@@ -123,6 +123,7 @@ MsdcWrite (
   MmioWrite32 (mHost.MsdcBase + Offset, Value);
 }
 
+#if MMC_USE_MT6789_QUIRKS
 STATIC
 UINT32
 TopRead (
@@ -141,6 +142,7 @@ TopWrite (
 {
   MmioWrite32 (mHost.TopBase + Offset, Value);
 }
+#endif /* MMC_USE_MT6789_QUIRKS */
 
 STATIC
 VOID
