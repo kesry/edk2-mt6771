@@ -242,3 +242,72 @@ USB host 能否工作不取决于 xHCI（那部分已实现），而取决于上
 
 诊断固件（含屏幕日志）已构建：run #29 `boot-uefi-29`，会在 Shell 画面打印
 IPPC 寄存器与 xHCI `CAPLENGTH`，用于判断 MTU3 是否已被时钟起来。
+
+## 10. USB host / VBUS 调试链（2026-11-26 记录）
+
+真机逐步定位的过程，供后续参考。
+
+### 已确认的事实
+
+| 结论 | 证据 |
+|---|---|
+| LK 会跳到我们的 payload | 探针镜像（BootShim 0x40 直接写 TopRGU）→ 几秒重启 |
+| BootShim 能把 `A3_UEFI.fd` 搬到 `0x50000000` | 拷贝后写 TopRGU → 反复重启 |
+| `br UEFI_BASE` 能执行 | 拷贝 + 覆盖入口为 TopRGU 桩 + 跳转 → 重启 |
+| EDK2 能启动到 Shell | run #26 起屏幕出现 UEFI Shell |
+| framebuffer 地址是 `0x77440000`（非 `0x7d170000`） | 从可启动 DTB 解出 `framebuffer@77440000`，stride 4352 |
+| **xHCI 控制器活着** | 诊断显示 `xHCI CAP0 caplen = 32` |
+| **I2C6 起初无响应** | `I2C6 INTR_STAT = 0x0000`，MT6370 读 `Device Error` |
+| USB 口无 5V | 键盘 NUM LOCK / 鼠标 LED 不亮 |
+
+### 供电与充电 IC
+
+- VBUS 必须 5V；`ldo_vusb` 3.3V 只喂手机自身 PHY。
+- 充电 IC 是**外部 MT6370 PMU**（DTB `mediatek,mt6370_pmu_charger`），
+  不是 MT6358 内置充电器。
+- MT6370 挂在 **I2C6 `0x11005000`**，7 位地址 `0x34`。
+- OTG 升压序列见 `mt6370_pmu_charger.c:1903`：
+  hidden mode(`0x07..0x0A`=`96 69 C3 3C`) → `LG_CONTROL(0x33)=0x7C`
+  → `CHGCTRL1(0x11) bit0` → 20 ms → `CHGHIDDENCTRL6(0x35)=0x00`。
+
+### I2C6 时钟门控
+
+```
+INFRA_AO 基址        0x10001000
+infra3 CG set        +0xC0   bit6 = I2C6
+infra3 CG status     +0xC8
+```
+来自厂商 `drivers/clk/mediatek/clk-mt6771.c`：`GATE_INFRA3(INFRACFG_AO_I2C6_CG, ..., 6)`。
+
+时序（26 MHz 父时钟、100 kHz，按 `mtk_i2c_calculate_speed` 推算）：
+`CLOCK_DIV=5`、`TIMING=0x6A03`、`LTIMING=0x3203`。
+
+### USB PHY（MT6771）
+
+基址 `0x11f40000`（DTB `usb0phy@11f40000`），U2 PHY COM 块在 `+0x300`：
+
+| 寄存器 | 偏移 | 相关位 |
+|---|---|---|
+| `U3D_U2PHYDTM0` | `+0x68` | `FORCE_UART_EN` b26、`FORCE_SUSPENDM` b18 |
+| `U3D_U2PHYDTM1` | `+0x6C` | `RG_VBUSVALID` b5 |
+| `U3D_U2PHYACR4` | `+0x20` | `GPIO_CTL` b9、`GPIO_MODE` b8 |
+| `U3D_USBPHYACR6` | `+0x18` | `OTG_VBUSCMP_EN` b20、`BC11_SW_EN` b23 |
+
+当前实现只做"离开 UART 模式 / 释放 force suspend / 打开 OTG VBUS 比较器 /
+置 VBUSVALID"，**完整模拟调参未移植**（厂商 `mtk-phy-asic.c` 有 1462 行）。
+
+### 诊断界面
+
+驱动 `Mt6771VbusDxe` 会把 LK framebuffer 整屏涂黑，从第 5 行开始打印，
+并每 2 秒重绘 10 次（因为 Shell 启动会清屏）。显示内容：
+
+```
+INFRA3_CG_STA  before/after      I2C6 时钟门控状态
+I2C6 CLOCK_DIV before/after
+I2C6 TIMING    before/after
+MT6370 read  : <status> val=0x..
+MT6370 OTG   : <status>
+   LG=0x.. CHGCTRL1=0x..          bit0=1 表示 boost 已开
+PHY DTM0 / DTM1 / ACR6  before -> after
+xHCI CAP0=0x........ caplen=..
+```
