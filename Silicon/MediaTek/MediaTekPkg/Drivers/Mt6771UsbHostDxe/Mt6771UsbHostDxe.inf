@@ -28,6 +28,12 @@
   UefiDriverEntryPoint
   UefiLib
   NonDiscoverableDeviceRegistrationLib
+  PrintLib
+
+[Protocols]
+  gEfiSimpleTextOutProtocolGuid
 
 [Depex]
-  TRUE
+  # Run after a text console exists so diagnostics are visible on screen
+  # (RELEASE builds route DEBUG() to the unwired UART0).
+  gEfiSimpleTextOutProtocolGuid

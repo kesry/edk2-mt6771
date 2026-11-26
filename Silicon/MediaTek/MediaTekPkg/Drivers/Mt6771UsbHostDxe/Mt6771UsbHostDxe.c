@@ -51,6 +51,7 @@
 #include <Library/UefiDriverEntryPoint.h>
 #include <Library/UefiLib.h>
 #include <Library/NonDiscoverableDeviceRegistrationLib.h>
+#include <Library/PrintLib.h>
 
 //
 // MMIO bases (see file header for provenance).
@@ -73,6 +74,22 @@
 #define SSUSB_U2_PORT_PDN     BIT1
 #define SSUSB_U2_PORT_FORCE_IDDIG BIT11
 #define SSUSB_U2_PORT_RG_IDDIG   BIT12
+
+//
+// The RELEASE build maps SerialPortLib to UART0, which is not wired on this
+// board, so DEBUG() output is invisible. Print to the UEFI console instead:
+// this driver depends on SimpleTextOut, so ConOut exists when it runs.
+//
+STATIC
+VOID
+ScreenLog (
+  IN CONST CHAR16  *Text
+  )
+{
+  if ((gST != NULL) && (gST->ConOut != NULL)) {
+    gST->ConOut->OutputString (gST->ConOut, (CHAR16 *)Text);
+  }
+}
 
 STATIC
 VOID
@@ -115,7 +132,13 @@ Mt6771UsbHostInit (
   UINT32 U2Ctrl;
 
   Ctrl0 = MmioRead32 (U3D_SSUSB_IP_PW_CTRL0);
-  DEBUG ((DEBUG_INFO, "Mt6771Usb: IP_PW_CTRL0  = 0x%08x\n", Ctrl0));
+  {
+    CHAR16 Buf[128];
+    UnicodeSPrint (Buf, sizeof (Buf), L"USB: IPPC before  CTRL0=%08x CTRL1=%08x CTRL2=%08x U2=%08x\r\n",
+                   MmioRead32 (U3D_SSUSB_IP_PW_CTRL0), MmioRead32 (U3D_SSUSB_IP_PW_CTRL1),
+                   MmioRead32 (U3D_SSUSB_IP_PW_CTRL2), MmioRead32 (U3D_SSUSB_U2_CTRL_0P));
+    ScreenLog (Buf);
+  }
 
   // 1. reset whole IP (xHCI + U3D)
   Mtu3SetBits (U3D_SSUSB_IP_PW_CTRL0, SSUSB_IP_SW_RST);
@@ -141,11 +164,12 @@ Mt6771UsbHostInit (
   Ctrl0 = MmioRead32 (U3D_SSUSB_IP_PW_CTRL0);
   Ctrl1 = MmioRead32 (U3D_SSUSB_IP_PW_CTRL1);
   Ctrl2 = MmioRead32 (U3D_SSUSB_IP_PW_CTRL2);
-  DEBUG ((
-    DEBUG_INFO,
-    "Mt6771Usb: after host init: CTRL0=0x%08x CTRL1=0x%08x CTRL2=0x%08x U2=0x%08x\n",
-    Ctrl0, Ctrl1, Ctrl2, MmioRead32 (U3D_SSUSB_U2_CTRL_0P)
-    ));
+  {
+    CHAR16 Buf[128];
+    UnicodeSPrint (Buf, sizeof (Buf), L"USB: IPPC after   CTRL0=%08x CTRL1=%08x CTRL2=%08x U2=%08x\r\n",
+                   Ctrl0, Ctrl1, Ctrl2, MmioRead32 (U3D_SSUSB_U2_CTRL_0P));
+    ScreenLog (Buf);
+  }
 }
 
 EFI_STATUS
@@ -158,24 +182,33 @@ Mt6771UsbHostDxeInitialize (
   EFI_STATUS  Status;
   UINT32      CapLength;
 
-  DEBUG ((DEBUG_INFO, "Mt6771Usb: probing xHCI @ 0x%08x\n", MT6771_XHCI_BASE));
+  ScreenLog (L"USB: Mt6771UsbHostDxe start\r\n");
 
   //
   // Sanity check before touching the wrapper: a live xHCI controller reports a
   // non-zero CAPLENGTH in the low byte of its capability register.
   //
   CapLength = MmioRead32 (MT6771_XHCI_BASE) & 0xFFu;
-  DEBUG ((DEBUG_INFO, "Mt6771Usb: xHCI HCS/CAplength raw=0x%08x caplen=%u\n",
-          MmioRead32 (MT6771_XHCI_BASE), CapLength));
+  {
+    CHAR16 Buf[128];
+    UnicodeSPrint (Buf, sizeof (Buf), L"USB: xHCI CAP0=%08x caplen=%u\r\n",
+                   MmioRead32 (MT6771_XHCI_BASE), CapLength);
+    ScreenLog (Buf);
+  }
 
   Mt6771UsbHostInit ();
 
   CapLength = MmioRead32 (MT6771_XHCI_BASE) & 0xFFu;
-  DEBUG ((DEBUG_INFO, "Mt6771Usb: after init caplen=%u\n", CapLength));
-
-  if (CapLength == 0) {
-    DEBUG ((DEBUG_ERROR, "Mt6771Usb: xHCI caplength is 0, controller not clocked?\n"));
-    // Still register it: the PCI shim will simply expose a dead controller.
+  {
+    CHAR16 Buf[128];
+    UnicodeSPrint (Buf, sizeof (Buf), L"USB: xHCI after init CAP0=%08x caplen=%u\r\n",
+                   MmioRead32 (MT6771_XHCI_BASE), CapLength);
+    ScreenLog (Buf);
+    if (CapLength == 0) {
+      ScreenLog (L"USB: caplen=0 -> controller NOT clocked / PHY off\r\n");
+    } else {
+      ScreenLog (L"USB: caplen!=0 -> controller alive, registering\r\n");
+    }
   }
 
   //
@@ -191,11 +224,11 @@ Mt6771UsbHostDxeInitialize (
              (UINTN)MT6771_XHCI_BASE,
              (UINTN)MT6771_XHCI_SIZE
              );
-  if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "Mt6771Usb: register non-discoverable xHCI failed: %r\n", Status));
-    return Status;
+  {
+    CHAR16 Buf[128];
+    UnicodeSPrint (Buf, sizeof (Buf), L"USB: register xHCI -> %r\r\n", Status);
+    ScreenLog (Buf);
   }
 
-  DEBUG ((DEBUG_INFO, "Mt6771Usb: xHCI registered as non-discoverable PCI device\n"));
-  return EFI_SUCCESS;
+  return Status;
 }
