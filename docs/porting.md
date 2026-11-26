@@ -345,3 +345,38 @@ dh -p SerialIo    串口
 
 副作用：诊断驱动的黑屏重绘（6 次 × 2 s）会覆盖 Shell 自己打印的 startup.nsh 输出。
 如果需要看 Shell 输出，把 `Mt6771VbusDxe` 的重绘次数改成 0 再构建。
+
+### 12. I2C6 真正的失败原因（2026-11-26 深夜）
+
+真机读数（run #37）：
+
+```
+INFRA3_CG_STA after = 0x00000040     ← 门控已打开（bit6）
+CLOCK_DIV before = 0x0004 after = 0x0004
+TIMING    before = 0x1303 after = 0x1303
+I2C6 scan = 0 device(s)，MT6370 read = Device Error
+```
+
+`CLOCK_DIV`/`TIMING` **能读、能保持、且明显是 LK 配置的值**，说明：
+
+- 控制器 MMIO 正常
+- 时钟源已选通
+- 引脚已 mux、上拉正常
+- 总线硬件没有问题（LK 充电时就用这条总线跟 MT6370 通信）
+
+**失败是自伤：`I2cPrepare()` 每次传输前都写 `I2C_SOFTRESET`。**
+软复位会清掉 `TIMING`/`CLOCK_DIV`/`LTIMING`/`HS`/`IO_CONFIG`，
+而重配逻辑只在"读回为 0"时触发（复位前读到非 0），因此复位后再无人恢复配置，
+传输永远不完成 → 扫描全静默、所有地址都不 ACK。
+
+修复（run #38）：
+
+- 去掉每次传输的软复位，保留 LK 的配置
+- 仅在读回确实为 0 时才写回退值，并在屏幕标注 `REPROGRAMMED` / `intact`
+- `DELAY_LEN` 为 0 时补 2
+- 完成判定同时接受"`START` 位自动清零"，避免某些配置不锁存中断状态
+
+### 经验
+
+遇到"寄存器读写正常但传输不完成"的总线问题，先看**自己有没有把别人配好的状态清掉**，
+不要一上来怀疑引脚/上拉/时钟。本例中 LK 已经把 I2C6 配好，我们的复位把它的工作状态毁了。
