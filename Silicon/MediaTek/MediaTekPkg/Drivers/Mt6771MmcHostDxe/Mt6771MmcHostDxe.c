@@ -162,6 +162,7 @@ MsdcClearBits (
   MsdcWrite (Offset, MsdcRead (Offset) & ~Mask);
 }
 
+#if MMC_USE_MT6789_QUIRKS
 STATIC
 VOID
 TopSetBits (
@@ -185,6 +186,7 @@ TopClearBits (
     TopWrite (Offset, TopRead (Offset) & ~Mask);
   }
 }
+#endif /* MMC_USE_MT6789_QUIRKS */
 
 STATIC
 EFI_STATUS
