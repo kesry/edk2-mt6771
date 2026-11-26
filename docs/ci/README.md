@@ -72,3 +72,16 @@
   导致 `A3Pkg/a3.dsc` 无法解析；同时 `PackagesSupported = ("A3Pkg")` 少了逗号，不是 tuple。
 - 修复：改为 `"Platform/OPPO"` 和 `("A3Pkg",)`（本次提交）。
 - 完整日志：[build-run45773461419.log](build-run45773461419.log)
+
+## Run #6 — 45774355830 (2026-11-26, failure)
+
+- 结果：**failure**，失败步骤：`Build platform`（EDS 编译阶段）
+- 错误原文：
+  ```
+  INFO - /bin/sh: 1: llvm-ar: not found
+  ERROR - Compiler #7000 from : Failed to execute command
+  ```
+- 根因：EDK2 目标工具链是 `CLANG38`（Build 目录下 `RELEASE_CLANG38`），
+  CI 未安装 `llvm-ar` 所在的 `llvm` 包。
+- 修复：apt 依赖加入 `llvm clang`（本次提交）。
+- 完整日志：[build-run45774355830.log](build-run45774355830.log)

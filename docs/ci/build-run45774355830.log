@@ -1,0 +1,1108 @@
+make: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools'
+make -C Source/C
+make[1]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C'
+Attempting to detect HOST_ARCH from 'uname -m': x86_64
+Detected HOST_ARCH of X64 using uname.
+mkdir -p .
+mkdir ./libs
+make -C Common
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/Common'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  BasePeCoff.c -o BasePeCoff.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  BinderFuncs.c -o BinderFuncs.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  CommonLib.c -o CommonLib.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  Crc32.c -o Crc32.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  Decompress.c -o Decompress.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  EfiCompress.c -o EfiCompress.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  EfiUtilityMsgs.c -o EfiUtilityMsgs.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  FirmwareVolumeBuffer.c -o FirmwareVolumeBuffer.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  FvLib.c -o FvLib.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  MemoryFile.c -o MemoryFile.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  MyAlloc.c -o MyAlloc.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  OsPath.c -o OsPath.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  ParseGuidedSectionTools.c -o ParseGuidedSectionTools.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  ParseInf.c -o ParseInf.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  PeCoffLoaderEx.c -o PeCoffLoaderEx.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  SimpleFileParsing.c -o SimpleFileParsing.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  StringFuncs.c -o StringFuncs.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  TianoCompress.c -o TianoCompress.o
+ar crs ../libs/libCommon.a BasePeCoff.o BinderFuncs.o CommonLib.o Crc32.o Decompress.o EfiCompress.o EfiUtilityMsgs.o FirmwareVolumeBuffer.o FvLib.o MemoryFile.o MyAlloc.o OsPath.o ParseGuidedSectionTools.o ParseInf.o PeCoffLoaderEx.o SimpleFileParsing.o StringFuncs.o TianoCompress.o
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/Common'
+mkdir ./bin
+make -C VfrCompile VfrLexer.h
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/VfrCompile'
+BIN_DIR='.' make -C Pccts/dlg
+make[3]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/VfrCompile/Pccts/dlg'
+cc -O -I. -I../support/set -I../h -DUSER_ZZSYN -DZZLEXBUFSIZE=65536 -c dlg_p.c
+cc -O -I. -I../support/set -I../h -DUSER_ZZSYN -DZZLEXBUFSIZE=65536 -c dlg_a.c
+cc -O -I. -I../support/set -I../h -DUSER_ZZSYN -DZZLEXBUFSIZE=65536 -c main.c
+cc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN -DZZLEXBUFSIZE=65536  err.c -o err.o
+cc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN -DZZLEXBUFSIZE=65536 ../support/set/set.c
+cc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN -DZZLEXBUFSIZE=65536  support.c -o support.o
+cc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN -DZZLEXBUFSIZE=65536  output.c -o output.o
+cc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN -DZZLEXBUFSIZE=65536  relabel.c -o relabel.o
+cc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN -DZZLEXBUFSIZE=65536  automata.c -o automata.o
+cc -O -I. -I../support/set -I../h -DUSER_ZZSYN -DZZLEXBUFSIZE=65536 -o ./dlg dlg_p.o dlg_a.o main.o err.o set.o support.o output.o relabel.o automata.o
+make[3]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/VfrCompile/Pccts/dlg'
+BIN_DIR='.' make -C Pccts/antlr
+make[3]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/VfrCompile/Pccts/antlr'
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  antlr.c -o antlr.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  scan.c -o scan.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  err.c -o err.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  bits.c -o bits.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  build.c -o build.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  fset2.c -o fset2.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  fset.c -o fset.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  gen.c -o gen.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  globals.c -o globals.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  hash.c -o hash.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  lex.c -o lex.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  main.c -o main.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  misc.c -o misc.o
+gcc -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536 -c -o set.o ../support/set/set.c
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  pred.c -o pred.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  egman.c -o egman.o
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  mrhoist.c -o mrhoist.o
+mrhoist.c: In function ‘MR_ruleNamePlusOffset’:
+mrhoist.c:2220:37: warning: ‘__builtin___sprintf_chk’ may write a terminating nul past the end of the destination [-Wformat-overflow=]
+ 2220 |       sprintf(ruleNameStatic2,"%s/%d",ruleNameStatic1,offset+1);
+      |                                     ^
+In file included from /usr/include/stdio.h:980,
+                 from mrhoist.c:28:
+In function ‘sprintf’,
+    inlined from ‘MR_ruleNamePlusOffset’ at mrhoist.c:2220:7:
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:30:10: note: ‘__builtin___sprintf_chk’ output between 3 and 61 bytes into a destination of size 60
+   30 |   return __builtin___sprintf_chk (__s, __USE_FORTIFY_LEVEL - 1,
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   31 |                                   __glibc_objsize (__s), __fmt,
+      |                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   32 |                                   __va_arg_pack ());
+      |                                   ~~~~~~~~~~~~~~~~~
+gcc -c -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536  fcache.c -o fcache.o
+gcc -O -I. -I../support/set -I../h -DUSER_ZZSYN  -DZZLEXBUFSIZE=65536 -o ./antlr antlr.o scan.o err.o bits.o build.o fset2.o fset.o gen.o globals.o hash.o lex.o main.o misc.o set.o pred.o egman.o mrhoist.o fcache.o
+make[3]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/VfrCompile/Pccts/antlr'
+Pccts/antlr/antlr -CC -e3 -ck 3 -k 2 -fl VfrParser.dlg -ft VfrTokens.h -o . VfrSyntax.g
+Antlr parser generator   Version 1.33MR33   1989-2001
+VfrSyntax.g, line 3529: warning: alts 1 and 2 of {..} ambiguous upon ( ";" RefreshGuid GuidOp Locked Image EndIf InconsistentIf DisableIf SuppressIf Default GrayOutIf )
+VfrSyntax.g, line 3538: warning: alts 1 and 2 of {..} ambiguous upon ( ";" RefreshGuid GuidOp Locked Image EndIf InconsistentIf DisableIf SuppressIf Default GrayOutIf )
+VfrSyntax.g, line 3547: warning: alts 1 and 2 of {..} ambiguous upon ( ";" RefreshGuid GuidOp Locked Image EndIf InconsistentIf DisableIf SuppressIf Default GrayOutIf )
+VfrSyntax.g, line 3557: warning: alts 1 and 2 of {..} ambiguous upon ( ";" RefreshGuid GuidOp Locked Image EndIf InconsistentIf DisableIf SuppressIf Default GrayOutIf )
+VfrSyntax.g, line 3587: warning: alts 1 and 2 of {..} ambiguous upon ( ";" RefreshGuid GuidOp Locked Image EndIf InconsistentIf DisableIf SuppressIf Default GrayOutIf )
+VfrSyntax.g, line 3596: warning: alts 1 and 2 of {..} ambiguous upon ( ";" RefreshGuid GuidOp Locked Image EndIf InconsistentIf DisableIf SuppressIf Default GrayOutIf )
+Pccts/dlg/dlg -C2 -i -CC -cl VfrLexer -o . VfrParser.dlg
+dlg  Version 1.33MR33   1989-2001
+
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/VfrCompile'
+make -C BrotliCompress
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/BrotliCompress'
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  BrotliCompress.c -o BrotliCompress.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/common/platform.c -o brotli/c/common/platform.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/common/shared_dictionary.c -o brotli/c/common/shared_dictionary.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/common/constants.c -o brotli/c/common/constants.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/common/context.c -o brotli/c/common/context.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/command.c -o brotli/c/enc/command.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/compound_dictionary.c -o brotli/c/enc/compound_dictionary.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/fast_log.c -o brotli/c/enc/fast_log.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/common/dictionary.c -o brotli/c/common/dictionary.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/common/transform.c -o brotli/c/common/transform.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/dec/bit_reader.c -o brotli/c/dec/bit_reader.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/dec/decode.c -o brotli/c/dec/decode.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/dec/huffman.c -o brotli/c/dec/huffman.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/dec/state.c -o brotli/c/dec/state.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/backward_references.c -o brotli/c/enc/backward_references.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/backward_references_hq.c -o brotli/c/enc/backward_references_hq.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/bit_cost.c -o brotli/c/enc/bit_cost.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/block_splitter.c -o brotli/c/enc/block_splitter.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/brotli_bit_stream.c -o brotli/c/enc/brotli_bit_stream.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/cluster.c -o brotli/c/enc/cluster.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/compress_fragment.c -o brotli/c/enc/compress_fragment.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/compress_fragment_two_pass.c -o brotli/c/enc/compress_fragment_two_pass.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/dictionary_hash.c -o brotli/c/enc/dictionary_hash.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/encode.c -o brotli/c/enc/encode.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/encoder_dict.c -o brotli/c/enc/encoder_dict.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/entropy_encode.c -o brotli/c/enc/entropy_encode.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/histogram.c -o brotli/c/enc/histogram.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/literal_cost.c -o brotli/c/enc/literal_cost.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/memory.c -o brotli/c/enc/memory.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/metablock.c -o brotli/c/enc/metablock.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/static_dict.c -o brotli/c/enc/static_dict.o
+gcc  -c -I ./brotli/c/include -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  brotli/c/enc/utf8_util.c -o brotli/c/enc/utf8_util.o
+gcc -o ../bin/BrotliCompress  BrotliCompress.o brotli/c/common/platform.o brotli/c/common/shared_dictionary.o brotli/c/common/constants.o brotli/c/common/context.o brotli/c/enc/command.o brotli/c/enc/compound_dictionary.o brotli/c/enc/fast_log.o brotli/c/common/dictionary.o brotli/c/common/transform.o brotli/c/dec/bit_reader.o brotli/c/dec/decode.o brotli/c/dec/huffman.o brotli/c/dec/state.o brotli/c/enc/backward_references.o brotli/c/enc/backward_references_hq.o brotli/c/enc/bit_cost.o brotli/c/enc/block_splitter.o brotli/c/enc/brotli_bit_stream.o brotli/c/enc/cluster.o brotli/c/enc/compress_fragment.o brotli/c/enc/compress_fragment_two_pass.o brotli/c/enc/dictionary_hash.o brotli/c/enc/encode.o brotli/c/enc/encoder_dict.o brotli/c/enc/entropy_encode.o brotli/c/enc/histogram.o brotli/c/enc/literal_cost.o brotli/c/enc/memory.o brotli/c/enc/metablock.o brotli/c/enc/static_dict.o brotli/c/enc/utf8_util.o -L../libs -lm
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/BrotliCompress'
+make -C VfrCompile
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/VfrCompile'
+g++ -c -DPCCTS_USE_NAMESPACE_STD -I Pccts/h -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/  -O2  Pccts/h/AParser.cpp -o AParser.o
+Pccts/h/AParser.cpp: In member function ‘int ANTLRParser::set_deg(SetWordType*)’:
+Pccts/h/AParser.cpp:475:31: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  475 |         register SetWordType *p = a;
+      |                               ^
+Pccts/h/AParser.cpp:476:31: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  476 |         register SetWordType *endp = &(a[bsetsize]);
+      |                               ^~~~
+Pccts/h/AParser.cpp:477:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  477 |         register int degree = 0;
+      |                      ^~~~~~
+Pccts/h/AParser.cpp:482:38: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  482 |                 register SetWordType t = *p;
+      |                                      ^
+Pccts/h/AParser.cpp:483:39: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  483 |                 register SetWordType *b = &(bitmask[0]);
+      |                                       ^
+Pccts/h/AParser.cpp: In member function ‘virtual void ANTLRParser::edecode(SetWordType*)’:
+Pccts/h/AParser.cpp:496:31: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  496 |         register SetWordType *p = a;
+      |                               ^
+Pccts/h/AParser.cpp:497:31: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  497 |         register SetWordType *endp = &(p[bsetsize]);
+      |                               ^~~~
+Pccts/h/AParser.cpp:498:27: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  498 |         register unsigned e = 0;
+      |                           ^
+Pccts/h/AParser.cpp:502:38: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  502 |                 register SetWordType t = *p;
+      |                                      ^
+Pccts/h/AParser.cpp:503:39: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  503 |                 register SetWordType *b = &(bitmask[0]);
+      |                                       ^
+g++ -c -DPCCTS_USE_NAMESPACE_STD -I Pccts/h -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/  -O2  Pccts/h/DLexerBase.cpp -o DLexerBase.o
+Pccts/h/DLexerBase.cpp: In member function ‘void DLGLexerBase::replstr(const DLGChar*)’:
+Pccts/h/DLexerBase.cpp:196:27: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  196 |         register DLGChar *l= &_lextext[_bufsize -1];
+      |                           ^
+g++ -c -DPCCTS_USE_NAMESPACE_STD -I Pccts/h -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/  -O2  Pccts/h/ATokenBuffer.cpp -o ATokenBuffer.o
+g++ -c -I Pccts/h -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -Wno-unused-result -O2  EfiVfrParser.cpp -o EfiVfrParser.o
+g++ -c -I Pccts/h -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -Wno-unused-result -O2  VfrLexer.cpp -o VfrLexer.o
+In file included from VfrLexer.cpp:22124:
+Pccts/h/DLexer.h: In member function ‘virtual ANTLRTokenType VfrLexer::nextTokenType()’:
+Pccts/h/DLexer.h:68:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+   68 |         register int state, newstate;
+      |                      ^~~~~
+Pccts/h/DLexer.h:68:29: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+   68 |         register int state, newstate;
+      |                             ^~~~~~~~
+Pccts/h/DLexer.h:70:27: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+   70 |         register DLGChar *lastpos;
+      |                           ^~~~~~~
+g++ -c -DPCCTS_USE_NAMESPACE_STD -I Pccts/h -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/  -O2  VfrSyntax.cpp -o VfrSyntax.o
+g++ -c -I Pccts/h -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -Wno-unused-result -O2  VfrFormPkg.cpp -o VfrFormPkg.o
+g++ -c -I Pccts/h -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -Wno-unused-result -O2  VfrError.cpp -o VfrError.o
+g++ -c -I Pccts/h -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -Wno-unused-result -O2  VfrUtilityLib.cpp -o VfrUtilityLib.o
+g++ -c -I Pccts/h -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -Wno-unused-result -O2  VfrCompiler.cpp -o VfrCompiler.o
+g++ -o ../bin/VfrCompile  AParser.o DLexerBase.o ATokenBuffer.o EfiVfrParser.o VfrLexer.o VfrSyntax.o VfrFormPkg.o VfrError.o VfrUtilityLib.o VfrCompiler.o -L../libs -lCommon
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/VfrCompile'
+make -C EfiRom
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/EfiRom'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  EfiRom.c -o EfiRom.o
+gcc -o ../bin/EfiRom  EfiRom.o -L../libs -lCommon
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/EfiRom'
+make -C GenFfs
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/GenFfs'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  GenFfs.c -o GenFfs.o
+gcc -o ../bin/GenFfs  GenFfs.o -L../libs -lCommon
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/GenFfs'
+make -C GenFv
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/GenFv'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  GenFv.c -o GenFv.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  GenFvInternalLib.c -o GenFvInternalLib.o
+gcc -o ../bin/GenFv  GenFv.o GenFvInternalLib.o -L../libs -lCommon -luuid
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/GenFv'
+make -C GenFw
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/GenFw'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  GenFw.c -o GenFw.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  ElfConvert.c -o ElfConvert.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  Elf32Convert.c -o Elf32Convert.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  Elf64Convert.c -o Elf64Convert.o
+gcc -o ../bin/GenFw  GenFw.o ElfConvert.o Elf32Convert.o Elf64Convert.o -L../libs -lCommon -luuid
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/GenFw'
+make -C GenSec
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/GenSec'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  GenSec.c -o GenSec.o
+gcc -o ../bin/GenSec  GenSec.o -L../libs -lCommon -luuid
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/GenSec'
+make -C GenCrc32
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/GenCrc32'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  GenCrc32.c -o GenCrc32.o
+gcc -o ../bin/GenCrc32  GenCrc32.o -L../libs -lCommon
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/GenCrc32'
+make -C LzmaCompress
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/LzmaCompress'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -D_7ZIP_ST LzmaCompress.c -o LzmaCompress.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -D_7ZIP_ST Sdk/C/Alloc.c -o Sdk/C/Alloc.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -D_7ZIP_ST Sdk/C/LzFind.c -o Sdk/C/LzFind.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -D_7ZIP_ST Sdk/C/LzmaDec.c -o Sdk/C/LzmaDec.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -D_7ZIP_ST Sdk/C/LzmaEnc.c -o Sdk/C/LzmaEnc.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -D_7ZIP_ST Sdk/C/7zFile.c -o Sdk/C/7zFile.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -D_7ZIP_ST Sdk/C/7zStream.c -o Sdk/C/7zStream.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -D_7ZIP_ST Sdk/C/Bra86.c -o Sdk/C/Bra86.o
+gcc -o ../bin/LzmaCompress  LzmaCompress.o Sdk/C/Alloc.o Sdk/C/LzFind.o Sdk/C/LzmaDec.o Sdk/C/LzmaEnc.o Sdk/C/7zFile.o Sdk/C/7zStream.o Sdk/C/Bra86.o -L../libs -lCommon
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/LzmaCompress'
+make -C TianoCompress
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/TianoCompress'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  TianoCompress.c -o TianoCompress.o
+gcc -o ../bin/TianoCompress  TianoCompress.o -L../libs -lCommon
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/TianoCompress'
+make -C VolInfo
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/VolInfo'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  VolInfo.c -o VolInfo.o
+gcc -o ../bin/VolInfo  VolInfo.o -L../libs -lCommon
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/VolInfo'
+make -C DevicePath
+make[2]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/DevicePath'
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -Wno-error=stringop-overflow DevicePath.c -o DevicePath.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -Wno-error=stringop-overflow UefiDevicePathLib.c -o UefiDevicePathLib.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -Wno-error=stringop-overflow DevicePathFromText.c -o DevicePathFromText.o
+gcc  -c  -I .. -I ../Include/Common -I ../Include/ -I ../Include/IndustryStandard -I ../Common/ -I .. -I . -I ../Include/X64/ -MD -fshort-wchar -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks -Wall -Werror -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict -Wno-unused-result -nostdlib -g -O2  -Wno-error=stringop-overflow DevicePathUtilities.c -o DevicePathUtilities.o
+gcc -o ../bin/DevicePath  DevicePath.o UefiDevicePathLib.o DevicePathFromText.o  DevicePathUtilities.o -L../libs -lCommon -luuid
+make[2]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C/DevicePath'
+Finished building BaseTools C Tools with HOST_ARCH=X64
+make[1]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/C'
+make -C Source/Python
+make[1]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python'
+make -C Tests
+make[1]: Entering directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Tests'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:44: SyntaxWarning: invalid escape sequence '\['
+  ArrayIndex = re.compile("\[\s*[0-9a-fA-FxX]*\s*\]")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:46: SyntaxWarning: invalid escape sequence '\$'
+  gPlaceholderPattern = re.compile("\$\{([^$()\s]+)\}", re.MULTILINE | re.UNICODE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:50: SyntaxWarning: invalid escape sequence '\+'
+  addressPatternGeneral = re.compile("^Address[' ']+Publics by Value[' ']+Rva\+Base")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:51: SyntaxWarning: invalid escape sequence '\w'
+  valuePatternGcc = re.compile('^([\w_\.]+) +([\da-fA-Fx]+) +([\da-fA-Fx]+)$')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:52: SyntaxWarning: invalid escape sequence '\d'
+  pcdPatternGcc = re.compile('^([\da-fA-Fx]+) +([\da-fA-Fx]+)')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:53: SyntaxWarning: invalid escape sequence '\d'
+  secReGeneral = re.compile('^([\da-fA-F]+):([\da-fA-F]+) +([\da-fA-F]+)[Hh]? +([.\w\$]+) +(\w+)', re.UNICODE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:85: SyntaxWarning: invalid escape sequence '\s'
+  if re.match('^\s*Address\s*Size\s*Align\s*Out\s*In\s*Symbol\s*$', firstline):
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:99: SyntaxWarning: invalid escape sequence '\s'
+  if status == 0 and (re.match('^\s*Address\s*Size\s*Align\s*Out\s*In\s*Symbol\s*$', line) \
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:107: SyntaxWarning: invalid escape sequence '\d'
+  m = re.match('^([\da-fA-FxX]+)([\s\S]*)([_]*%s)$' % varname, line)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:173: SyntaxWarning: invalid escape sequence '\d'
+  symRe = re.compile('^([\da-fA-F]+):([\da-fA-F]+) +([\.:\\\\\w\?@\$-]+) +([\da-fA-F]+)', re.UNICODE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:1929: SyntaxWarning: invalid escape sequence '\*'
+  return re.sub('//.*?\n|/\*.*?\*/', '\n', ctext, flags=re.S)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/GlobalData.py:39: SyntaxWarning: invalid escape sequence '\$'
+  gMacroRefPattern = re.compile("\$\(({})\)".format(_MacroNamePattern), re.UNICODE)
+testHelp (TianoCompress.Tests.testHelp) ... ok
+testRandomDataCycles (TianoCompress.Tests.testRandomDataCycles) ... ok
+test_AmlToC_AmlToC (CheckPythonSyntax.Tests.test_AmlToC_AmlToC) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/AmlToC/AmlToC.py:20: SyntaxWarning: invalid escape sequence '\D'
+  __description__ = """
+ok
+test_AutoGen_AutoGen (CheckPythonSyntax.Tests.test_AutoGen_AutoGen) ... ok
+test_AutoGen_AutoGenWorker (CheckPythonSyntax.Tests.test_AutoGen_AutoGenWorker) ... ok
+test_AutoGen_BuildEngine (CheckPythonSyntax.Tests.test_AutoGen_BuildEngine) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/AutoGen/BuildEngine.py:309: SyntaxWarning: invalid escape sequence '\-'
+  _FileTypePattern = re.compile("^[_a-zA-Z][_\-0-9a-zA-Z]*$")
+ok
+test_AutoGen_DataPipe (CheckPythonSyntax.Tests.test_AutoGen_DataPipe) ... ok
+test_AutoGen_GenC (CheckPythonSyntax.Tests.test_AutoGen_GenC) ... ok
+test_AutoGen_GenDepex (CheckPythonSyntax.Tests.test_AutoGen_GenDepex) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/AutoGen/GenDepex.py:129: SyntaxWarning: invalid escape sequence '\('
+  TokenPattern = re.compile("(\(|\)|\{[^{}]+\{?[^{}]+\}?[ ]*\}|\w+)")
+ok
+test_AutoGen_GenMake (CheckPythonSyntax.Tests.test_AutoGen_GenMake) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/AutoGen/GenMake.py:31: SyntaxWarning: invalid escape sequence '\('
+  gMacroPattern = re.compile("([_A-Z][_A-Z0-9]*)[ \t]*\((.+)\)", re.UNICODE)
+ok
+test_AutoGen_GenPcdDb (CheckPythonSyntax.Tests.test_AutoGen_GenPcdDb) ... ok
+test_AutoGen_GenVar (CheckPythonSyntax.Tests.test_AutoGen_GenVar) ... ok
+test_AutoGen_IdfClassObject (CheckPythonSyntax.Tests.test_AutoGen_IdfClassObject) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/AutoGen/IdfClassObject.py:21: SyntaxWarning: invalid escape sequence '\('
+  IMAGE_TOKEN = re.compile('IMAGE_TOKEN *\(([A-Z0-9_]+) *\)', re.MULTILINE | re.UNICODE)
+ok
+test_AutoGen_IncludesAutoGen (CheckPythonSyntax.Tests.test_AutoGen_IncludesAutoGen) ... ok
+test_AutoGen_InfSectionParser (CheckPythonSyntax.Tests.test_AutoGen_InfSectionParser) ... ok
+test_AutoGen_ModuleAutoGen (CheckPythonSyntax.Tests.test_AutoGen_ModuleAutoGen) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/AutoGen/ModuleAutoGen.py:54: SyntaxWarning: invalid escape sequence '\s'
+  gEfiVarStoreNamePattern = re.compile("\s*name\s*=\s*(\w+)")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/AutoGen/ModuleAutoGen.py:59: SyntaxWarning: invalid escape sequence '\s'
+  gEfiVarStoreGuidPattern = re.compile("\s*guid\s*=\s*({.*?{.*?}\s*})")
+ok
+test_AutoGen_ModuleAutoGenHelper (CheckPythonSyntax.Tests.test_AutoGen_ModuleAutoGenHelper) ... ok
+test_AutoGen_PlatformAutoGen (CheckPythonSyntax.Tests.test_AutoGen_PlatformAutoGen) ... ok
+test_AutoGen_StrGather (CheckPythonSyntax.Tests.test_AutoGen_StrGather) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/AutoGen/StrGather.py:57: SyntaxWarning: invalid escape sequence '\('
+  STRING_TOKEN = re.compile('STRING_TOKEN *\(([A-Z0-9_]+) *\)', re.MULTILINE | re.UNICODE)
+ok
+test_AutoGen_UniClassObject (CheckPythonSyntax.Tests.test_AutoGen_UniClassObject) ... ok
+test_AutoGen_ValidCheckingInfoObject (CheckPythonSyntax.Tests.test_AutoGen_ValidCheckingInfoObject) ... ok
+test_AutoGen_WorkspaceAutoGen (CheckPythonSyntax.Tests.test_AutoGen_WorkspaceAutoGen) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/AutoGen/WorkspaceAutoGen.py:29: SyntaxWarning: invalid escape sequence '\('
+  gDepexTokenPattern = re.compile("(\(|\)|\w+| \S+\.inf)")
+ok
+test_AutoGen___init__ (CheckPythonSyntax.Tests.test_AutoGen___init__) ... ok
+test_BPDG_BPDG (CheckPythonSyntax.Tests.test_BPDG_BPDG) ... ok
+test_BPDG_GenVpd (CheckPythonSyntax.Tests.test_BPDG_GenVpd) ... ok
+test_BPDG_StringTable (CheckPythonSyntax.Tests.test_BPDG_StringTable) ... ok
+test_BPDG___init__ (CheckPythonSyntax.Tests.test_BPDG___init__) ... ok
+test_Capsule_GenerateCapsule (CheckPythonSyntax.Tests.test_Capsule_GenerateCapsule) ... ok
+test_Capsule_GenerateWindowsDriver (CheckPythonSyntax.Tests.test_Capsule_GenerateWindowsDriver) ... ok
+test_Capsule_WindowsCapsuleSupportHelper (CheckPythonSyntax.Tests.test_Capsule_WindowsCapsuleSupportHelper) ... ok
+test_CommonDataClass_CommonClass (CheckPythonSyntax.Tests.test_CommonDataClass_CommonClass) ... ok
+test_CommonDataClass_DataClass (CheckPythonSyntax.Tests.test_CommonDataClass_DataClass) ... ok
+test_CommonDataClass_Exceptions (CheckPythonSyntax.Tests.test_CommonDataClass_Exceptions) ... ok
+test_CommonDataClass_FdfClass (CheckPythonSyntax.Tests.test_CommonDataClass_FdfClass) ... ok
+test_CommonDataClass___init__ (CheckPythonSyntax.Tests.test_CommonDataClass___init__) ... ok
+test_Common_BuildToolError (CheckPythonSyntax.Tests.test_Common_BuildToolError) ... ok
+test_Common_BuildVersion (CheckPythonSyntax.Tests.test_Common_BuildVersion) ... ok
+test_Common_DataType (CheckPythonSyntax.Tests.test_Common_DataType) ... ok
+test_Common_Edk2_Capsule_FmpPayloadHeader (CheckPythonSyntax.Tests.test_Common_Edk2_Capsule_FmpPayloadHeader) ... ok
+test_Common_Edk2_Capsule___init__ (CheckPythonSyntax.Tests.test_Common_Edk2_Capsule___init__) ... ok
+test_Common_Edk2___init__ (CheckPythonSyntax.Tests.test_Common_Edk2___init__) ... ok
+test_Common_EdkLogger (CheckPythonSyntax.Tests.test_Common_EdkLogger) ... ok
+test_Common_Expression (CheckPythonSyntax.Tests.test_Common_Expression) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Expression.py:44: SyntaxWarning: invalid escape sequence '\('
+  _ReLabel = re.compile('LABEL\((\w+)\)')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Expression.py:45: SyntaxWarning: invalid escape sequence '\('
+  _ReOffset = re.compile('OFFSET_OF\((\w+)\)')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Expression.py:245: SyntaxWarning: invalid escape sequence '\$'
+  "\$\([A-Z][A-Z0-9_]*\)|\$\(\w+\.\w+\)|\w+\.\w+|"
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Expression.py:246: SyntaxWarning: invalid escape sequence '\|'
+  "&&|\|\||!(?!=)|"
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Expression.py:247: SyntaxWarning: invalid escape sequence '\W'
+  "(?<=\W)AND(?=\W)|(?<=\W)OR(?=\W)|(?<=\W)NOT(?=\W)|(?<=\W)XOR(?=\W)|"
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Expression.py:248: SyntaxWarning: invalid escape sequence '\W'
+  "(?<=\W)EQ(?=\W)|(?<=\W)NE(?=\W)|(?<=\W)GT(?=\W)|(?<=\W)LT(?=\W)|(?<=\W)GE(?=\W)|(?<=\W)LE(?=\W)"
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Expression.py:740: SyntaxWarning: invalid escape sequence '\('
+  Re = re.compile('(?:UINT8|UINT16|UINT32|UINT64)\((.+)\)')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Expression.py:978: SyntaxWarning: invalid escape sequence '\('
+  TokenSpaceGuidName = re.search('GUID\((\w+)\)', Item).group(1)
+ok
+test_Common_GlobalData (CheckPythonSyntax.Tests.test_Common_GlobalData) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/GlobalData.py:39: SyntaxWarning: invalid escape sequence '\$'
+  gMacroRefPattern = re.compile("\$\(({})\)".format(_MacroNamePattern), re.UNICODE)
+ok
+test_Common_LongFilePathOs (CheckPythonSyntax.Tests.test_Common_LongFilePathOs) ... ok
+test_Common_LongFilePathOsPath (CheckPythonSyntax.Tests.test_Common_LongFilePathOsPath) ... ok
+test_Common_LongFilePathSupport (CheckPythonSyntax.Tests.test_Common_LongFilePathSupport) ... ok
+test_Common_Misc (CheckPythonSyntax.Tests.test_Common_Misc) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:44: SyntaxWarning: invalid escape sequence '\['
+  ArrayIndex = re.compile("\[\s*[0-9a-fA-FxX]*\s*\]")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:46: SyntaxWarning: invalid escape sequence '\$'
+  gPlaceholderPattern = re.compile("\$\{([^$()\s]+)\}", re.MULTILINE | re.UNICODE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:50: SyntaxWarning: invalid escape sequence '\+'
+  addressPatternGeneral = re.compile("^Address[' ']+Publics by Value[' ']+Rva\+Base")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:51: SyntaxWarning: invalid escape sequence '\w'
+  valuePatternGcc = re.compile('^([\w_\.]+) +([\da-fA-Fx]+) +([\da-fA-Fx]+)$')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:52: SyntaxWarning: invalid escape sequence '\d'
+  pcdPatternGcc = re.compile('^([\da-fA-Fx]+) +([\da-fA-Fx]+)')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:53: SyntaxWarning: invalid escape sequence '\d'
+  secReGeneral = re.compile('^([\da-fA-F]+):([\da-fA-F]+) +([\da-fA-F]+)[Hh]? +([.\w\$]+) +(\w+)', re.UNICODE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:85: SyntaxWarning: invalid escape sequence '\s'
+  if re.match('^\s*Address\s*Size\s*Align\s*Out\s*In\s*Symbol\s*$', firstline):
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:99: SyntaxWarning: invalid escape sequence '\s'
+  if status == 0 and (re.match('^\s*Address\s*Size\s*Align\s*Out\s*In\s*Symbol\s*$', line) \
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:107: SyntaxWarning: invalid escape sequence '\d'
+  m = re.match('^([\da-fA-FxX]+)([\s\S]*)([_]*%s)$' % varname, line)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:173: SyntaxWarning: invalid escape sequence '\d'
+  symRe = re.compile('^([\da-fA-F]+):([\da-fA-F]+) +([\.:\\\\\w\?@\$-]+) +([\da-fA-F]+)', re.UNICODE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/Misc.py:1929: SyntaxWarning: invalid escape sequence '\*'
+  return re.sub('//.*?\n|/\*.*?\*/', '\n', ctext, flags=re.S)
+ok
+test_Common_MultipleWorkspace (CheckPythonSyntax.Tests.test_Common_MultipleWorkspace) ... ok
+test_Common_Parsing (CheckPythonSyntax.Tests.test_Common_Parsing) ... ok
+test_Common_RangeExpression (CheckPythonSyntax.Tests.test_Common_RangeExpression) ... ok
+test_Common_StringUtils (CheckPythonSyntax.Tests.test_Common_StringUtils) ... ok
+test_Common_TargetTxtClassObject (CheckPythonSyntax.Tests.test_Common_TargetTxtClassObject) ... ok
+test_Common_ToolDefClassObject (CheckPythonSyntax.Tests.test_Common_ToolDefClassObject) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/ToolDefClassObject.py:33: SyntaxWarning: invalid escape sequence '\('
+  gMacroRefPattern = re.compile('(DEF\([^\(\)]+\))')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/ToolDefClassObject.py:34: SyntaxWarning: invalid escape sequence '\('
+  gEnvRefPattern = re.compile('(ENV\([^\(\)]+\))')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Common/ToolDefClassObject.py:35: SyntaxWarning: invalid escape sequence '\s'
+  gMacroDefPattern = re.compile("DEFINE\s+([^\s]+)")
+ok
+test_Common_Uefi_Capsule_CapsuleDependency (CheckPythonSyntax.Tests.test_Common_Uefi_Capsule_CapsuleDependency) ... ok
+test_Common_Uefi_Capsule_FmpAuthHeader (CheckPythonSyntax.Tests.test_Common_Uefi_Capsule_FmpAuthHeader) ... ok
+test_Common_Uefi_Capsule_FmpCapsuleHeader (CheckPythonSyntax.Tests.test_Common_Uefi_Capsule_FmpCapsuleHeader) ... ok
+test_Common_Uefi_Capsule_UefiCapsuleHeader (CheckPythonSyntax.Tests.test_Common_Uefi_Capsule_UefiCapsuleHeader) ... ok
+test_Common_Uefi_Capsule___init__ (CheckPythonSyntax.Tests.test_Common_Uefi_Capsule___init__) ... ok
+test_Common_Uefi___init__ (CheckPythonSyntax.Tests.test_Common_Uefi___init__) ... ok
+test_Common_VariableAttributes (CheckPythonSyntax.Tests.test_Common_VariableAttributes) ... ok
+test_Common_VpdInfoFile (CheckPythonSyntax.Tests.test_Common_VpdInfoFile) ... ok
+test_Common___init__ (CheckPythonSyntax.Tests.test_Common___init__) ... ok
+test_Common_caching (CheckPythonSyntax.Tests.test_Common_caching) ... ok
+test_Ecc_CParser3_CLexer (CheckPythonSyntax.Tests.test_Ecc_CParser3_CLexer) ... ok
+test_Ecc_CParser3_CParser (CheckPythonSyntax.Tests.test_Ecc_CParser3_CParser) ... ok
+test_Ecc_CParser3___init__ (CheckPythonSyntax.Tests.test_Ecc_CParser3___init__) ... ok
+test_Ecc_CParser4_CLexer (CheckPythonSyntax.Tests.test_Ecc_CParser4_CLexer) ... ok
+test_Ecc_CParser4_CListener (CheckPythonSyntax.Tests.test_Ecc_CParser4_CListener) ... ok
+test_Ecc_CParser4_CParser (CheckPythonSyntax.Tests.test_Ecc_CParser4_CParser) ... ok
+test_Ecc_CParser4___init__ (CheckPythonSyntax.Tests.test_Ecc_CParser4___init__) ... ok
+test_Ecc_Check (CheckPythonSyntax.Tests.test_Ecc_Check) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/Check.py:1115: SyntaxWarning: invalid escape sequence '\X'
+  Path = Path.upper().replace('\X64', '').replace('\IA32', '').replace('\EBC', '').replace('\IPF', '').replace('\ARM', '')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/Check.py:1115: SyntaxWarning: invalid escape sequence '\I'
+  Path = Path.upper().replace('\X64', '').replace('\IA32', '').replace('\EBC', '').replace('\IPF', '').replace('\ARM', '')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/Check.py:1115: SyntaxWarning: invalid escape sequence '\E'
+  Path = Path.upper().replace('\X64', '').replace('\IA32', '').replace('\EBC', '').replace('\IPF', '').replace('\ARM', '')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/Check.py:1115: SyntaxWarning: invalid escape sequence '\I'
+  Path = Path.upper().replace('\X64', '').replace('\IA32', '').replace('\EBC', '').replace('\IPF', '').replace('\ARM', '')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/Check.py:1115: SyntaxWarning: invalid escape sequence '\A'
+  Path = Path.upper().replace('\X64', '').replace('\IA32', '').replace('\EBC', '').replace('\IPF', '').replace('\ARM', '')
+ok
+test_Ecc_CodeFragment (CheckPythonSyntax.Tests.test_Ecc_CodeFragment) ... ok
+test_Ecc_CodeFragmentCollector (CheckPythonSyntax.Tests.test_Ecc_CodeFragmentCollector) ... ok
+test_Ecc_Configuration (CheckPythonSyntax.Tests.test_Ecc_Configuration) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/Configuration.py:438: SyntaxWarning: invalid escape sequence '\S'
+  myconfig = Configuration("BaseTools\Source\Python\Ecc\config.ini")
+ok
+test_Ecc_Database (CheckPythonSyntax.Tests.test_Ecc_Database) ... ok
+test_Ecc_EccGlobalData (CheckPythonSyntax.Tests.test_Ecc_EccGlobalData) ... ok
+test_Ecc_EccMain (CheckPythonSyntax.Tests.test_Ecc_EccMain) ... ok
+test_Ecc_EccToolError (CheckPythonSyntax.Tests.test_Ecc_EccToolError) ... ok
+test_Ecc_Exception (CheckPythonSyntax.Tests.test_Ecc_Exception) ... ok
+test_Ecc_FileProfile (CheckPythonSyntax.Tests.test_Ecc_FileProfile) ... ok
+test_Ecc_MetaDataParser (CheckPythonSyntax.Tests.test_Ecc_MetaDataParser) ... ok
+test_Ecc_MetaFileWorkspace_MetaDataTable (CheckPythonSyntax.Tests.test_Ecc_MetaFileWorkspace_MetaDataTable) ... ok
+test_Ecc_MetaFileWorkspace_MetaFileParser (CheckPythonSyntax.Tests.test_Ecc_MetaFileWorkspace_MetaFileParser) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/MetaFileWorkspace/MetaFileParser.py:1844: SyntaxWarning: invalid escape sequence '\s'
+  PatternDesc = re.compile('##\s*([\x21-\x7E\s]*)', re.S)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/MetaFileWorkspace/MetaFileParser.py:1845: SyntaxWarning: invalid escape sequence '\s'
+  PatternPrompt = re.compile('#\s+@Prompt\s+([\x21-\x7E\s]*)', re.S)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/MetaFileWorkspace/MetaFileParser.py:1850: SyntaxWarning: invalid escape sequence '\s'
+  PatternValidRangeIn = '(NOT)?\s*(\d+\s*-\s*\d+|0[xX][a-fA-F0-9]+\s*-\s*0[xX][a-fA-F0-9]+|LT\s*\d+|LT\s*0[xX][a-fA-F0-9]+|GT\s*\d+|GT\s*0[xX][a-fA-F0-9]+|LE\s*\d+|LE\s*0[xX][a-fA-F0-9]+|GE\s*\d+|GE\s*0[xX][a-fA-F0-9]+|XOR\s*\d+|XOR\s*0[xX][a-fA-F0-9]+|EQ\s*\d+|EQ\s*0[xX][a-fA-F0-9]+)'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/MetaFileWorkspace/MetaFileParser.py:1851: SyntaxWarning: invalid escape sequence '\s'
+  PatternValidRng = re.compile('^' + '(NOT)?\s*' + PatternValidRangeIn + '$')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/MetaFileWorkspace/MetaFileParser.py:2074: SyntaxWarning: invalid escape sequence '\s'
+  KeyPattern = re.compile('#string\s+%s\s+.*?#language.*?".*?"' % Key, re.S)
+ok
+test_Ecc_MetaFileWorkspace_MetaFileTable (CheckPythonSyntax.Tests.test_Ecc_MetaFileWorkspace_MetaFileTable) ... ok
+test_Ecc_MetaFileWorkspace___init__ (CheckPythonSyntax.Tests.test_Ecc_MetaFileWorkspace___init__) ... ok
+test_Ecc_ParserWarning (CheckPythonSyntax.Tests.test_Ecc_ParserWarning) ... ok
+test_Ecc_Xml_XmlRoutines (CheckPythonSyntax.Tests.test_Ecc_Xml_XmlRoutines) ... ok
+test_Ecc_Xml___init__ (CheckPythonSyntax.Tests.test_Ecc_Xml___init__) ... ok
+test_Ecc___init__ (CheckPythonSyntax.Tests.test_Ecc___init__) ... ok
+test_Ecc_c (CheckPythonSyntax.Tests.test_Ecc_c) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Ecc/c.py:46: SyntaxWarning: invalid escape sequence '\w'
+  p = re.compile('[_\w\s]*\([\w\s]*\*+\s*[_\w]+\s*\)\s*\(.*\)', re.DOTALL)
+ok
+test_Eot_CParser3_CLexer (CheckPythonSyntax.Tests.test_Eot_CParser3_CLexer) ... ok
+test_Eot_CParser3_CParser (CheckPythonSyntax.Tests.test_Eot_CParser3_CParser) ... ok
+test_Eot_CParser3___init__ (CheckPythonSyntax.Tests.test_Eot_CParser3___init__) ... ok
+test_Eot_CParser4_CLexer (CheckPythonSyntax.Tests.test_Eot_CParser4_CLexer) ... ok
+test_Eot_CParser4_CListener (CheckPythonSyntax.Tests.test_Eot_CParser4_CListener) ... ok
+test_Eot_CParser4_CParser (CheckPythonSyntax.Tests.test_Eot_CParser4_CParser) ... ok
+test_Eot_CParser4___init__ (CheckPythonSyntax.Tests.test_Eot_CParser4___init__) ... ok
+test_Eot_CodeFragment (CheckPythonSyntax.Tests.test_Eot_CodeFragment) ... ok
+test_Eot_CodeFragmentCollector (CheckPythonSyntax.Tests.test_Eot_CodeFragmentCollector) ... ok
+test_Eot_Database (CheckPythonSyntax.Tests.test_Eot_Database) ... ok
+test_Eot_EotGlobalData (CheckPythonSyntax.Tests.test_Eot_EotGlobalData) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Eot/EotGlobalData.py:14: SyntaxWarning: invalid escape sequence '\S'
+  gSHELL_INF = 'Application\Shell'
+ok
+test_Eot_EotMain (CheckPythonSyntax.Tests.test_Eot_EotMain) ... ok
+test_Eot_EotToolError (CheckPythonSyntax.Tests.test_Eot_EotToolError) ... ok
+test_Eot_FileProfile (CheckPythonSyntax.Tests.test_Eot_FileProfile) ... ok
+test_Eot_Identification (CheckPythonSyntax.Tests.test_Eot_Identification) ... ok
+test_Eot_InfParserLite (CheckPythonSyntax.Tests.test_Eot_InfParserLite) ... ok
+test_Eot_Parser (CheckPythonSyntax.Tests.test_Eot_Parser) ... ok
+test_Eot_ParserWarning (CheckPythonSyntax.Tests.test_Eot_ParserWarning) ... ok
+test_Eot_Report (CheckPythonSyntax.Tests.test_Eot_Report) ... ok
+test_Eot___init__ (CheckPythonSyntax.Tests.test_Eot___init__) ... ok
+test_Eot_c (CheckPythonSyntax.Tests.test_Eot_c) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Eot/c.py:57: SyntaxWarning: invalid escape sequence '\w'
+  p = re.compile('[_\w\s]*\([\w\s]*\*+\s*[_\w]+\s*\)\s*\(.*\)', re.DOTALL)
+ok
+test_FMMT_FMMT (CheckPythonSyntax.Tests.test_FMMT_FMMT) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/FMMT/FMMT.py:40: SyntaxWarning: invalid escape sequence '\C'
+  help="Provide the target FmmtConf.ini file path: '-c C:\Code\FmmtConf.ini' \
+ok
+test_FMMT___init__ (CheckPythonSyntax.Tests.test_FMMT___init__) ... ok
+test_FMMT_core_BinaryFactoryProduct (CheckPythonSyntax.Tests.test_FMMT_core_BinaryFactoryProduct) ... ok
+test_FMMT_core_BiosTree (CheckPythonSyntax.Tests.test_FMMT_core_BiosTree) ... ok
+test_FMMT_core_BiosTreeNode (CheckPythonSyntax.Tests.test_FMMT_core_BiosTreeNode) ... ok
+test_FMMT_core_FMMTOperation (CheckPythonSyntax.Tests.test_FMMT_core_FMMTOperation) ... ok
+test_FMMT_core_FMMTParser (CheckPythonSyntax.Tests.test_FMMT_core_FMMTParser) ... ok
+test_FMMT_core_FvHandler (CheckPythonSyntax.Tests.test_FMMT_core_FvHandler) ... ok
+test_FMMT_core_GuidTools (CheckPythonSyntax.Tests.test_FMMT_core_GuidTools) ... ok
+test_FMMT_utils_FmmtLogger (CheckPythonSyntax.Tests.test_FMMT_utils_FmmtLogger) ... ok
+test_FMMT_utils_FvLayoutPrint (CheckPythonSyntax.Tests.test_FMMT_utils_FvLayoutPrint) ... ok
+test_FirmwareStorageFormat_Common (CheckPythonSyntax.Tests.test_FirmwareStorageFormat_Common) ... ok
+test_FirmwareStorageFormat_FfsFileHeader (CheckPythonSyntax.Tests.test_FirmwareStorageFormat_FfsFileHeader) ... ok
+test_FirmwareStorageFormat_FvHeader (CheckPythonSyntax.Tests.test_FirmwareStorageFormat_FvHeader) ... ok
+test_FirmwareStorageFormat_SectionHeader (CheckPythonSyntax.Tests.test_FirmwareStorageFormat_SectionHeader) ... ok
+test_FirmwareStorageFormat___init__ (CheckPythonSyntax.Tests.test_FirmwareStorageFormat___init__) ... ok
+test_GenFds_AprioriSection (CheckPythonSyntax.Tests.test_GenFds_AprioriSection) ... ok
+test_GenFds_Capsule (CheckPythonSyntax.Tests.test_GenFds_Capsule) ... ok
+test_GenFds_CapsuleData (CheckPythonSyntax.Tests.test_GenFds_CapsuleData) ... ok
+test_GenFds_CompressSection (CheckPythonSyntax.Tests.test_GenFds_CompressSection) ... ok
+test_GenFds_DataSection (CheckPythonSyntax.Tests.test_GenFds_DataSection) ... ok
+test_GenFds_DepexSection (CheckPythonSyntax.Tests.test_GenFds_DepexSection) ... ok
+test_GenFds_EfiSection (CheckPythonSyntax.Tests.test_GenFds_EfiSection) ... ok
+test_GenFds_Fd (CheckPythonSyntax.Tests.test_GenFds_Fd) ... ok
+test_GenFds_FdfParser (CheckPythonSyntax.Tests.test_GenFds_FdfParser) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenFds/FdfParser.py:68: SyntaxWarning: invalid escape sequence '\s'
+  RegionSizePattern = compile("\s*(?P<base>(?:0x|0X)?[a-fA-F0-9]+)\s*\|\s*(?P<size>(?:0x|0X)?[a-fA-F0-9]+)\s*")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenFds/FdfParser.py:69: SyntaxWarning: invalid escape sequence '\s'
+  RegionSizeGuidPattern = compile("\s*(?P<base>\w+\.\w+[\.\w\[\]]*)\s*\|\s*(?P<size>\w+\.\w+[\.\w\[\]]*)\s*")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenFds/FdfParser.py:70: SyntaxWarning: invalid escape sequence '\s'
+  RegionOffsetPcdPattern = compile("\s*(?P<base>\w+\.\w+[\.\w\[\]]*)\s*$")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenFds/FdfParser.py:71: SyntaxWarning: invalid escape sequence '\s'
+  ShortcutPcdPattern = compile("\s*\w+\s*=\s*(?P<value>(?:0x|0X)?[a-fA-F0-9]+)\s*\|\s*(?P<name>\w+\.\w+)\s*")
+ok
+test_GenFds_Ffs (CheckPythonSyntax.Tests.test_GenFds_Ffs) ... ok
+test_GenFds_FfsFileStatement (CheckPythonSyntax.Tests.test_GenFds_FfsFileStatement) ... ok
+test_GenFds_FfsInfStatement (CheckPythonSyntax.Tests.test_GenFds_FfsInfStatement) ... ok
+test_GenFds_Fv (CheckPythonSyntax.Tests.test_GenFds_Fv) ... ok
+test_GenFds_FvImageSection (CheckPythonSyntax.Tests.test_GenFds_FvImageSection) ... ok
+test_GenFds_GenFds (CheckPythonSyntax.Tests.test_GenFds_GenFds) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenFds/GenFds.py:736: SyntaxWarning: invalid escape sequence '\S'
+  ReFileEnds = compile('\S+(.ui)$|\S+(fv.sec.txt)$|\S+(.pe32.txt)$|\S+(.te.txt)$|\S+(.pic.txt)$|\S+(.raw.txt)$|\S+(.ffs.txt)$')
+ok
+test_GenFds_GenFdsGlobalVariable (CheckPythonSyntax.Tests.test_GenFds_GenFdsGlobalVariable) ... ok
+test_GenFds_GuidSection (CheckPythonSyntax.Tests.test_GenFds_GuidSection) ... ok
+test_GenFds_OptRomFileStatement (CheckPythonSyntax.Tests.test_GenFds_OptRomFileStatement) ... ok
+test_GenFds_OptRomInfStatement (CheckPythonSyntax.Tests.test_GenFds_OptRomInfStatement) ... ok
+test_GenFds_OptionRom (CheckPythonSyntax.Tests.test_GenFds_OptionRom) ... ok
+test_GenFds_Region (CheckPythonSyntax.Tests.test_GenFds_Region) ... ok
+test_GenFds_Rule (CheckPythonSyntax.Tests.test_GenFds_Rule) ... ok
+test_GenFds_RuleComplexFile (CheckPythonSyntax.Tests.test_GenFds_RuleComplexFile) ... ok
+test_GenFds_RuleSimpleFile (CheckPythonSyntax.Tests.test_GenFds_RuleSimpleFile) ... ok
+test_GenFds_Section (CheckPythonSyntax.Tests.test_GenFds_Section) ... ok
+test_GenFds_SubTypeGuidSection (CheckPythonSyntax.Tests.test_GenFds_SubTypeGuidSection) ... ok
+test_GenFds_UiSection (CheckPythonSyntax.Tests.test_GenFds_UiSection) ... ok
+test_GenFds_VerSection (CheckPythonSyntax.Tests.test_GenFds_VerSection) ... ok
+test_GenFds___init__ (CheckPythonSyntax.Tests.test_GenFds___init__) ... ok
+test_GenPatchPcdTable_GenPatchPcdTable (CheckPythonSyntax.Tests.test_GenPatchPcdTable_GenPatchPcdTable) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenPatchPcdTable/GenPatchPcdTable.py:34: SyntaxWarning: invalid escape sequence '\d'
+  symRe = re.compile('^([\da-fA-F]+):([\da-fA-F]+) +([\.\-:\\\\\w\?@\$<>]+) +([\da-fA-F]+)', re.UNICODE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenPatchPcdTable/GenPatchPcdTable.py:52: SyntaxWarning: invalid escape sequence '\s'
+  if re.match('^\s*Address\s*Size\s*Align\s*Out\s*In\s*Symbol\s*$', firstline):
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenPatchPcdTable/GenPatchPcdTable.py:62: SyntaxWarning: invalid escape sequence '\d'
+  valuePattern = re.compile('^([\da-fA-FxX]+)([\s\S]*)([_]*_gPcd_BinaryPatch_([\w]+))')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenPatchPcdTable/GenPatchPcdTable.py:67: SyntaxWarning: invalid escape sequence '\s'
+  if status == 0 and (re.match('^\s*Address\s*Size\s*Align\s*Out\s*In\s*Symbol\s*$', line) \
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenPatchPcdTable/GenPatchPcdTable.py:80: SyntaxWarning: invalid escape sequence '\w'
+  dataPattern = re.compile('^.data._gPcd_BinaryPatch_([\w_\d]+)$')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/GenPatchPcdTable/GenPatchPcdTable.py:139: SyntaxWarning: invalid escape sequence '\w'
+  symPattern = re.compile('^[_]+gPcd_BinaryPatch_([\w]+)')
+ok
+test_GenPatchPcdTable___init__ (CheckPythonSyntax.Tests.test_GenPatchPcdTable___init__) ... ok
+test_PatchPcdValue_PatchPcdValue (CheckPythonSyntax.Tests.test_PatchPcdValue_PatchPcdValue) ... ok
+test_PatchPcdValue___init__ (CheckPythonSyntax.Tests.test_PatchPcdValue___init__) ... ok
+test_Pkcs7Sign_Pkcs7Sign (CheckPythonSyntax.Tests.test_Pkcs7Sign_Pkcs7Sign) ... ok
+test_Rsa2048Sha256Sign_Rsa2048Sha256GenerateKeys (CheckPythonSyntax.Tests.test_Rsa2048Sha256Sign_Rsa2048Sha256GenerateKeys) ... ok
+test_Rsa2048Sha256Sign_Rsa2048Sha256Sign (CheckPythonSyntax.Tests.test_Rsa2048Sha256Sign_Rsa2048Sha256Sign) ... ok
+test_Split_Split (CheckPythonSyntax.Tests.test_Split_Split) ... ok
+test_Split___init__ (CheckPythonSyntax.Tests.test_Split___init__) ... ok
+test_Table_Table (CheckPythonSyntax.Tests.test_Table_Table) ... ok
+test_Table_TableDataModel (CheckPythonSyntax.Tests.test_Table_TableDataModel) ... ok
+test_Table_TableDec (CheckPythonSyntax.Tests.test_Table_TableDec) ... ok
+test_Table_TableDsc (CheckPythonSyntax.Tests.test_Table_TableDsc) ... ok
+test_Table_TableEotReport (CheckPythonSyntax.Tests.test_Table_TableEotReport) ... ok
+test_Table_TableFdf (CheckPythonSyntax.Tests.test_Table_TableFdf) ... ok
+test_Table_TableFile (CheckPythonSyntax.Tests.test_Table_TableFile) ... ok
+test_Table_TableFunction (CheckPythonSyntax.Tests.test_Table_TableFunction) ... ok
+test_Table_TableIdentifier (CheckPythonSyntax.Tests.test_Table_TableIdentifier) ... ok
+test_Table_TableInf (CheckPythonSyntax.Tests.test_Table_TableInf) ... ok
+test_Table_TablePcd (CheckPythonSyntax.Tests.test_Table_TablePcd) ... ok
+test_Table_TableQuery (CheckPythonSyntax.Tests.test_Table_TableQuery) ... ok
+test_Table_TableReport (CheckPythonSyntax.Tests.test_Table_TableReport) ... ok
+test_Table___init__ (CheckPythonSyntax.Tests.test_Table___init__) ... ok
+test_TargetTool_TargetTool (CheckPythonSyntax.Tests.test_TargetTool_TargetTool) ... ok
+test_TargetTool___init__ (CheckPythonSyntax.Tests.test_TargetTool___init__) ... ok
+test_Trim_Trim (CheckPythonSyntax.Tests.test_Trim_Trim) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Trim/Trim.py:31: SyntaxWarning: invalid escape sequence '\s'
+  gLineControlDirective = re.compile('^\s*#(?:line)?\s+([0-9]+)\s+"*([^"]*)"')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Trim/Trim.py:33: SyntaxWarning: invalid escape sequence '\s'
+  gTypedefPattern = re.compile("^\s*typedef\s+struct(\s+\w+)?\s*[{]*$", re.MULTILINE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Trim/Trim.py:35: SyntaxWarning: invalid escape sequence '\s'
+  gPragmaPattern = re.compile("^\s*#pragma\s+pack", re.MULTILINE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Trim/Trim.py:37: SyntaxWarning: invalid escape sequence '\s'
+  gTypedef_SinglePattern = re.compile("^\s*typedef", re.MULTILINE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Trim/Trim.py:39: SyntaxWarning: invalid escape sequence '\s'
+  gTypedef_MulPattern = re.compile("^\s*(typedef)?\s+(struct|union)(\s+\w+)?\s*[{]*$", re.MULTILINE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Trim/Trim.py:54: SyntaxWarning: invalid escape sequence '\s'
+  gAslIncludePattern = re.compile("^(\s*)[iI]nclude\s*\(\"?([^\"\(\)]+)\"\)", re.MULTILINE)
+ok
+test_UPT_BuildVersion (CheckPythonSyntax.Tests.test_UPT_BuildVersion) ... ok
+test_UPT_Core_DependencyRules (CheckPythonSyntax.Tests.test_UPT_Core_DependencyRules) ... ok
+test_UPT_Core_DistributionPackageClass (CheckPythonSyntax.Tests.test_UPT_Core_DistributionPackageClass) ... ok
+test_UPT_Core_FileHook (CheckPythonSyntax.Tests.test_UPT_Core_FileHook) ... ok
+test_UPT_Core_IpiDb (CheckPythonSyntax.Tests.test_UPT_Core_IpiDb) ... ok
+test_UPT_Core_PackageFile (CheckPythonSyntax.Tests.test_UPT_Core_PackageFile) ... ok
+test_UPT_Core___init__ (CheckPythonSyntax.Tests.test_UPT_Core___init__) ... ok
+test_UPT_GenMetaFile_GenDecFile (CheckPythonSyntax.Tests.test_UPT_GenMetaFile_GenDecFile) ... ok
+test_UPT_GenMetaFile_GenInfFile (CheckPythonSyntax.Tests.test_UPT_GenMetaFile_GenInfFile) ... ok
+test_UPT_GenMetaFile_GenMetaFileMisc (CheckPythonSyntax.Tests.test_UPT_GenMetaFile_GenMetaFileMisc) ... ok
+test_UPT_GenMetaFile_GenXmlFile (CheckPythonSyntax.Tests.test_UPT_GenMetaFile_GenXmlFile) ... ok
+test_UPT_GenMetaFile___init__ (CheckPythonSyntax.Tests.test_UPT_GenMetaFile___init__) ... ok
+test_UPT_InstallPkg (CheckPythonSyntax.Tests.test_UPT_InstallPkg) ... ok
+test_UPT_InventoryWs (CheckPythonSyntax.Tests.test_UPT_InventoryWs) ... ok
+test_UPT_Library_CommentGenerating (CheckPythonSyntax.Tests.test_UPT_Library_CommentGenerating) ... ok
+test_UPT_Library_CommentParsing (CheckPythonSyntax.Tests.test_UPT_Library_CommentParsing) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/CommentParsing.py:241: SyntaxWarning: invalid escape sequence '\s'
+  MACRO_PATTERN = '[\t\s]*\$\([A-Z][_A-Z0-9]*\)'
+ok
+test_UPT_Library_DataType (CheckPythonSyntax.Tests.test_UPT_Library_DataType) ... ok
+test_UPT_Library_ExpressionValidate (CheckPythonSyntax.Tests.test_UPT_Library_ExpressionValidate) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/ExpressionValidate.py:69: SyntaxWarning: invalid escape sequence '\s'
+  HEX_PATTERN = '[\t\s]*0[xX][a-fA-F0-9]+'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/ExpressionValidate.py:70: SyntaxWarning: invalid escape sequence '\s'
+  INT_PATTERN = '[\t\s]*[0-9]+'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/ExpressionValidate.py:71: SyntaxWarning: invalid escape sequence '\s'
+  MACRO_PATTERN = '[\t\s]*\$\(([A-Z][_A-Z0-9]*)\)'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/ExpressionValidate.py:73: SyntaxWarning: invalid escape sequence '\s'
+  '[\t\s]*[_a-zA-Z][a-zA-Z0-9_]*[\t\s]*\.[\t\s]*[_a-zA-Z][a-zA-Z0-9_]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/ExpressionValidate.py:74: SyntaxWarning: invalid escape sequence '\s'
+  QUOTED_PATTERN = '[\t\s]*L?"[^"]*"'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/ExpressionValidate.py:75: SyntaxWarning: invalid escape sequence '\s'
+  BOOL_PATTERN = '[\t\s]*(true|True|TRUE|false|False|FALSE)'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/ExpressionValidate.py:306: SyntaxWarning: invalid escape sequence '\s'
+  INT_RANGE_PATTERN = '[\t\s]*[0-9]+[\t\s]*-[\t\s]*[0-9]+'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/ExpressionValidate.py:308: SyntaxWarning: invalid escape sequence '\s'
+  '[\t\s]*0[xX][a-fA-F0-9]+[\t\s]*-[\t\s]*0[xX][a-fA-F0-9]+'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/ExpressionValidate.py:410: SyntaxWarning: invalid escape sequence '\s'
+  VALID_LIST_PATTERN = '(0[xX][0-9a-fA-F]+|[0-9]+)([\t\s]*,[\t\s]*(0[xX][0-9a-fA-F]+|[0-9]+))*'
+ok
+test_UPT_Library_GlobalData (CheckPythonSyntax.Tests.test_UPT_Library_GlobalData) ... ok
+test_UPT_Library_Misc (CheckPythonSyntax.Tests.test_UPT_Library_Misc) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/Misc.py:72: SyntaxWarning: invalid escape sequence '\s'
+  RegFormatGuidPattern = re.compile("^\s*([0-9a-fA-F]){8}-"
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/Misc.py:76: SyntaxWarning: invalid escape sequence '\s'
+  "([0-9a-fA-F]){12}\s*$")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/Misc.py:840: SyntaxWarning: invalid escape sequence '\s'
+  ReFileGuidPattern = re.compile("^\s*FILE_GUID\s*=.*$")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/Misc.py:841: SyntaxWarning: invalid escape sequence '\s'
+  ReVerStringPattern = re.compile("^\s*VERSION_STRING\s*=.*$")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/Misc.py:981: SyntaxWarning: invalid escape sequence '\-'
+  Pattern = '[a-zA-Z0-9_][a-zA-Z0-9_\-\.]*'
+ok
+test_UPT_Library_ParserValidate (CheckPythonSyntax.Tests.test_UPT_Library_ParserValidate) ... ok
+test_UPT_Library_Parsing (CheckPythonSyntax.Tests.test_UPT_Library_Parsing) ... ok
+test_UPT_Library_StringUtils (CheckPythonSyntax.Tests.test_UPT_Library_StringUtils) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Library/StringUtils.py:26: SyntaxWarning: invalid escape sequence '\$'
+  gMACRO_PATTERN = re.compile("\$\(([_A-Z][_A-Z0-9]*)\)", re.UNICODE)
+ok
+test_UPT_Library_UniClassObject (CheckPythonSyntax.Tests.test_UPT_Library_UniClassObject) ... ok
+test_UPT_Library_Xml_XmlRoutines (CheckPythonSyntax.Tests.test_UPT_Library_Xml_XmlRoutines) ... ok
+test_UPT_Library_Xml___init__ (CheckPythonSyntax.Tests.test_UPT_Library_Xml___init__) ... ok
+test_UPT_Library___init__ (CheckPythonSyntax.Tests.test_UPT_Library___init__) ... ok
+test_UPT_Logger_Log (CheckPythonSyntax.Tests.test_UPT_Logger_Log) ... ok
+test_UPT_Logger_StringTable (CheckPythonSyntax.Tests.test_UPT_Logger_StringTable) ... ok
+test_UPT_Logger_ToolError (CheckPythonSyntax.Tests.test_UPT_Logger_ToolError) ... ok
+test_UPT_Logger___init__ (CheckPythonSyntax.Tests.test_UPT_Logger___init__) ... ok
+test_UPT_MkPkg (CheckPythonSyntax.Tests.test_UPT_MkPkg) ... ok
+test_UPT_Object_POM_CommonObject (CheckPythonSyntax.Tests.test_UPT_Object_POM_CommonObject) ... ok
+test_UPT_Object_POM_ModuleObject (CheckPythonSyntax.Tests.test_UPT_Object_POM_ModuleObject) ... ok
+test_UPT_Object_POM_PackageObject (CheckPythonSyntax.Tests.test_UPT_Object_POM_PackageObject) ... ok
+test_UPT_Object_POM___init__ (CheckPythonSyntax.Tests.test_UPT_Object_POM___init__) ... ok
+test_UPT_Object_Parser_DecObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_DecObject) ... ok
+test_UPT_Object_Parser_InfBinaryObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfBinaryObject) ... ok
+test_UPT_Object_Parser_InfBuildOptionObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfBuildOptionObject) ... ok
+test_UPT_Object_Parser_InfCommonObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfCommonObject) ... ok
+test_UPT_Object_Parser_InfDefineCommonObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfDefineCommonObject) ... ok
+test_UPT_Object_Parser_InfDefineObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfDefineObject) ... ok
+test_UPT_Object_Parser_InfDepexObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfDepexObject) ... ok
+test_UPT_Object_Parser_InfGuidObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfGuidObject) ... ok
+test_UPT_Object_Parser_InfHeaderObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfHeaderObject) ... ok
+test_UPT_Object_Parser_InfLibraryClassesObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfLibraryClassesObject) ... ok
+test_UPT_Object_Parser_InfMisc (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfMisc) ... ok
+test_UPT_Object_Parser_InfPackagesObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfPackagesObject) ... ok
+test_UPT_Object_Parser_InfPcdObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfPcdObject) ... ok
+test_UPT_Object_Parser_InfPpiObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfPpiObject) ... ok
+test_UPT_Object_Parser_InfProtocolObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfProtocolObject) ... ok
+test_UPT_Object_Parser_InfSoucesObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfSoucesObject) ... ok
+test_UPT_Object_Parser_InfUserExtensionObject (CheckPythonSyntax.Tests.test_UPT_Object_Parser_InfUserExtensionObject) ... ok
+test_UPT_Object_Parser___init__ (CheckPythonSyntax.Tests.test_UPT_Object_Parser___init__) ... ok
+test_UPT_Object___init__ (CheckPythonSyntax.Tests.test_UPT_Object___init__) ... ok
+test_UPT_Parser_DecParser (CheckPythonSyntax.Tests.test_UPT_Parser_DecParser) ... ok
+test_UPT_Parser_DecParserMisc (CheckPythonSyntax.Tests.test_UPT_Parser_DecParserMisc) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/DecParserMisc.py:28: SyntaxWarning: invalid escape sequence '\.'
+  VERSION_PATTERN = '[0-9]+(\.[0-9]+)?'
+ok
+test_UPT_Parser_InfAsBuiltProcess (CheckPythonSyntax.Tests.test_UPT_Parser_InfAsBuiltProcess) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfAsBuiltProcess.py:56: SyntaxWarning: invalid escape sequence '\s'
+  RegFormatGuidPattern = re.compile("\s*([0-9a-fA-F]){8}-"
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfAsBuiltProcess.py:60: SyntaxWarning: invalid escape sequence '\s'
+  "([0-9a-fA-F]){12}\s*")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfAsBuiltProcess.py:61: SyntaxWarning: invalid escape sequence '\s'
+  VersionPattern = re.compile('[\t\s]*\d+(\.\d+)?[\t\s]*')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfAsBuiltProcess.py:78: SyntaxWarning: invalid escape sequence '\s'
+  ReFindFileGuidPattern = re.compile("^\s*FILE_GUID\s*=.*$")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfAsBuiltProcess.py:79: SyntaxWarning: invalid escape sequence '\s'
+  ReFindVerStringPattern = re.compile("^\s*VERSION_STRING\s*=.*$")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfAsBuiltProcess.py:109: SyntaxWarning: invalid escape sequence '\s'
+  RePackageHeader = re.compile('^\s*\[Packages.*\].*$')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfAsBuiltProcess.py:110: SyntaxWarning: invalid escape sequence '\s'
+  ReDefineHeader = re.compile('^\s*\[Defines].*$')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfAsBuiltProcess.py:258: SyntaxWarning: invalid escape sequence '\s'
+  ReFindFileGuidPattern = re.compile("^\s*FILE_GUID\s*=.*$")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfAsBuiltProcess.py:259: SyntaxWarning: invalid escape sequence '\s'
+  ReFindVerStringPattern = re.compile("^\s*VERSION_STRING\s*=.*$")
+ok
+test_UPT_Parser_InfBinarySectionParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfBinarySectionParser) ... ok
+test_UPT_Parser_InfBuildOptionSectionParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfBuildOptionSectionParser) ... ok
+test_UPT_Parser_InfDefineSectionParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfDefineSectionParser) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfDefineSectionParser.py:43: SyntaxWarning: invalid escape sequence '\s'
+  ArchList = re.split('\s+', TempArch)
+ok
+test_UPT_Parser_InfDepexSectionParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfDepexSectionParser) ... ok
+test_UPT_Parser_InfGuidPpiProtocolSectionParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfGuidPpiProtocolSectionParser) ... ok
+test_UPT_Parser_InfLibrarySectionParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfLibrarySectionParser) ... ok
+test_UPT_Parser_InfPackageSectionParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfPackageSectionParser) ... ok
+test_UPT_Parser_InfParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfParser) ... ok
+test_UPT_Parser_InfParserMisc (CheckPythonSyntax.Tests.test_UPT_Parser_InfParserMisc) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfParserMisc.py:112: SyntaxWarning: invalid escape sequence '\$'
+  gQuotedMacro = re.compile(".*\".*\$\(%s\).*\".*"%(Macro))
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfParserMisc.py:133: SyntaxWarning: invalid escape sequence '\s'
+  ReIsSourcesSection = re.compile("^\s*\[Sources.*\]\s.*$", re.IGNORECASE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfParserMisc.py:134: SyntaxWarning: invalid escape sequence '\s'
+  ReIsBinarySection = re.compile("^\s*\[Binaries.*\]\s.*$", re.IGNORECASE)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfParserMisc.py:158: SyntaxWarning: invalid escape sequence '\s'
+  ReIsLibInstance = re.compile("^\s*##\s*@LIB_INSTANCES\s*$")
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Parser/InfParserMisc.py:174: SyntaxWarning: invalid escape sequence '\s'
+  ReIsAsBuildInstance = re.compile("^\s*##\s*@AsBuilt\s*$")
+ok
+test_UPT_Parser_InfPcdSectionParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfPcdSectionParser) ... ok
+test_UPT_Parser_InfSectionParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfSectionParser) ... ok
+test_UPT_Parser_InfSourceSectionParser (CheckPythonSyntax.Tests.test_UPT_Parser_InfSourceSectionParser) ... ok
+test_UPT_Parser___init__ (CheckPythonSyntax.Tests.test_UPT_Parser___init__) ... ok
+test_UPT_PomAdapter_DecPomAlignment (CheckPythonSyntax.Tests.test_UPT_PomAdapter_DecPomAlignment) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/PomAdapter/DecPomAlignment.py:750: SyntaxWarning: invalid escape sequence '\s'
+  NOTNOT_Pattern = '[\t\s]*NOT[\t\s]+NOT[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/PomAdapter/DecPomAlignment.py:751: SyntaxWarning: invalid escape sequence '\s'
+  NOTGE_Pattern = '[\t\s]*NOT[\t\s]+GE[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/PomAdapter/DecPomAlignment.py:752: SyntaxWarning: invalid escape sequence '\s'
+  NOTLE_Pattern = '[\t\s]*NOT[\t\s]+LE[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/PomAdapter/DecPomAlignment.py:753: SyntaxWarning: invalid escape sequence '\s'
+  NOTGT_Pattern = '[\t\s]*NOT[\t\s]+GT[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/PomAdapter/DecPomAlignment.py:754: SyntaxWarning: invalid escape sequence '\s'
+  NOTLT_Pattern = '[\t\s]*NOT[\t\s]+LT[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/PomAdapter/DecPomAlignment.py:755: SyntaxWarning: invalid escape sequence '\s'
+  NOTEQ_Pattern = '[\t\s]*NOT[\t\s]+EQ[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/PomAdapter/DecPomAlignment.py:788: SyntaxWarning: invalid escape sequence '\.'
+  Pattern = '[a-zA-Z0-9]{1,}\.[a-zA-Z0-9]{1,}'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/PomAdapter/DecPomAlignment.py:817: SyntaxWarning: invalid escape sequence '\s'
+  QUOTED_PATTERN = '[\t\s]*L?"[^"]*"'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/PomAdapter/DecPomAlignment.py:850: SyntaxWarning: invalid escape sequence '\s'
+  QUOTED_PATTERN = '[\t\s]*L?"[^"]*"'
+ok
+test_UPT_PomAdapter_InfPomAlignment (CheckPythonSyntax.Tests.test_UPT_PomAdapter_InfPomAlignment) ... ok
+test_UPT_PomAdapter_InfPomAlignmentMisc (CheckPythonSyntax.Tests.test_UPT_PomAdapter_InfPomAlignmentMisc) ... ok
+test_UPT_PomAdapter___init__ (CheckPythonSyntax.Tests.test_UPT_PomAdapter___init__) ... ok
+test_UPT_ReplacePkg (CheckPythonSyntax.Tests.test_UPT_ReplacePkg) ... ok
+test_UPT_RmPkg (CheckPythonSyntax.Tests.test_UPT_RmPkg) ... ok
+test_UPT_TestInstall (CheckPythonSyntax.Tests.test_UPT_TestInstall) ... ok
+test_UPT_UPT (CheckPythonSyntax.Tests.test_UPT_UPT) ... ok
+test_UPT_UnitTest_CommentGeneratingUnitTest (CheckPythonSyntax.Tests.test_UPT_UnitTest_CommentGeneratingUnitTest) ... ok
+test_UPT_UnitTest_CommentParsingUnitTest (CheckPythonSyntax.Tests.test_UPT_UnitTest_CommentParsingUnitTest) ... ok
+test_UPT_UnitTest_DecParserTest (CheckPythonSyntax.Tests.test_UPT_UnitTest_DecParserTest) ... ok
+test_UPT_UnitTest_DecParserUnitTest (CheckPythonSyntax.Tests.test_UPT_UnitTest_DecParserUnitTest) ... ok
+test_UPT_UnitTest_InfBinarySectionTest (CheckPythonSyntax.Tests.test_UPT_UnitTest_InfBinarySectionTest) ... ok
+test_UPT_Xml_CommonXml (CheckPythonSyntax.Tests.test_UPT_Xml_CommonXml) ... ok
+test_UPT_Xml_GuidProtocolPpiXml (CheckPythonSyntax.Tests.test_UPT_Xml_GuidProtocolPpiXml) ... ok
+test_UPT_Xml_IniToXml (CheckPythonSyntax.Tests.test_UPT_Xml_IniToXml) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/IniToXml.py:203: SyntaxWarning: invalid escape sequence '\.'
+  'Version'   :   ('[0-9]+(\.[0-9]+)?', ST.ERR_VERSION_VALUE % \
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/IniToXml.py:205: SyntaxWarning: invalid escape sequence '\.'
+  'XmlSpecification' : ('1\.1', ST.ERR_VERSION_XMLSPEC % Value)
+ok
+test_UPT_Xml_ModuleSurfaceAreaXml (CheckPythonSyntax.Tests.test_UPT_Xml_ModuleSurfaceAreaXml) ... ok
+test_UPT_Xml_PackageSurfaceAreaXml (CheckPythonSyntax.Tests.test_UPT_Xml_PackageSurfaceAreaXml) ... ok
+test_UPT_Xml_PcdXml (CheckPythonSyntax.Tests.test_UPT_Xml_PcdXml) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:103: SyntaxWarning: invalid escape sequence '\s'
+  INT_RANGE_PATTERN1 = '[\t\s]*[0-9]+[\t\s]*-[\t\s]*[0-9]+'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:104: SyntaxWarning: invalid escape sequence '\s'
+  INT_RANGE_PATTERN2 = '[\t\s]*(LT|GT|LE|GE|XOR|EQ)[\t\s]+\d+[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:106: SyntaxWarning: invalid escape sequence '\s'
+  '[\t\s]*0[xX][a-fA-F0-9]+[\t\s]*-[\t\s]*0[xX][a-fA-F0-9]+'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:107: SyntaxWarning: invalid escape sequence '\s'
+  HEX_RANGE_PATTERN2 = '[\t\s]*(LT|GT|LE|GE|XOR|EQ)[\t\s]+0[xX][a-fA-F0-9]+[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:161: SyntaxWarning: invalid escape sequence '\s'
+  '[\t\s]*[_a-zA-Z][a-zA-Z0-9_]*[\t\s]*\.[\t\s]*[_a-zA-Z][a-zA-Z0-9_]*[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:163: SyntaxWarning: invalid escape sequence '\s'
+  '[\t\s]*\([\t\s]*'+PCD_PATTERN+'[\t\s]+GE[\t\s]+\d+[\t\s]*\)[\t\s]+AND[\t\s]+\([\t\s]*'+\
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:163: SyntaxWarning: invalid escape sequence '\s'
+  '[\t\s]*\([\t\s]*'+PCD_PATTERN+'[\t\s]+GE[\t\s]+\d+[\t\s]*\)[\t\s]+AND[\t\s]+\([\t\s]*'+\
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:164: SyntaxWarning: invalid escape sequence '\s'
+  PCD_PATTERN+'[\t\s]+LE[\t\s]+\d+[\t\s]*\)'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:166: SyntaxWarning: invalid escape sequence '\s'
+  IntPattern2 = '[\t\s]*'+PCD_PATTERN+'[\t\s]+(LT|GT|LE|GE|XOR|EQ)[\t\s]+\d+[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:166: SyntaxWarning: invalid escape sequence '\s'
+  IntPattern2 = '[\t\s]*'+PCD_PATTERN+'[\t\s]+(LT|GT|LE|GE|XOR|EQ)[\t\s]+\d+[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:169: SyntaxWarning: invalid escape sequence '\s'
+  '[\t\s]*\([\t\s]*'+PCD_PATTERN+'[\t\s]+GE[\t\s]+0[xX][0-9a-fA-F]+[\t\s]*\)[\t\s]+AND[\t\s]+\([\t\s]*'+\
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:169: SyntaxWarning: invalid escape sequence '\s'
+  '[\t\s]*\([\t\s]*'+PCD_PATTERN+'[\t\s]+GE[\t\s]+0[xX][0-9a-fA-F]+[\t\s]*\)[\t\s]+AND[\t\s]+\([\t\s]*'+\
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:170: SyntaxWarning: invalid escape sequence '\s'
+  PCD_PATTERN+'[\t\s]+LE[\t\s]+0[xX][0-9a-fA-F]+[\t\s]*\)'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:172: SyntaxWarning: invalid escape sequence '\s'
+  HexPattern2 = '[\t\s]*'+PCD_PATTERN+'[\t\s]+(LT|GT|LE|GE|XOR|EQ)[\t\s]+0[xX][0-9a-zA-Z]+[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:172: SyntaxWarning: invalid escape sequence '\s'
+  HexPattern2 = '[\t\s]*'+PCD_PATTERN+'[\t\s]+(LT|GT|LE|GE|XOR|EQ)[\t\s]+0[xX][0-9a-zA-Z]+[\t\s]*'
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:183: SyntaxWarning: invalid escape sequence '\s'
+  RangeItemList = re.compile('[\t\s]*0[xX][0-9a-fA-F]+[\t\s]*').findall(HexMatchedItem)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/PcdXml.py:207: SyntaxWarning: invalid escape sequence '\s'
+  RangeItemList = re.compile('[\t\s]*\d+[\t\s]*').findall(MatchedItem)
+ok
+test_UPT_Xml_XmlParser (CheckPythonSyntax.Tests.test_UPT_Xml_XmlParser) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/XmlParser.py:284: SyntaxWarning: invalid escape sequence '\s'
+  '[\s\r\n]*"', '', XmlContent)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/XmlParser.py:287: SyntaxWarning: invalid escape sequence '\s'
+  '[\s\r\n]*"', '', XmlContent)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/XmlParser.py:293: SyntaxWarning: invalid escape sequence '\s'
+  '</SupArchList>[\s\r\n]*', '', XmlContent)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/XmlParser.py:300: SyntaxWarning: invalid escape sequence '\s'
+  'common[\s\r\n]*</SupArchList>[\s\r\n]*', '', XmlContent)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/XmlParser.py:307: SyntaxWarning: invalid escape sequence '\s'
+  '[\s\r\n]*"', '', XmlContent)
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/UPT/Xml/XmlParser.py:310: SyntaxWarning: invalid escape sequence '\s'
+  '[\s\r\n]*"', '', XmlContent)
+ok
+test_UPT_Xml_XmlParserMisc (CheckPythonSyntax.Tests.test_UPT_Xml_XmlParserMisc) ... ok
+test_UPT_Xml___init__ (CheckPythonSyntax.Tests.test_UPT_Xml___init__) ... ok
+test_Workspace_BuildClassObject (CheckPythonSyntax.Tests.test_Workspace_BuildClassObject) ... ok
+test_Workspace_DecBuildData (CheckPythonSyntax.Tests.test_Workspace_DecBuildData) ... ok
+test_Workspace_DscBuildData (CheckPythonSyntax.Tests.test_Workspace_DscBuildData) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Workspace/DscBuildData.py:93: SyntaxWarning: invalid escape sequence '\S'
+  PcdMakefileEnd = '''
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Workspace/DscBuildData.py:113: SyntaxWarning: invalid escape sequence '\d'
+  Pattern = re.compile('^[1-9]\d*|0$')
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Workspace/DscBuildData.py:2843: SyntaxWarning: invalid escape sequence '\%'
+  MakeApp = MakeApp + 'APPFILE = %s\%s.exe\n' % (self.OutputPath, PcdValueInitName) + 'APPNAME = %s\n' % (PcdValueInitName) + 'OBJECTS = %s\%s.obj %s.obj\n' % (self.OutputPath, PcdValueInitName, os.path.join(self.OutputPath, PcdValueCommonName)) + 'INC = '
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Workspace/DscBuildData.py:2843: SyntaxWarning: invalid escape sequence '\%'
+  MakeApp = MakeApp + 'APPFILE = %s\%s.exe\n' % (self.OutputPath, PcdValueInitName) + 'APPNAME = %s\n' % (PcdValueInitName) + 'OBJECTS = %s\%s.obj %s.obj\n' % (self.OutputPath, PcdValueInitName, os.path.join(self.OutputPath, PcdValueCommonName)) + 'INC = '
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Workspace/DscBuildData.py:2952: SyntaxWarning: invalid escape sequence '\C'
+  PcdValueCommonPath = os.path.normpath(mws.join(GlobalData.gGlobalDefines["EDK_TOOLS_PATH"], "Source\C\Common\PcdValueCommon.c"))
+/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Workspace/DscBuildData.py:2953: SyntaxWarning: invalid escape sequence '\P'
+  MakeApp = MakeApp + '%s\PcdValueCommon.c : %s\n' % (self.OutputPath, PcdValueCommonPath)
+ok
+test_Workspace_InfBuildData (CheckPythonSyntax.Tests.test_Workspace_InfBuildData) ... ok
+test_Workspace_MetaDataTable (CheckPythonSyntax.Tests.test_Workspace_MetaDataTable) ... ok
+test_Workspace_MetaFileCommentParser (CheckPythonSyntax.Tests.test_Workspace_MetaFileCommentParser) ... ok
+test_Workspace_MetaFileParser (CheckPythonSyntax.Tests.test_Workspace_MetaFileParser) ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Source/Python/Workspace/MetaFileParser.py:1900: SyntaxWarning: invalid escape sequence '\s'
+  Line = re.sub(',[\s]*', TAB_COMMA_SPLIT, self._CurrentLine)
+ok
+test_Workspace_MetaFileTable (CheckPythonSyntax.Tests.test_Workspace_MetaFileTable) ... ok
+test_Workspace_WorkspaceCommon (CheckPythonSyntax.Tests.test_Workspace_WorkspaceCommon) ... ok
+test_Workspace_WorkspaceDatabase (CheckPythonSyntax.Tests.test_Workspace_WorkspaceDatabase) ... ok
+test_Workspace___init__ (CheckPythonSyntax.Tests.test_Workspace___init__) ... ok
+test_build_BuildReport (CheckPythonSyntax.Tests.test_build_BuildReport) ... ok
+test_build___init__ (CheckPythonSyntax.Tests.test_build___init__) ... ok
+test_build_build (CheckPythonSyntax.Tests.test_build_build) ... ok
+test_build_buildoptions (CheckPythonSyntax.Tests.test_build_buildoptions) ... ok
+test_sitecustomize (CheckPythonSyntax.Tests.test_sitecustomize) ... ok
+test_tests_Split_test_split (CheckPythonSyntax.Tests.test_tests_Split_test_split) ... ok
+test32bitUnicodeCharInUtf8Comment (CheckUnicodeSourceFiles.Tests.test32bitUnicodeCharInUtf8Comment) ... ok
+test32bitUnicodeCharInUtf8File (CheckUnicodeSourceFiles.Tests.test32bitUnicodeCharInUtf8File) ... ok
+testSupplementaryPlaneUnicodeCharInUtf16File (CheckUnicodeSourceFiles.Tests.testSupplementaryPlaneUnicodeCharInUtf16File) ... ok
+testSurrogatePairUnicodeCharInUtf16File (CheckUnicodeSourceFiles.Tests.testSurrogatePairUnicodeCharInUtf16File) ... ok
+testSurrogatePairUnicodeCharInUtf8File (CheckUnicodeSourceFiles.Tests.testSurrogatePairUnicodeCharInUtf8File) ... ok
+testSurrogatePairUnicodeCharInUtf8FileWithBom (CheckUnicodeSourceFiles.Tests.testSurrogatePairUnicodeCharInUtf8FileWithBom) ... ok
+testUtf16InUniFile (CheckUnicodeSourceFiles.Tests.testUtf16InUniFile) ... ok
+testValidUtf8File (CheckUnicodeSourceFiles.Tests.testValidUtf8File) ... ok
+testValidUtf8FileWithBom (CheckUnicodeSourceFiles.Tests.testValidUtf8FileWithBom) ... ok
+
+----------------------------------------------------------------------
+Ran 302 tests in 0.809s
+
+OK
+make[1]: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Tests'
+make: Leaving directory '/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools'
+INFO - Log Started: Thursday, November 26, 2026 07:22AM
+INFO - Cmd to run is: stuart TARGET=RELEASE
+SECTION - Init Self Describing Environment
+INFO - Computing path for mu_nasm located at /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Bin/mu_nasm_extdep on Host(os='Linux', arch='x86', bit='64')
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Bin/mu_nasm_extdep/Linux-x86-64 was found!
+INFO - Computing path for mu_nasm located at /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Bin/mu_nasm_extdep on Host(os='Linux', arch='x86', bit='64')
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Bin/mu_nasm_extdep/Linux-x86-64 was found!
+INFO - Computing path for mu_nasm located at /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Bin/mu_nasm_extdep on Host(os='Linux', arch='x86', bit='64')
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/Bin/mu_nasm_extdep/Linux-x86-64 was found!
+SECTION - Loading Plugins
+SECTION - Start Invocable Tool
+INFO - Running Python version: sys.version_info(major=3, minor=12, micro=3, releaselevel='final', serial=0)
+INFO - attrs version: 23.2.0
+INFO - mercurial version: 6.7.2
+INFO - python-apt version: 2.7.7+ubuntu5.3
+INFO - httplib2 version: 0.20.4
+INFO - ec2-hibinit-agent version: 1.0.0
+INFO - s3transfer version: 0.10.1
+INFO - netaddr version: 0.8.0
+INFO - markdown-it-py version: 3.0.0
+INFO - mdurl version: 0.1.2
+INFO - pygount version: 3.2.0
+INFO - blinker version: 1.7.0
+INFO - pefile version: 2024.8.26
+INFO - MarkupSafe version: 2.1.5
+INFO - userpath version: 1.9.2
+INFO - hyperlink version: 21.0.0
+INFO - launchpadlib version: 1.11.0
+INFO - Twisted version: 24.3.0
+INFO - python-debian version: 0.1.49+ubuntu2
+INFO - zstandard version: 0.22.0
+INFO - systemd-python version: 235
+INFO - joblib version: 1.6.0
+INFO - xlsxwriter version: 3.3.4
+INFO - edk2-pytool-library version: 0.23.18
+INFO - distro version: 1.9.0
+INFO - chardet version: 5.2.0
+INFO - smmap version: 5.0.3
+INFO - command-not-found version: 0.3
+INFO - PyGObject version: 3.48.2
+INFO - wadllib version: 1.3.6
+INFO - certifi version: 2023.11.17
+INFO - jsonpatch version: 1.32
+INFO - packaging version: 24.0
+INFO - botocore version: 1.34.46
+INFO - constantly version: 23.10.4
+INFO - pyasn1-modules version: 0.2.8
+INFO - PyHamcrest version: 2.1.0
+INFO - ubuntu-pro-client version: 8001
+INFO - incremental version: 22.10.0
+INFO - jsonschema version: 4.10.3
+INFO - GitPython version: 3.2.1
+INFO - configobj version: 5.0.8
+INFO - Pygments version: 2.17.2
+INFO - jmespath version: 1.0.1
+INFO - semantic-version version: 2.10.0
+INFO - SQLAlchemy version: 2.1.9
+INFO - PyYAML version: 6.0.1
+INFO - ssh-import-id version: 5.11
+INFO - pyasn1 version: 0.4.8
+INFO - sos version: 4.11.2
+INFO - ptyprocess version: 0.7.0
+INFO - pyparsing version: 3.1.1
+INFO - distro-info version: 1.7+ubuntu0.1
+INFO - PyJWT version: 2.7.0
+INFO - Babel version: 2.10.3
+INFO - zope.interface version: 6.1
+INFO - requests version: 2.31.0
+INFO - pyrsistent version: 0.20.0
+INFO - Automat version: 22.10.0
+INFO - edk2-pytool-extensions version: 0.31.4
+INFO - pytz version: 2024.1
+INFO - argcomplete version: 3.8.0
+INFO - rich version: 15.0.0
+INFO - pyOpenSSL version: 23.2.0
+INFO - idna version: 3.6
+INFO - typing_extensions version: 4.10.0
+INFO - gitdb version: 4.0.12
+INFO - dbus-python version: 1.3.2
+INFO - Jinja2 version: 3.1.2
+INFO - setuptools version: 84.2.1
+INFO - ufw version: 0.36.2
+INFO - jsonpointer version: 2.0
+INFO - wheel version: 0.42.0
+INFO - cryptography version: 41.0.7
+INFO - pip version: 24.0
+INFO - et_xmlfile version: 2.0.0
+INFO - urllib3 version: 2.0.7
+INFO - cloudpickle version: 3.1.3
+INFO - service-identity version: 24.1.0
+INFO - cloud-init version: 26.2
+INFO - bcc version: 0.29.1
+INFO - openpyxl version: 3.1.5
+INFO - hibagent version: 1.0.1
+INFO - lazr.restfulclient version: 0.14.6
+INFO - netifaces version: 0.11.0
+INFO - lazr.uri version: 1.0.6
+INFO - platformdirs version: 4.14.8
+INFO - python-dateutil version: 2.8.2
+INFO - bcrypt version: 3.2.2
+INFO - pipx version: 1.16.7
+INFO - python-magic version: 0.4.27
+INFO - filelock version: 4.3.0
+INFO - pyserial version: 3.5
+INFO - oauthlib version: 3.2.2
+INFO - boto3 version: 1.34.46
+INFO - pexpect version: 4.9.0
+INFO - six version: 1.16.0
+INFO - colorama version: 0.4.6
+INFO - click version: 8.1.6
+INFO - cargo version: 1.100.0
+INFO - cargo make version: N/A
+INFO - rustc version: 1.100.0
+SECTION - Loading Plugins
+SECTION - Kicking off build
+PROGRESS - Start time: 2026-11-26 07:22:37.866975
+PROGRESS - Setting up the Environment
+PROGRESS - Running Pre Build
+INFO - Writing BuildToolsReports to /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/BUILD_TOOLS_REPORT
+PROGRESS - Running Build RELEASE
+INFO - Cmd to run is: build -p A3Pkg/a3.dsc -b RELEASE -t CLANG38 -a AARCH64 -y /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/BUILD_REPORT.TXT -Y PCD -Y DEPEX -Y FLASH -Y BUILD_FLAGS -Y LIBRARY -Y FIXED_ADDRESS -Y HASH -D BUILDID_STRING=Unknown -D FD_BASE=0x50000000 -D FD_SIZE=0x00700000 -D FIRMWARE_VER=2fcc7dd
+INFO - ------------------------------------------------
+INFO - --------------Cmd Output Starting---------------
+INFO - ------------------------------------------------
+INFO - Build environment: Linux-7.0.0-1018-aws-x86_64-with-glibc2.39
+INFO - Build start time: 07:22:37, Nov.26 2026
+INFO - 
+INFO - WORKSPACE        = /home/runner/work/edk2-mt6771/edk2-mt6771
+INFO - PACKAGES_PATH    = /home/runner/work/edk2-mt6771/edk2-mt6771:/home/runner/work/edk2-mt6771/edk2-mt6771/Platform/OPPO:/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2:/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2-platforms:/home/runner/work/edk2-mt6771/edk2-mt6771/Silicon/MediaTek
+INFO - EDK_TOOLS_PATH   = /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools
+INFO - CONF_PATH        = /home/runner/work/edk2-mt6771/edk2-mt6771/Conf
+INFO - PYTHON_COMMAND   = /usr/bin/python3
+INFO - 
+INFO - 
+INFO - Processing meta-data .
+INFO - Architecture(s)  = AARCH64
+INFO - Build target     = RELEASE
+INFO - Toolchain        = CLANG38
+INFO - 
+INFO - Active Platform          = /home/runner/work/edk2-mt6771/edk2-mt6771/Platform/OPPO/A3Pkg/a3.dsc
+INFO - . done!
+INFO - Building ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib.inf [AARCH64]
+INFO - "clang" -MMD -MF /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckGcc.obj.deps -g -Os -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wno-array-bounds -include AutoGen.h -fno-common -mlittle-endian -fno-short-enums -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -Wno-address -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-pic -fno-pie -ffixed-x18 -target aarch64-linux-gnu -mcmodel=small -Wno-parentheses-equality -Wno-tautological-compare -Wno-tautological-constant-out-of-range-compare -Wno-empty-body -Wno-unused-const-variable -Wno-varargs -Wno-unknown-warning-option -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-unaligned-access  -flto -O3 -Os -Wno-unused-const-variable -Wno-sometimes-uninitialized -D CLANG -Wno-self-assign -Wno-uninitialized -Wno-initializer-overrides -Wno-non-literal-null-conversion -Wno-unused-but-set-variable -Wno-string-plus-int -fdiagnostics-format=vi -fcolor-diagnostics -Wno-deprecated-non-prototype -DDEFAULT_DARK -mtune=cortex-a53 -mcpu=cortex-a53 -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -fno-builtin -fno-common -Wno-unused-variable -fshort-wchar -fno-strict-aliasing -mlittle-endian -fno-short-enums -fno-asynchronous-unwind-tables -mcmodel=small -ffixed-x18 -mstrict-align -fstack-protector -Wno-unaligned-access -Wno-misleading-indentation -mstrict-align -mgeneral-regs-only -c -o /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/./BaseStackCheckGcc.obj -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Library/BaseStackCheckLib -I/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib/DEBUG -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Test/UnitTest/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include/AArch64 /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Library/BaseStackCheckLib/BaseStackCheckGcc.c
+INFO - Building ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf [AARCH64]
+INFO - Trim --asm-file -o /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/AArch64/Atomics.i -i /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/inc.lst /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib/AArch64/Atomics.S
+INFO - Building ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Library/UefiUsbLib/UefiUsbLib.inf [AARCH64]
+INFO - "clang" -MMD -MF /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/UefiUsbLib/UefiUsbLib/OUTPUT/Hid.obj.deps -g -Os -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wno-array-bounds -include AutoGen.h -fno-common -mlittle-endian -fno-short-enums -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -Wno-address -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-pic -fno-pie -ffixed-x18 -target aarch64-linux-gnu -mcmodel=small -Wno-parentheses-equality -Wno-tautological-compare -Wno-tautological-constant-out-of-range-compare -Wno-empty-body -Wno-unused-const-variable -Wno-varargs -Wno-unknown-warning-option -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-unaligned-access  -flto -O3 -Os -Wno-unused-const-variable -Wno-sometimes-uninitialized -D CLANG -Wno-self-assign -Wno-uninitialized -Wno-initializer-overrides -Wno-non-literal-null-conversion -Wno-unused-but-set-variable -Wno-string-plus-int -fdiagnostics-format=vi -fcolor-diagnostics -Wno-deprecated-non-prototype -DDEFAULT_DARK -mtune=cortex-a53 -mcpu=cortex-a53 -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -fno-builtin -fno-common -Wno-unused-variable -fshort-wchar -fno-strict-aliasing -mlittle-endian -fno-short-enums -fno-asynchronous-unwind-tables -mcmodel=small -ffixed-x18 -mstrict-align -fstack-protector -Wno-unaligned-access -Wno-misleading-indentation -c -o /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/UefiUsbLib/UefiUsbLib/OUTPUT/./Hid.obj -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Library/UefiUsbLib -I/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/UefiUsbLib/UefiUsbLib/DEBUG -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Test/UnitTest/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include/AArch64 /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Library/UefiUsbLib/Hid.c
+INFO - Building ... /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib.inf [AARCH64]
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:31: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gLineControlDirective = re.compile('^\s*#(?:line)?\s+([0-9]+)\s+"*([^"]*)"')
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:33: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gTypedefPattern = re.compile("^\s*typedef\s+struct(\s+\w+)?\s*[{]*$", re.MULTILINE)
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:35: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gPragmaPattern = re.compile("^\s*#pragma\s+pack", re.MULTILINE)
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:37: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gTypedef_SinglePattern = re.compile("^\s*typedef", re.MULTILINE)
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:39: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gTypedef_MulPattern = re.compile("^\s*(typedef)?\s+(struct|union)(\s+\w+)?\s*[{]*$", re.MULTILINE)
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:54: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gAslIncludePattern = re.compile("^(\s*)[iI]nclude\s*\(\"?([^\"\(\)]+)\"\)", re.MULTILINE)
+INFO - "clang" -MMD -MF /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib/OUTPUT/ReportStatusCodeLib.obj.deps -g -Os -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wno-array-bounds -include AutoGen.h -fno-common -mlittle-endian -fno-short-enums -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -Wno-address -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-pic -fno-pie -ffixed-x18 -target aarch64-linux-gnu -mcmodel=small -Wno-parentheses-equality -Wno-tautological-compare -Wno-tautological-constant-out-of-range-compare -Wno-empty-body -Wno-unused-const-variable -Wno-varargs -Wno-unknown-warning-option -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-unaligned-access  -flto -O3 -Os -Wno-unused-const-variable -Wno-sometimes-uninitialized -D CLANG -Wno-self-assign -Wno-uninitialized -Wno-initializer-overrides -Wno-non-literal-null-conversion -Wno-unused-but-set-variable -Wno-string-plus-int -fdiagnostics-format=vi -fcolor-diagnostics -Wno-deprecated-non-prototype -DDEFAULT_DARK -mtune=cortex-a53 -mcpu=cortex-a53 -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -fno-builtin -fno-common -Wno-unused-variable -fshort-wchar -fno-strict-aliasing -mlittle-endian -fno-short-enums -fno-asynchronous-unwind-tables -mcmodel=small -ffixed-x18 -mstrict-align -fstack-protector -Wno-unaligned-access -Wno-misleading-indentation -c -o /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib/OUTPUT/./ReportStatusCodeLib.obj -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdeModulePkg/Library/DxeReportStatusCodeLib -I/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib/DEBUG -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Test/UnitTest/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include/AArch64 -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdeModulePkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdeModulePkg/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdeModulePkg/Library/BrotliCustomDecompressLib/brotli/c/include /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdeModulePkg/Library/DxeReportStatusCodeLib/ReportStatusCodeLib.c
+INFO - "clang" -MMD -MF /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/AArch64/Atomics.obj.deps -E -x assembler-with-cpp -include AutoGen.h -target aarch64-linux-gnu  -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib/AArch64 -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib -I/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/DEBUG -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Test/UnitTest/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include/AArch64 -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Include /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib/AArch64/Atomics.S > /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/AArch64/Atomics.ii
+INFO - Trim --trim-long --source-code -o /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/AArch64/Atomics.iiii /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/AArch64/Atomics.ii
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:31: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gLineControlDirective = re.compile('^\s*#(?:line)?\s+([0-9]+)\s+"*([^"]*)"')
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:33: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gTypedefPattern = re.compile("^\s*typedef\s+struct(\s+\w+)?\s*[{]*$", re.MULTILINE)
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:35: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gPragmaPattern = re.compile("^\s*#pragma\s+pack", re.MULTILINE)
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:37: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gTypedef_SinglePattern = re.compile("^\s*typedef", re.MULTILINE)
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:39: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gTypedef_MulPattern = re.compile("^\s*(typedef)?\s+(struct|union)(\s+\w+)?\s*[{]*$", re.MULTILINE)
+INFO - /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/BaseTools/BinWrappers/PosixLike/../../Source/Python/Trim/Trim.py:54: SyntaxWarning: invalid escape sequence '\s'
+INFO -   gAslIncludePattern = re.compile("^(\s*)[iI]nclude\s*\(\"?([^\"\(\)]+)\"\)", re.MULTILINE)
+INFO - "clang" -c -x assembler -imacros AutoGen.h -target aarch64-linux-gnu  -Qunused-arguments -o /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/AArch64/Atomics.obj -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib/AArch64 -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib -I/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/DEBUG -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Test/UnitTest/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include/AArch64 -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Include /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/AArch64/Atomics.iiii
+INFO - "clang" -MMD -MF /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/memcpy.obj.deps -g -Os -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wno-array-bounds -include AutoGen.h -fno-common -mlittle-endian -fno-short-enums -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -Wno-address -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-pic -fno-pie -ffixed-x18 -target aarch64-linux-gnu -mcmodel=small -Wno-parentheses-equality -Wno-tautological-compare -Wno-tautological-constant-out-of-range-compare -Wno-empty-body -Wno-unused-const-variable -Wno-varargs -Wno-unknown-warning-option -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-unaligned-access  -flto -O3 -Os -Wno-unused-const-variable -Wno-sometimes-uninitialized -D CLANG -Wno-self-assign -Wno-uninitialized -Wno-initializer-overrides -Wno-non-literal-null-conversion -Wno-unused-but-set-variable -Wno-string-plus-int -fdiagnostics-format=vi -fcolor-diagnostics -Wno-deprecated-non-prototype -DDEFAULT_DARK -mtune=cortex-a53 -mcpu=cortex-a53 -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -fno-builtin -fno-common -Wno-unused-variable -fshort-wchar -fno-strict-aliasing -mlittle-endian -fno-short-enums -fno-asynchronous-unwind-tables -mcmodel=small -ffixed-x18 -mstrict-align -fstack-protector -Wno-unaligned-access -Wno-misleading-indentation -mstrict-align -mgeneral-regs-only -c -o /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/./memcpy.obj -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib/AArch64 -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib -I/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/DEBUG -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Test/UnitTest/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include/AArch64 -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Include /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib/memcpy.c
+INFO - rm -f /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckLib.lib
+INFO - "clang" -MMD -MF /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/UefiUsbLib/UefiUsbLib/OUTPUT/UsbDxeLib.obj.deps -g -Os -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wno-array-bounds -include AutoGen.h -fno-common -mlittle-endian -fno-short-enums -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -Wno-address -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-pic -fno-pie -ffixed-x18 -target aarch64-linux-gnu -mcmodel=small -Wno-parentheses-equality -Wno-tautological-compare -Wno-tautological-constant-out-of-range-compare -Wno-empty-body -Wno-unused-const-variable -Wno-varargs -Wno-unknown-warning-option -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-unaligned-access  -flto -O3 -Os -Wno-unused-const-variable -Wno-sometimes-uninitialized -D CLANG -Wno-self-assign -Wno-uninitialized -Wno-initializer-overrides -Wno-non-literal-null-conversion -Wno-unused-but-set-variable -Wno-string-plus-int -fdiagnostics-format=vi -fcolor-diagnostics -Wno-deprecated-non-prototype -DDEFAULT_DARK -mtune=cortex-a53 -mcpu=cortex-a53 -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -fno-builtin -fno-common -Wno-unused-variable -fshort-wchar -fno-strict-aliasing -mlittle-endian -fno-short-enums -fno-asynchronous-unwind-tables -mcmodel=small -ffixed-x18 -mstrict-align -fstack-protector -Wno-unaligned-access -Wno-misleading-indentation -c -o /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/UefiUsbLib/UefiUsbLib/OUTPUT/./UsbDxeLib.obj -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Library/UefiUsbLib -I/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/UefiUsbLib/UefiUsbLib/DEBUG -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Test/UnitTest/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include/AArch64 /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Library/UefiUsbLib/UsbDxeLib.c
+INFO - "llvm-ar" cr /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckLib.lib  @/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/object_files.lst
+INFO - /bin/sh: 1: llvm-ar: not found
+INFO - "clang" -MMD -MF /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/memset.obj.deps -g -Os -fshort-wchar -fno-builtin -fno-strict-aliasing -Wall -Werror -Wno-array-bounds -include AutoGen.h -fno-common -mlittle-endian -fno-short-enums -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -Wno-address -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-pic -fno-pie -ffixed-x18 -target aarch64-linux-gnu -mcmodel=small -Wno-parentheses-equality -Wno-tautological-compare -Wno-tautological-constant-out-of-range-compare -Wno-empty-body -Wno-unused-const-variable -Wno-varargs -Wno-unknown-warning-option -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-unaligned-access  -flto -O3 -Os -Wno-unused-const-variable -Wno-sometimes-uninitialized -D CLANG -Wno-self-assign -Wno-uninitialized -Wno-initializer-overrides -Wno-non-literal-null-conversion -Wno-unused-but-set-variable -Wno-string-plus-int -fdiagnostics-format=vi -fcolor-diagnostics -Wno-deprecated-non-prototype -DDEFAULT_DARK -mtune=cortex-a53 -mcpu=cortex-a53 -fverbose-asm -funsigned-char -ffunction-sections -fdata-sections -fno-builtin -fno-common -Wno-unused-variable -fshort-wchar -fno-strict-aliasing -mlittle-endian -fno-short-enums -fno-asynchronous-unwind-tables -mcmodel=small -ffixed-x18 -mstrict-align -fstack-protector -Wno-unaligned-access -Wno-misleading-indentation -mstrict-align -mgeneral-regs-only -c -o /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/OUTPUT/./memset.obj -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib/AArch64 -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib -I/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib/DEBUG -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Test/UnitTest/Include -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdePkg/Include/AArch64 -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg -I/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Include /home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/ArmPkg/Library/CompilerIntrinsicsLib/memset.c
+INFO - rm -f /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib/OUTPUT/DxeReportStatusCodeLib.lib
+INFO - "llvm-ar" cr /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib/OUTPUT/DxeReportStatusCodeLib.lib  @/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib/OUTPUT/object_files.lst
+INFO - make: *** [GNUmakefile:295: /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckLib.lib] Error 127
+INFO - /bin/sh: 1: llvm-ar: not found
+INFO - make: *** [GNUmakefile:298: /home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib/OUTPUT/DxeReportStatusCodeLib.lib] Error 127
+INFO - 
+INFO - 
+INFO - build.py...
+INFO -  : error 7000: Failed to execute command
+INFO - 	make tbuild [/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib]
+INFO - 
+INFO - 
+INFO - build.py...
+INFO -  : error 7000: Failed to execute command
+INFO - 	make tbuild [/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib]
+INFO - 
+INFO - 
+INFO - build.py...
+INFO -  : error 7000: Failed to execute command
+INFO - 	make tbuild [/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib]
+INFO - 
+INFO - 
+INFO - build.py...
+INFO -  : error 7000: Failed to execute command
+INFO - 	make tbuild [/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/UefiUsbLib/UefiUsbLib]
+INFO - 
+INFO - 
+INFO - build.py...
+INFO -  : error 7000: Failed to execute command
+INFO - 	make tbuild [/home/runner/work/edk2-mt6771/edk2-mt6771/Build/a3/RELEASE_CLANG38/AARCH64/MdePkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint]
+INFO - 
+INFO - 
+INFO - build.py...
+INFO -  : error F002: Failed to build module
+INFO - 	/home/runner/work/edk2-mt6771/edk2-mt6771/Common/edk2/MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib.inf [AARCH64, CLANG38, RELEASE]
+INFO - 
+INFO - - Failed -
+INFO - Build end time: 07:22:42, Nov.26 2026
+INFO - Build total time: 00:00:05
+INFO - 
+INFO - ------------------------------------------------
+INFO - --------------Cmd Output Finished---------------
+INFO - --------- Running Time (mm:ss): 00:04 ----------
+INFO - ----------- Return Code: 0x00000001 ------------
+INFO - ------------------------------------------------
+ERROR - Compiler #7000 from : Failed to execute command
+ERROR - Compiler #7000 from : Failed to execute command
+ERROR - Compiler #7000 from : Failed to execute command
+ERROR - Compiler #7000 from : Failed to execute command
+ERROR - Compiler #7000 from : Failed to execute command
+ERROR - EDK2 #002 from : Failed to build module
+CRITICAL - Build failed
+PROGRESS - End time: 2026-11-26 07:22:42.714135	 Total time Elapsed: 0:00:04
+SECTION - Log file is located at: /home/runner/work/edk2-mt6771/edk2-mt6771/Build/BUILDLOG_a3.txt
+SECTION - Summary
+ERROR - Error
