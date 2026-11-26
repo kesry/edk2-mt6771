@@ -704,8 +704,8 @@ Mt6771MmcSendCommand (
   }
 
   MsdcClearBits (MSDC_INTEN, MSDC_INT_CMDSTS);
-  MsdcWrite (MSDC_ARG, Argument);
-  MsdcWrite (MSDC_CMD, RawCmd);
+  MsdcWrite (SDC_ARG, Argument);
+  MsdcWrite (SDC_CMD, RawCmd);
 
   DEBUG ((DEBUG_BLKIO, "Mt6771Mmc: CMD%d arg=0x%08x raw=0x%08x\n",
           Index, Argument, RawCmd));
@@ -891,6 +891,19 @@ Mt6771MmcHostDxeInitialize (
 {
   EFI_MMC_HOST_PROTOCOL  *Host;
   EFI_STATUS              Status;
+  EFI_MMC_HOST_PROTOCOL   Template = {
+    MMC_HOST_PROTOCOL_REVISION,
+    Mt6771MmcIsCardPresent,
+    Mt6771MmcIsReadOnly,
+    Mt6771MmcBuildDevicePath,
+    Mt6771MmcNotifyState,
+    Mt6771MmcSendCommand,
+    Mt6771MmcReceiveResponse,
+    Mt6771MmcReadBlockData,
+    Mt6771MmcWriteBlockData,
+    Mt6771MmcSetIos,
+    Mt6771MmcIsMultiBlock
+  };
 
   Status = Mt6771MmcHostInit ();
   if (EFI_ERROR (Status)) {
@@ -898,7 +911,7 @@ Mt6771MmcHostDxeInitialize (
     return Status;
   }
 
-  Host = AllocateCopyPool (sizeof (EFI_MMC_HOST_PROTOCOL), &mMmcHostProtocolTemplate);
+  Host = AllocateCopyPool (sizeof (EFI_MMC_HOST_PROTOCOL), &Template);
   if (Host == NULL) {
     return EFI_OUT_OF_RESOURCES;
   }
