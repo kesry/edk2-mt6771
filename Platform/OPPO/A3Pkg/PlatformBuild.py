@@ -126,7 +126,7 @@ class PlatformBuilder (UefiBuilder, BuildSettingsManager):
         return CommonPlatform.Scopes
 
     def GetName (self):
-        return "A3Pkg"
+        return "a3"
 
     def GetLoggingLevel (self, loggerType):
         return logging.INFO
