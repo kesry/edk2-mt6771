@@ -95,6 +95,30 @@
 
 #define I2C_TIMEOUT_US          100000u
 
+//
+// USB PHY (MT6771). Base from vendor DTS usb0phy@11f40000 (sif_base).
+// Offsets from vendor drivers/misc/mediatek/mu3phy/mt6771/mtk-phy-asic.h:
+//   SSUSB_SIFSLV_U2PHY_COM_BASE     u3_sif2_base + 0x300
+//   SSUSB_USB30_PHYA_SIV_B_BASE     u3_sif2_base + 0xB00
+//   U3D_USBPHYACR6  +0x18   RG_USB20_OTG_VBUSCMP_EN bit20, BC11_SW_EN bit23
+//   U3D_U2PHYACR4   +0x20   RG_USB20_GPIO_CTL bit9, USB20_GPIO_MODE bit8
+//   U3D_U2PHYDTM0   +0x68   FORCE_UART_EN bit26, FORCE_SUSPENDM bit18
+//   U3D_U2PHYDTM1   +0x6C   RG_VBUSVALID bit5
+//
+#define MT6771_U3PHY_BASE       0x11F40000u
+#define PHY_U2PHY_COM           0x0300u
+#define PHY_USBPHYACR6          (MT6771_U3PHY_BASE + PHY_U2PHY_COM + 0x0018u)
+#define PHY_U2PHYACR4           (MT6771_U3PHY_BASE + PHY_U2PHY_COM + 0x0020u)
+#define PHY_U2PHYDTM0           (MT6771_U3PHY_BASE + PHY_U2PHY_COM + 0x0068u)
+#define PHY_U2PHYDTM1           (MT6771_U3PHY_BASE + PHY_U2PHY_COM + 0x006Cu)
+#define PHY_ACR6_OTG_VBUSCMP_EN BIT20
+#define PHY_ACR6_BC11_SW_EN     BIT23
+#define PHY_ACR4_GPIO_CTL       BIT9
+#define PHY_ACR4_GPIO_MODE      BIT8
+#define PHY_DTM0_FORCE_UART_EN  BIT26
+#define PHY_DTM0_FORCE_SUSPENDM BIT18
+#define PHY_DTM1_VBUSVALID      BIT5
+
 /* Timing values computed from the vendor speed algorithm (26 MHz, 100 kHz). */
 #define I2C6_CLOCK_DIV_VAL      5u
 #define I2C6_TIMING_VAL         0x6A03u
@@ -115,6 +139,12 @@ typedef struct {
   EFI_STATUS  OtgStatus;
   UINT8   LgCtrl;
   UINT8   ChgCtrl1;
+  UINT32  Dtm0Before;
+  UINT32  Dtm1Before;
+  UINT32  Acr6Before;
+  UINT32  Dtm0After;
+  UINT32  Dtm1After;
+  UINT32  Acr6After;
 } VBUS_DIAG;
 
 STATIC VBUS_DIAG  mDiag;
@@ -399,6 +429,53 @@ Mt6370EnableOtg (OUT UINT8 *LgCtrl, OUT UINT8 *ChgCtrl1)
 }
 
 /* ------------------------------------------------------------------ */
+/* USB PHY: dump + minimal host-mode switch (experimental)             */
+/* ------------------------------------------------------------------ */
+STATIC
+VOID
+PhyBringup (
+  VOID
+  )
+{
+  UINT32  Reg;
+
+  mDiag.Dtm0Before = MmioRead32 (PHY_U2PHYDTM0);
+  mDiag.Dtm1Before = MmioRead32 (PHY_U2PHYDTM1);
+  mDiag.Acr6Before = MmioRead32 (PHY_USBPHYACR6);
+
+  //
+  // Mirror the USB-function half of vendor usb_phy_recover(): leave UART mode,
+  // release force suspend, enable OTG VBUS comparator, then assert VBUSVALID.
+  // TODO: the full vendor sequence also clears many DTM0/DTM1 fields and sets
+  // analog tuning; only the role-relevant bits are handled here.
+  //
+  Reg = MmioRead32 (PHY_U2PHYDTM0);
+  Reg &= ~(PHY_DTM0_FORCE_UART_EN | PHY_DTM0_FORCE_SUSPENDM);
+  MmioWrite32 (PHY_U2PHYDTM0, Reg);
+
+  Reg = MmioRead32 (PHY_U2PHYACR4);
+  Reg &= ~(PHY_ACR4_GPIO_CTL | PHY_ACR4_GPIO_MODE);
+  MmioWrite32 (PHY_U2PHYACR4, Reg);
+
+  Reg = MmioRead32 (PHY_USBPHYACR6);
+  Reg &= ~PHY_ACR6_BC11_SW_EN;
+  Reg |= PHY_ACR6_OTG_VBUSCMP_EN;
+  MmioWrite32 (PHY_USBPHYACR6, Reg);
+
+  MicroSecondDelay (800);
+
+  Reg = MmioRead32 (PHY_U2PHYDTM1);
+  Reg |= PHY_DTM1_VBUSVALID;
+  MmioWrite32 (PHY_U2PHYDTM1, Reg);
+
+  MicroSecondDelay (1000);
+
+  mDiag.Dtm0After = MmioRead32 (PHY_U2PHYDTM0);
+  mDiag.Dtm1After = MmioRead32 (PHY_U2PHYDTM1);
+  mDiag.Acr6After = MmioRead32 (PHY_USBPHYACR6);
+}
+
+/* ------------------------------------------------------------------ */
 /* Bring-up sequence (runs once)                                       */
 /* ------------------------------------------------------------------ */
 STATIC
@@ -434,6 +511,9 @@ VbusBringup (
 
   // 4. turn on the boost
   mDiag.OtgStatus = Mt6370EnableOtg (&mDiag.LgCtrl, &mDiag.ChgCtrl1);
+
+  // 5. try to put the U2 PHY into host-capable state
+  PhyBringup ();
 }
 
 STATIC
@@ -475,6 +555,14 @@ DrawDiagnostics (
   } else {
     ScreenLog (L"   => boost OFF\r\n");
   }
+
+  ScreenLog (L"------------------------------------------\r\n");
+  UnicodeSPrint (Buf, sizeof (Buf), L"PHY DTM0 %08x -> %08x\r\n", mDiag.Dtm0Before, mDiag.Dtm0After);
+  ScreenLog (Buf);
+  UnicodeSPrint (Buf, sizeof (Buf), L"PHY DTM1 %08x -> %08x\r\n", mDiag.Dtm1Before, mDiag.Dtm1After);
+  ScreenLog (Buf);
+  UnicodeSPrint (Buf, sizeof (Buf), L"PHY ACR6 %08x -> %08x\r\n", mDiag.Acr6Before, mDiag.Acr6After);
+  ScreenLog (Buf);
 
   ScreenLog (L"------------------------------------------\r\n");
   Cap = MmioRead32 (0x11200000u);
