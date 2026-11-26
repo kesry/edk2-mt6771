@@ -150,3 +150,43 @@ EmbeddedPkg/Universal/MmcDxe/MmcDxe.inf
 - ⬜ 真机验证：未做。需在 Shell 中确认 `fs0:`/`fs1:` 是否出现、能否读取 eMMC FAT 分区；
 - ⬜ ISO9660 支持：未添加。下一步在 BlockIo 验证后再做；
 - ⬜ 时钟/quirks：如果真机枚举失败，先调整 `PcdMsdcSourceClockHz` 并逐项关闭 quirks。
+
+## 8. USB 主机支持（2026-11-26）
+
+UEFI Shell 已能在屏幕上工作（run #26 起）。为获得输入与 U 盘支持，新增 USB host 栈。
+
+### 硬件事实（原机 DTB 解码）
+
+| 节点 | compatible | reg |
+|---|---|---|
+| `usb3@11200000` | `mediatek,mt6771-mtu3` | `<0x11201000 0x3000>`, `<0x11203e00 0x100>` ("mac","ippc") |
+| `usb3_xhci@11200000` | `mediatek,mt677x-xhci` | `<0x11200000 0x1000>` |
+| `usb0phy@11f40000` | `mediatek,mt6771-phy` | `<0x11f40000 0x10000>`, `<0x11203e00 0x100>` |
+
+IPPC 寄存器偏移/位来自 Linux v6.12 `drivers/usb/mtu3/mtu3_hw_regs.h`：
+`U3D_SSUSB_IP_PW_CTRL0 +0x00`（`SSUSB_IP_SW_RST BIT0`）、
+`PW_CTRL1 +0x04`（`SSUSB_IP_HOST_PDN BIT0`）、
+`PW_CTRL2 +0x08`（`SSUSB_IP_DEV_PDN BIT0`）、
+`U2_CTRL_0P +0x50`（`FORCE_IDDIG BIT11`、`RG_IDDIG BIT12`、`PORT_PDN BIT1`）。
+host 序列参照 `mtu3_plat.c:ssusb_ip_sw_reset()` 与 `mtu3_dr.c` 的 force/switch 逻辑。
+
+### 新增
+
+- `Silicon/MediaTek/MediaTekPkg/Drivers/Mt6771UsbHostDxe/`
+  - IPPC 切 host：整 IP 复位 → 关 gadget IP → 开 host IP → U2 口强制 IDDIG=host 且解除 PD
+  - 通过 `RegisterNonDiscoverableMmioDevice(NonDiscoverableDeviceTypeXhci, ...)`
+    把 `0x11200000/0x1000` 注册为 xHCI 设备
+- DSC/FDF 加入 `NonDiscoverablePciDeviceDxe`、`XhciDxe`、`UsbKbDxe`
+  （`UsbBusDxe`、`UsbMassStorageDxe` 原本已在）
+- 新增 DEC 库映射 `NonDiscoverableDeviceRegistrationLib`
+
+### 状态
+
+- ✅ CI run #28 编译通过；产物 FV 中已确认包含
+  `Mt6771UsbHostDxe`、`NonDiscoverablePciDeviceDxe`、`XhciDxe`、`UsbKbDxe`
+- ⬜ 真机未验证：USB 键盘、U 盘、OTG 供电（VBUS）
+- ⚠️ 未实现：MTU3 MAC 时钟、USB PHY（`0x11f40000`）上电、VBUS 开关。
+  若 LK 没有把 MTU3 时钟/PHY 留在可用状态，控制器会读不到（CAPLENGTH=0），
+  需要补充 PHY/时钟初始化。
+- ⚠️ EDK2 pinned commit **没有 USB 串口类驱动**（CDC-ACM/CH340 均无）。
+  要用 USB-TTL 适配器做串口控制台，需要额外移植 USB-serial 驱动。
