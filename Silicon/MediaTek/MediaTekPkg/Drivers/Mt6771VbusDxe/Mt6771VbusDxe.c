@@ -104,6 +104,13 @@
 #define I2C_TIMEOUT_US          100000u
 
 //
+// 0 = quiet mode: no black screen, no bus scan, no on-screen spam. The VBUS
+// attempt and the PHY bits are still applied so USB keeps a chance to work.
+// 1 = full diagnostics (black panel + I2C/PHY dump), used while debugging.
+//
+#define A3_USB_DIAG             0
+
+//
 // USB PHY (MT6771). Base from vendor DTS usb0phy@11f40000 (sif_base).
 // Offsets from vendor drivers/misc/mediatek/mu3phy/mt6771/mtk-phy-asic.h:
 //   SSUSB_SIFSLV_U2PHY_COM_BASE     u3_sif2_base + 0x300
@@ -627,8 +634,10 @@ VbusBringup (
   // 3. probe MT6370
   mDiag.ReadStatus = Mt6370Read (MT6370_REG_CHGCTRL1, &mDiag.ChgCtrl1Read);
 
-  // 3b. scan the bus so we can tell whether the slave address is wrong
-  I2cScan ();
+  if (A3_USB_DIAG) {
+    // 3b. scan the bus so we can tell whether the slave address is wrong
+    I2cScan ();
+  }
 
   // 4. turn on the boost
   mDiag.OtgStatus = Mt6370EnableOtg (&mDiag.LgCtrl, &mDiag.ChgCtrl1);
@@ -740,16 +749,22 @@ Mt6771VbusDxeInitialize (
   VbusBringup ();
 
   Event = NULL;
-  Status = gBS->CreateEvent (
-                  EVT_TIMER | EVT_NOTIFY_SIGNAL,
-                  TPL_CALLBACK,
-                  OnTimer,
-                  NULL,
-                  &Event
-                  );
-  if (EFI_ERROR (Status)) {
-    return EFI_SUCCESS;
+  if (A3_USB_DIAG) {
+    Status = gBS->CreateEvent (
+                    EVT_TIMER | EVT_NOTIFY_SIGNAL,
+                    TPL_CALLBACK,
+                    OnTimer,
+                    NULL,
+                    &Event
+                    );
+    if (!EFI_ERROR (Status)) {
+      gBS->SetTimer (Event, TimerPeriodic, 20000000u);
+    }
   }
-  gBS->SetTimer (Event, TimerPeriodic, 20000000u);
+
+  //
+  // Quiet mode: the VBUS and PHY attempts above still happen, but nothing is
+  // painted over the shell so its startup.nsh output stays readable.
+  //
   return EFI_SUCCESS;
 }
