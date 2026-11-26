@@ -177,3 +177,10 @@ post-build 工具路径、runner apt 镜像缓慢（run10 被 run11 取代）。
   `platform = self.env.GetValue("PRODUCT_NAME")`，但下面构造 FD 路径仍用到 `platform`。
 - 修复：恢复该行赋值（本次提交）。
 - 完整日志：[build-run45789831583.log](build-run45789831583.log)
+
+## Run #18 — 45805236884 (2026-11-26, **SUCCESS**, eMMC stack)
+
+- 结果：**success**，全部步骤通过。
+- 本次固件首次包含 `Mt6771MmcHostDxe` 与 `EmbeddedPkg/MmcDxe`（从产物 map 文件确认）。
+- 产物：`mt6771-uefi-18`、`boot-uefi-18`、`build-log-18`。
+- 注意：只验证编译与打包；eMMC BlockIo 的真机功能尚未验证。

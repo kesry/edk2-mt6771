@@ -113,3 +113,40 @@ model = "mt6771"; compatible = "mediatek,mt6771"
 | 内核侧 `CONFIG_FB_SIMPLE` 曾导致花屏（stride 4352 vs 4320） | commit `7d54087`,`31a3b17` | UEFI `PcdMipiFrameBuffer...` 使用 1080×2280/stride 4320；仍需实机验证 |
 | MT6771 与 MT8183 在 MMSYS/DRM/I2C/WDT 上复用 IP，但寄存器需逐项核对 | `script/a3-mmsys-patch.py`, `patch/0005` | 继续以 `MT8183Pkg` 为基础，但不可假定全部寄存器一致 |
 | 物理 UART 未引出；USB ACM 115200 可用 | `docs/partition-userdata-split.md`, `script/build-rootfs.sh` | UEFI 控制台优先 USB；串口调试 TODO |
+
+## 7. eMMC BlockIo 支持（2026-11-26）
+
+为了让 UEFI Shell 能看到 eMMC 分区（`fs0:`），新增了完整的 eMMC host 栈：
+
+```
+Silicon/MediaTek/MediaTekPkg/Drivers/Mt6771MmcHostDxe/
+  → 安装 gEmbeddedMmcHostProtocolGuid
+
+EmbeddedPkg/Universal/MmcDxe/MmcDxe.inf
+  → 消费 gEmbeddedMmcHostProtocolGuid，产生 BlockIo
+```
+
+### 事实依据
+
+- `mainline-linux-mt6771/patch/0005-...:513-521`：
+  `msdc@11230000`, reg `<0 0x11230000 0 0x10000>`, bus-width=8, non-removable, bootable。
+- 同 patch `:662-665`：`msdc0_top@11f50000`, reg `<0 0x11f50000 0 0x1000>`。
+- 同 patch `:216-219`：source clock 来自 `clk_msdcpll`，约 400 MHz；注意这是 "ASSUMED"，
+  需要真机确认（文档中已作为 TODO）。
+- 同 patch `:8179-8187`、`:8222-8252`：MT6771 MSDC 复用 MT6779 IP；LK 已完成 pinmux，
+  主线内核用 `A3_MMC_NO_PINCTRL` 跳过 pinctrl。
+- `linux-mediatek/edk2-mtk origin/next-msdc` 提供了寄存器定义、PIO 模型和 quirks 参考；
+  但该驱动是 WIP，不安装任何 BlockIo 协议，不能直接用于读 ISO。
+- Linux v6.12 `drivers/mmc/host/mtk-sd.c` 中 `mt6779_compat` 交叉验证了
+  async_fifo/data_tune/busy_check/stop_clk_fix/enhance_rx 等 quirks 位。
+
+### 实现状态
+
+- ✅ 新增 `Mt6771MmcHostDxe`（GPL-2.0-only，引用上游 next-msdc 的寄存器定义）；
+- ✅ 新增 PCD：`PcdMsdcMmioRegBase=0x11230000`、`PcdMsdcTopMmioRegBase=0x11f50000`、
+  `PcdMsdcUseTop=TRUE`、`PcdMsdcSourceClockHz=400000000`；
+- ✅ 仅支持 MSDC0/eMMC，PIO 模式；不支持 SD 卡、不支持 DMA/HS200/HS400；
+- ✅ CI run #18 编译通过，产物中包含 `Mt6771MmcHostDxe` 和 `MmcDxe` 模块；
+- ⬜ 真机验证：未做。需在 Shell 中确认 `fs0:`/`fs1:` 是否出现、能否读取 eMMC FAT 分区；
+- ⬜ ISO9660 支持：未添加。下一步在 BlockIo 验证后再做；
+- ⬜ 时钟/quirks：如果真机枚举失败，先调整 `PcdMsdcSourceClockHz` 并逐项关闭 quirks。
