@@ -24,6 +24,12 @@
 
 #include <Library/PrintLib.h>
 
+//
+// 0 = leave LK's MSDC tuning alone (default). 1 = apply the MT6789-derived
+// PATCH_BIT quirks that edk2-mtk next-msdc used; only for experiments.
+//
+#define MMC_USE_MT6789_QUIRKS   0
+
 STATIC UINTN  mMmcTraceCount;
 
 #define MMC_TRACE_LINES  40
@@ -950,10 +956,11 @@ Mt6771MmcHostInit (
   MsdcWrite (MSDC_INTEN, 0);
 
   //
-  // FIXME: these quirks came from the MT6789 next-msdc WIP. They are marked
-  // FIXME in that driver too. Keep them for first silicon bring-up, but
-  // remove/disable individually if eMMC enumeration fails.
+  // The PATCH_* values below were taken from the MT6789 WIP driver and are NOT
+  // MT6771 tuning. Writing them may disturb a controller that LK already
+  // configured, so they are opt-in. Default: keep whatever LK programmed.
   //
+#if MMC_USE_MT6789_QUIRKS
   MsdcSetBits (SDC_CFG, SDC_CFG_SDIO);
   MsdcClearBits (SDC_CFG, SDC_CFG_SDIOIDE);
 
@@ -981,6 +988,7 @@ Mt6771MmcHostInit (
   MsdcSetBits (MSDC_PATCH_BIT2, BIT2 | BIT3);
   MsdcClearBits (MSDC_PATCH_BIT2, MSDC_PB2_CFGRESP);
   MsdcSetBits (MSDC_PATCH_BIT2, MSDC_PB2_CFGCRCSTS);
+#endif /* MMC_USE_MT6789_QUIRKS */
 
   //
   // Identification must run at a slow card clock. MmcDxe calls
