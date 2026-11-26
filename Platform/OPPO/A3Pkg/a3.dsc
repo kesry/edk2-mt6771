@@ -19,10 +19,14 @@
   gMediaTekTokenSpaceGuid.PcdUefiMemPoolBase|0x40C50000
   gMediaTekTokenSpaceGuid.PcdUefiMemPoolSize|0x075b0000
 
-  # Simple Framebuffer
-  gMediaTekTokenSpaceGuid.PcdMipiFrameBufferWidth|1080
+  # LK-injected simple-framebuffer (decoded from vendor/a3-v186-tgpio.dtb):
+  #   base 0x77440000, 16 MiB, 1080x2280, stride 0x1100 (4352 B = 1088 px),
+  #   format a8r8g8b8.
+  # SimpleFbDxe computes pitch as Width * 4, so Width must be 1088 to match
+  # LK's stride; 1080 would skew every row by 32 bytes.
+  gMediaTekTokenSpaceGuid.PcdMipiFrameBufferWidth|1088
   gMediaTekTokenSpaceGuid.PcdMipiFrameBufferHeight|2280
-  gMediaTekTokenSpaceGuid.PcdMipiFrameBufferAddress|0x7d170000
+  gMediaTekTokenSpaceGuid.PcdMipiFrameBufferAddress|0x77440000
 
 [LibraryClasses]
   PlatformMemoryMapLib|A3Pkg/Library/PlatformMemoryMapLib/PlatformMemoryMapLib.inf

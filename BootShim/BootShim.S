@@ -1,43 +1,62 @@
 /*
- * DIAGNOSTIC STAGE 3 BootShim for OPPO A3 (MT6771). DO NOT USE AS RELEASE.
+ * OPPO A3 (MT6771) BootShim - fake arm64 Linux Image header + EDK2 loader.
  *
- * Stage 1 proved: LK jumps to our payload.
- * Stage 2 proved: BootShim can copy A3_UEFI.fd to UEFI_BASE (0x50000000).
+ * The original LK on this board validates the arm64 Image header before it
+ * jumps. Facts from mainline-linux-mt6771/script/a3-prep-kernel.py:
  *
- * Stage 3 verifies the final `br UEFI_BASE` itself:
- *   1. copy payload to UEFI_BASE
- *   2. overwrite the first 8 instructions at UEFI_BASE with a WDT reset stub
- *   3. branch to UEFI_BASE
+ *   - code0 must be a branch instruction (0x14xxxxxx); a plain adr/nop makes
+ *     LK hang at the logo until the watchdog resets the board.
+ *   - text_offset must be 0x80000 (stock value).
+ *   - image_size must be 0x257f000 (stock value); declaring the honest size
+ *     hangs LK.
+ *   - magic "ARM\x64" must be at offset 0x38.
  *
- * Interpretation:
- *   - device reboots: br UEFI_BASE works, entry execution works. Failure is
- *     deeper in EDK2 after the reset vector.
- *   - device hangs: br UEFI_BASE or entry execution is broken.
+ * Stock header values were extracted from the original Android_boot.img:
+ *   code0=0x14574000, text_offset=0x80000, image_size=0x257f000, flags=0xa.
+ *
+ * Layout:
+ *   0x00  b _Start           (code0 - LK requires a branch)
+ *   0x04  nop                (code1)
+ *   0x08  text_offset        = 0x80000
+ *   0x10  image_size         = 0x257f000
+ *   0x18  flags              = 0xa
+ *   0x38  "ARM\x64"
+ *   0x40  _Start: real shim code (copy payload to UEFI_BASE and jump)
+ *
+ * This file is assembled into BootShim.bin and prepended to A3_UEFI.fd.
  *
  * SPDX-License-Identifier: BSD-2-Clause-Patent
  */
 
 _Head:
+	/* code0: branch into the real shim (LK requires a branch here) */
 	b	_Start
+	/* code1: reserved */
 	nop
 
-	.quad	0x00080000
-	.quad	0x0257f000
-	.quad	0x0000000a
-	.quad	0
-	.quad	0
-	.quad	0
+	/* ---- fake Linux kernel header (LK reads these) ---- */
+	.quad	0x00080000		/* text_offset */
+	.quad	0x0257f000		/* image_size (stock value required by LK) */
+	.quad	0x0000000a		/* flags (stock value) */
+	.quad	0			/* reserved */
+	.quad	0			/* reserved */
+	.quad	0			/* reserved */
 
+	/* ARM64 magic at 0x38 */
 	.ascii	"ARM\x64"
 	.long	0
 
+	/* ---- real shim code starts at 0x40 ---- */
 	.align	4
 _Start:
-	adr	x1, _Payload
+	adr	x1, _Payload		/* runtime address of the EDK2 payload */
 	adr	x4, _BootBaseValue
-	ldr	x5, [x4]
+	ldr	x5, [x4]		/* x5 = UEFI_BASE */
+	cmp	x1, x5
+	beq	_Entry
+
 	adr	x4, _BootSizeValue
-	ldr	x6, [x4]
+	ldr	x6, [x4]		/* x6 = UEFI_SIZE */
 
 _CopyLoop:
 	ldp	x2, x3, [x1], #16
@@ -45,26 +64,10 @@ _CopyLoop:
 	subs	x6, x6, #16
 	b.ne	_CopyLoop
 
-	/* Reload UEFI_BASE into x5. */
 	adr	x4, _BootBaseValue
 	ldr	x5, [x4]
 
-	/* Patch first 8 words at 0x50000000 with WDT reset stub. */
-	adr	x7, _WdtStub
-	ldr	x8, _WdtStub
-	/* x7 = address of stub data; copy 8 words to x5 */
-	ldp	x2, x3, [x7], #16
-	stp	x2, x3, [x5], #16
-	ldp	x2, x3, [x7], #16
-	stp	x2, x3, [x5], #16
-	ldp	x2, x3, [x7], #16
-	stp	x2, x3, [x5], #16
-	ldp	x2, x3, [x7], #16
-	stp	x2, x3, [x5], #16
-
-	/* x5 advanced to 0x50000020; reload base and jump. */
-	adr	x4, _BootBaseValue
-	ldr	x5, [x4]
+_Entry:
 	br	x5
 
 _Dead:
@@ -76,17 +79,7 @@ _BootBaseValue:
 _BootSizeValue:
 	.quad	UEFI_SIZE
 
-	.align	3
-_WdtStub:
-	.inst	0xd28e0000
-	.inst	0xf2a20000
-	.inst	0x52800602
-	.inst	0x72a44002
-	.inst	0xb9000002
-	.inst	0x52824121
-	.inst	0xb9001401
-	.inst	0x14000000
-
 .text
 .align	4
 _Payload:
+	/* A3_UEFI.fd is appended immediately after this binary. */
