@@ -6,6 +6,8 @@ import uuid
 import subprocess
 import gzip
 import shutil
+import struct
+import zlib
 import logging
 
 from io import StringIO
@@ -241,9 +243,19 @@ class PlatformBuilder (UefiBuilder, BuildSettingsManager):
         fd_gz_path = fd_path + ".gz"
 
         try:
+            # Match mainline-linux-mt6771/script/a3-prep-kernel.py exactly:
+            # gzip header 1f 8b 08 00 00 00 00 00 02 03 (no FNAME field).
+            # LK on OPPO A3 is strict about the boot image layout; python's
+            # gzip.open(path,'wb') stores the source filename in the gzip
+            # header (FLG=0x08), which the stock image does not have.
             with open(fd_path, 'rb') as f_in:
-                with gzip.open(fd_gz_path, 'wb') as f_out:
-                    shutil.copyfileobj(f_in, f_out)
+                raw = f_in.read()
+            co = zlib.compressobj(1, zlib.DEFLATED, -15, 1)
+            body = co.compress(raw) + co.flush()
+            hdr = b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\x03"
+            trl = struct.pack("<II", zlib.crc32(raw) & 0xffffffff, len(raw) & 0xffffffff)
+            with open(fd_gz_path, 'wb') as f_out:
+                f_out.write(hdr + body + trl)
         except Exception as e:
             logging.critical(f"Gzip compression failed: {e}")
             return 1
