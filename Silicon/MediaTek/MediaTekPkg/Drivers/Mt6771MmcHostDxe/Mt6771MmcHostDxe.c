@@ -22,6 +22,34 @@
 
 #include "Mt6771MmcHostDxe.h"
 
+#include <Library/PrintLib.h>
+
+STATIC UINTN  mMmcTraceCount;
+
+//
+// Print to the UEFI console: the RELEASE build routes DEBUG() to the unwired
+// UART0, so on-screen tracing is the only way to see what the card init does.
+//
+STATIC
+VOID
+MmcTrace (
+  IN CONST CHAR16  *Format,
+  ...
+  )
+{
+  VA_LIST  Args;
+  CHAR16   Buffer[160];
+
+  if ((gST == NULL) || (gST->ConOut == NULL)) {
+    return;
+  }
+  VA_START (Args, Format);
+  UnicodeVSPrint (Buffer, sizeof (Buffer), Format, Args);
+  VA_END (Args);
+  gST->ConOut->OutputString (gST->ConOut, Buffer);
+}
+
+
 STATIC MT6771_MMC_HOST_DATA  mHost;
 STATIC EFI_HANDLE             mHostHandle;
 
@@ -711,6 +739,16 @@ Mt6771MmcSendCommand (
           Index, Argument, RawCmd));
 
   Status = MsdcWaitCommandDone (&IntStatus);
+
+  if (mMmcTraceCount < 32) {
+    TraceInt = MsdcRead (MSDC_INT);
+    MmcTrace (
+      L"MMC CMD%u arg=%08x raw=%04x -> %r  INT=%04x\r\n",
+      MMC_GET_INDX (Cmd), Argument, RawCmd, Status, TraceInt
+      );
+    mMmcTraceCount++;
+  }
+
   if (EFI_ERROR (Status)) {
     return Status;
   }
@@ -824,6 +862,14 @@ Mt6771MmcHostInit (
 {
   EFI_STATUS  Status;
 
+  MmcTrace (
+    L"MSDC regs before: CFG=%04x SDC_CFG=%04x PS=%04x INTEN=%04x\r\n",
+    MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_CFG),
+    MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + SDC_CFG),
+    MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_PS),
+    MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_INTEN)
+    );
+
   mHost.MsdcBase      = FixedPcdGet32 (PcdMsdcMmioRegBase);
   mHost.TopBase       = FixedPcdGet32 (PcdMsdcTopMmioRegBase);
   mHost.UseTop        = FixedPcdGetBool (PcdMsdcUseTop);
@@ -879,6 +925,15 @@ Mt6771MmcHostInit (
 
   mHost.SclkHz = mHost.SourceClockHz;
   MsdcSetTimeout ();
+
+  MmcTrace (
+    L"MSDC regs after : CFG=%04x SDC_CFG=%04x PS=%04x INTEN=%04x\r\n",
+    MmioRead16 (mHost.MsdcBase + MSDC_CFG),
+    MmioRead16 (mHost.MsdcBase + SDC_CFG),
+    MmioRead16 (mHost.MsdcBase + MSDC_PS),
+    MmioRead16 (mHost.MsdcBase + MSDC_INTEN)
+    );
+
   return MsdcSetBusWidth (1);
 }
 

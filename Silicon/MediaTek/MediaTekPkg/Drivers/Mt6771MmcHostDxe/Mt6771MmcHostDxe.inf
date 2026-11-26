@@ -24,6 +24,7 @@
   IoLib
   MemoryAllocationLib
   PcdLib
+  PrintLib
   TimerLib
   UefiBootServicesTableLib
   UefiDriverEntryPoint
@@ -40,4 +41,5 @@
   gMediaTekTokenSpaceGuid.PcdMsdcSourceClockHz
 
 [Depex]
-  TRUE
+  # console must exist so MMC command tracing is visible on screen
+  gEfiSimpleTextOutProtocolGuid
