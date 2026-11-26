@@ -167,6 +167,7 @@ typedef struct {
   UINT32  Acr6After;
   UINT8   ScanList[16];
   UINT16  ScanCount;
+  BOOLEAN Reprogrammed;
   UINT32  Pad000;
   UINT32  Pad004;
   UINT32  Pad008;
@@ -254,6 +255,14 @@ I2c6Ungate (
           InfraAoRead (INFRA3_CG_STA)));
 }
 
+/**
+  Per-transfer preparation.
+
+  It deliberately does NOT issue I2C_SOFTRESET: LK already configured this bus
+  (it talks to MT6370 while charging) and a soft reset clears TIMING,
+  CLOCK_DIV, LTIMING, HS and IO_CONFIG, which is why every earlier transfer
+  stalled. Only clear the FIFO and interrupt state here.
+**/
 STATIC
 VOID
 I2cPrepare (
@@ -262,8 +271,6 @@ I2cPrepare (
 {
   I2cWrite (I2C_INTR_MASK, 0x0000);
   I2cWrite (I2C_INTR_STAT, I2C_INTR_ALL);
-  I2cWrite (I2C_SOFTRESET, I2C_SOFT_RST);
-  MicroSecondDelay (1000);
   I2cWrite (I2C_FIFO_ADDR_CLR, 0x0001);
   I2cWrite (I2C_INTR_STAT, I2C_INTR_ALL);
 }
@@ -306,6 +313,26 @@ I2cWaitCompletion (
       }
       return EFI_SUCCESS;
     }
+
+    //
+    // The START bit is self-clearing when the transaction finishes. Some
+    // configurations do not latch an interrupt status for a NAK, so accept
+    // "START cleared" as completion and report the error bits we did see.
+    //
+    if ((I2cRead (I2C_START) & I2C_TRANSAC_START) == 0) {
+      if (Elapsed >= 50) {
+        Status = I2cRead (I2C_INTR_STAT);
+        I2cWrite (I2C_INTR_STAT, I2C_INTR_ALL);
+        if (FinalStatus != NULL) {
+          *FinalStatus = Status;
+        }
+        if ((Status & (I2C_ACKERR | I2C_HS_NACKERR | I2C_ARB_LOST | I2C_TIMEOUT_BIT)) != 0) {
+          return EFI_DEVICE_ERROR;
+        }
+        return EFI_SUCCESS;
+      }
+    }
+
     MicroSecondDelay (10);
     Elapsed += 10;
   }
@@ -572,11 +599,22 @@ VbusBringup (
   mDiag.ClkDivAfter  = I2cRead (I2C_CLOCK_DIV);
   mDiag.TimingAfter  = I2cRead (I2C_TIMING);
 
-  // 2. if timing looks unprogrammed, set it
+  //
+  // LK normally leaves this bus fully configured (CLOCK_DIV/TIMING non-zero).
+  // Only program a fallback when the registers really read back as zero.
+  //
   if ((mDiag.ClkDivAfter == 0) || (mDiag.TimingAfter == 0)) {
     I2cProgramTiming ();
     mDiag.ClkDivAfter = I2cRead (I2C_CLOCK_DIV);
     mDiag.TimingAfter = I2cRead (I2C_TIMING);
+    mDiag.Reprogrammed = TRUE;
+  } else {
+    mDiag.Reprogrammed = FALSE;
+  }
+
+  // DELAY_LEN is required by the controller but is not always left non-zero.
+  if (I2cRead (I2C_DELAY_LEN) == 0) {
+    I2cWrite (I2C_DELAY_LEN, 0x0002);
   }
 
   // 3. probe MT6370
