@@ -28,3 +28,19 @@
   不是 `edk2toolext` / `edk2toollib`（已用 `https://pypi.org/pypi/<name>/json` 核对）。
 - 修复：workflow 改用正确包名（本次提交）。
 - 完整日志：[run-45771408216.log](run-45771408216.log)
+
+## Run #3 — 45772445402 (2026-11-26, failure)
+
+- 结果：**failure**，失败步骤：`Initialize EDK2 environment`
+- 错误原文：
+  ```
+  ERROR - Error when trying to resolve Common/edk2
+  stderr: 'error: pathspec 'Common/edk2' did not match any file(s) known to git'
+  ```
+- 根因：初始提交用 `git archive` 导出树，丢失了 `.gitmodules` 对应的 gitlink，
+  `stuart_setup` 调用 `git submodule sync -- Common/edk2` 时找不到 submodule。
+- 修复：
+  1. 用 `git update-index --cacheinfo 160000` 恢复两个 gitlink
+     （`Common/edk2@e7aac7fc...`、`Common/edk2-platforms@98221266...`，与上游锁定值一致）；
+  2. workflow 改为 `actions/checkout` 的 `submodules: true`，删除手工 fetch 目录的步骤。
+- 完整日志：[run-45772445402.log](run-45772445402.log)

@@ -33,7 +33,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
         with:
-          submodules: false
+          submodules: true
 
       - name: Show environment
         run: |
@@ -50,23 +50,13 @@ jobs:
             python3 python3-pip make git curl ca-certificates \
             device-tree-compiler uuid-dev libssl-dev nasm
 
-      - name: Prepare pinned EDK2 submodules
+      - name: Verify pinned EDK2 submodules
         run: |
           set -euo pipefail
-          # Pinned by the base repo's .gitmodules at fdb0ef9.
-          ED2_COMMIT=e7aac7fc137e247edad22f7ee53b9a1fba227397
-          EDP_COMMIT=982212662c71b6c734b7578526071d6b78da3bcc
-          for pair in "edk2:$ED2_COMMIT" "edk2-platforms:$EDP_COMMIT"; do
-            name=${pair%%:*}; sha=${pair##*:}
-            url="https://github.com/tianocore/$name.git"
-            echo "Fetching $name @ $sha"
-            mkdir -p "Common/$name"
-            git -C "Common/$name" init -q
-            git -C "Common/$name" remote add origin "$url" 2>/dev/null || true
-            git -C "Common/$name" fetch --depth=1 -q origin "$sha"
-            git -C "Common/$name" checkout -q --detach FETCH_HEAD
-          done
-          # submodules expect edk2Platforms at Common/edk2-platforms (ok).
+          test -f Common/edk2/BaseTools/Makefile
+          test -d Common/edk2-platforms/Platform
+          echo "edk2        : $(git -C Common/edk2 rev-parse HEAD)"
+          echo "edk2-plat   : $(git -C Common/edk2-platforms rev-parse HEAD)"
 
       - name: Install Python build tools
         run: |
