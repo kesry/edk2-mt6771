@@ -1,22 +1,18 @@
 /*
- * DIAGNOSTIC STAGE 2 BootShim for OPPO A3 (MT6771). DO NOT USE AS RELEASE.
+ * DIAGNOSTIC STAGE 3 BootShim for OPPO A3 (MT6771). DO NOT USE AS RELEASE.
  *
- * Purpose: verify that the normal BootShim relocation path works.
+ * Stage 1 proved: LK jumps to our payload.
+ * Stage 2 proved: BootShim can copy A3_UEFI.fd to UEFI_BASE (0x50000000).
  *
- * The release shim copies A3_UEFI.fd to UEFI_BASE (0x50000000) and jumps
- * there. This diagnostic performs the SAME copy, then immediately triggers
- * TopRGU reset instead of jumping into EDK2:
- *
- *   WDT_MODE  @ 0x10007000 = 0x22000030
- *   WDT_SWRST @ 0x10007014 = 0x1209
+ * Stage 3 verifies the final `br UEFI_BASE` itself:
+ *   1. copy payload to UEFI_BASE
+ *   2. overwrite the first 8 instructions at UEFI_BASE with a WDT reset stub
+ *   3. branch to UEFI_BASE
  *
  * Interpretation:
- *   - device reboots within a few seconds:
- *       BootShim relocation/copy loop works. Failure is inside EDK2.
- *   - device hangs at logo:
- *       BootShim relocation path or payload location/size is broken.
- *
- * Header still satisfies OPPO A3 LK.
+ *   - device reboots: br UEFI_BASE works, entry execution works. Failure is
+ *     deeper in EDK2 after the reset vector.
+ *   - device hangs: br UEFI_BASE or entry execution is broken.
  *
  * SPDX-License-Identifier: BSD-2-Clause-Patent
  */
@@ -49,7 +45,39 @@ _CopyLoop:
 	subs	x6, x6, #16
 	b.ne	_CopyLoop
 
-	/* Copy completed: trigger WDT reset. */
+	/* Reload UEFI_BASE into x5. */
+	adr	x4, _BootBaseValue
+	ldr	x5, [x4]
+
+	/* Patch first 8 words at 0x50000000 with WDT reset stub. */
+	adr	x7, _WdtStub
+	ldr	x8, _WdtStub
+	/* x7 = address of stub data; copy 8 words to x5 */
+	ldp	x2, x3, [x7], #16
+	stp	x2, x3, [x5], #16
+	ldp	x2, x3, [x7], #16
+	stp	x2, x3, [x5], #16
+	ldp	x2, x3, [x7], #16
+	stp	x2, x3, [x5], #16
+	ldp	x2, x3, [x7], #16
+	stp	x2, x3, [x5], #16
+
+	/* x5 advanced to 0x50000020; reload base and jump. */
+	adr	x4, _BootBaseValue
+	ldr	x5, [x4]
+	br	x5
+
+_Dead:
+	b	_Dead
+
+	.align	3
+_BootBaseValue:
+	.quad	UEFI_BASE
+_BootSizeValue:
+	.quad	UEFI_SIZE
+
+	.align	3
+_WdtStub:
 	.inst	0xd28e0000
 	.inst	0xf2a20000
 	.inst	0x52800602
@@ -58,12 +86,6 @@ _CopyLoop:
 	.inst	0x52824121
 	.inst	0xb9001401
 	.inst	0x14000000
-
-	.align	3
-_BootBaseValue:
-	.quad	UEFI_BASE
-_BootSizeValue:
-	.quad	UEFI_SIZE
 
 .text
 .align	4
