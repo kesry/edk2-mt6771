@@ -578,7 +578,7 @@ OnTimer (
   IN VOID       *Context
   )
 {
-  if (mRedraws >= 10) {
+  if (mRedraws >= 6) {
     gBS->SetTimer (Event, TimerCancel, 0);
     return;
   }

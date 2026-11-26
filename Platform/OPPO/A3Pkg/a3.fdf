@@ -198,6 +198,19 @@ READ_LOCK_STATUS   = TRUE
 # Device specific fdf
 !include $(DEVICE_DXE_FV_COMPONENTS)
 
+
+################################################################################
+#
+# Shell auto-start script: lets the board run diagnostics without a keyboard.
+# FvSimpleFileSystemDxe exposes it as startup.nsh so the UEFI Shell runs it.
+#
+################################################################################
+
+FILE FREEFORM = 5E2C7A41-8D3B-4F69-9C21-7A4E5B8D0F13 {
+  SECTION UI = "startup.nsh"
+  SECTION RAW = A3Pkg/startup.nsh
+}
+
 [FV.FVMAIN_COMPACT]
 FvAlignment        = 8
 ERASE_POLARITY     = 1
