@@ -1,0 +1,118 @@
+name: Build MT6771 UEFI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Platform/OPPO/A3Pkg/**'
+      - 'BootShim/**'
+      - 'Silicon/**'
+      - 'Common/**'
+      - 'Tools/**'
+      - 'build.sh'
+      - '.github/workflows/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TARGET: RELEASE
+  PLATFORM: OPPO/A3Pkg
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Show environment
+        run: |
+          echo "Platform: $PLATFORM"
+          echo "Target: $TARGET"
+          echo "Runner: $(uname -a)"
+          echo "Commit: $(git rev-parse HEAD)"
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential gcc aarch64-linux-gnu gcc-aarch64-linux-gnu \
+            python3 python3-pip make git curl ca-certificates \
+            device-tree-compiler uuid-dev libssl-dev nasm
+
+      - name: Prepare pinned EDK2 submodules
+        run: |
+          set -euo pipefail
+          # Pinned by the base repo's .gitmodules at fdb0ef9.
+          ED2_COMMIT=e7aac7fc137e247edad22f7ee53b9a1fba227397
+          EDP_COMMIT=982212662c71b6c734b7578526071d6b78da3bcc
+          for pair in "edk2:$ED2_COMMIT" "edk2-platforms:$EDP_COMMIT"; do
+            name=${pair%%:*}; sha=${pair##*:}
+            url="https://github.com/tianocore/$name.git"
+            echo "Fetching $name @ $sha"
+            mkdir -p "Common/$name"
+            git -C "Common/$name" init -q
+            git -C "Common/$name" remote add origin "$url" 2>/dev/null || true
+            git -C "Common/$name" fetch --depth=1 -q origin "$sha"
+            git -C "Common/$name" checkout -q --detach FETCH_HEAD
+          done
+          # submodules expect edk2Platforms at Common/edk2-platforms (ok).
+
+      - name: Install Python build tools
+        run: |
+          set -euo pipefail
+          python3 -m pip install --break-system-packages \
+            edk2toolext edk2toollib pyyaml
+
+      - name: Initialize EDK2 environment
+        run: |
+          set -euo pipefail
+          # build.sh -s runs stuart_setup + stuart_update, which installs the
+          # tools listed in *.ext_dep and configures Conf/.
+          ./build.sh -s -t "$TARGET" "$PLATFORM"
+          echo "--- Conf/target.txt ---"
+          sed -n '1,80p' Conf/target.txt || true
+
+      - name: Build platform
+        id: build
+        run: |
+          set -o pipefail
+          ./build.sh -t "$TARGET" "$PLATFORM" 2>&1 | tee build.log
+        continue-on-error: true
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{ github.run_number }}
+          path: build.log
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload firmware artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mt6771-uefi-${{ github.run_number }}
+          path: |
+            Build/**/*.fd
+            Build/boot-*.img
+            Build/**/*.map
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Fail if build failed
+        if: steps.build.outcome == 'failure'
+        run: |
+          echo "Build failed; see build.log artifact."
+          exit 1

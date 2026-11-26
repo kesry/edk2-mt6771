@@ -1,0 +1,32 @@
+# Local credentials and secrets (NEVER commit)
+security/
+.git-credentials
+*.credential
+*token*
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+
+# EDK2 build output
+Build/
+Conf/
+.cache/
+.edkCode/
+.vscode*/
+*.dll
+*.fd
+*.pyc
+__pycache__/
+
+# Local binaries and vendor assets not suitable for git
+*.dtb
+!Platform/*/*/Blob/*.dtb
+*.img
+!Platform/*/*/Blob/ramdisk
+
+# Editors / patches
+*.swp
+*.rej
+*.orig
