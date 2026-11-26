@@ -12,8 +12,13 @@
 #include "MmcHostDxe.h"
 
 STATIC MT6771_MMC_HOST  mMmcHost;
-STATIC UINT32           mLastResponse[4];
-STATIC BOOLEAN          mHaveResponse;
+
+//
+// Stable vendor DP GUID for the single soldered-down eMMC device.
+//
+STATIC CONST EFI_GUID  gMt6771MmcDevicePathGuid = {
+  0x2f7f6a70, 0x5f1d, 0x4b6c, { 0x9a, 0xd1, 0x32, 0x1c, 0x7e, 0x6d, 0x4a, 0x20 }
+};
 
 STATIC VOID
 MsdcWrite (IN UINT32 Offset, IN UINT32 Value)
@@ -443,7 +448,6 @@ MmcHostBuildDevicePath (
   OUT EFI_DEVICE_PATH_PROTOCOL **DevicePath
   )
 {
-  EFI_GUID VendorGuid = EFI_CALLER_ID_GUID;
   VENDOR_DEVICE_PATH *Node;
 
   if (DevicePath == NULL) {
@@ -454,7 +458,7 @@ MmcHostBuildDevicePath (
   if (Node == NULL) {
     return EFI_OUT_OF_RESOURCES;
   }
-  CopyGuid (&Node->Guid, &VendorGuid);
+  CopyGuid (&Node->Guid, &gMt6771MmcDevicePathGuid);
   *DevicePath = (EFI_DEVICE_PATH_PROTOCOL *)Node;
   return EFI_SUCCESS;
 }

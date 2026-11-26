@@ -27,4 +27,8 @@
 [LibraryClasses]
   PlatformMemoryMapLib|A3Pkg/Library/PlatformMemoryMapLib/PlatformMemoryMapLib.inf
 
+[Components.common]
+  MT6771Pkg/Drivers/MmcHostDxe/MmcHostDxe.inf
+  EmbeddedPkg/Universal/MmcDxe/MmcDxe.inf
+
 !include Silicon/MediaTek/MT8183Pkg/MT8183.dsc
