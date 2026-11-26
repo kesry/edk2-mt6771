@@ -145,6 +145,8 @@ typedef struct {
   UINT32  Dtm0After;
   UINT32  Dtm1After;
   UINT32  Acr6After;
+  UINT8   ScanList[16];
+  UINT16  ScanCount;
 } VBUS_DIAG;
 
 STATIC VBUS_DIAG  mDiag;
@@ -257,6 +259,7 @@ I2cProgramTiming (
 STATIC
 EFI_STATUS
 I2cWaitCompletion (
+  IN  UINTN   TimeoutUs,
   OUT UINT16  *FinalStatus
   )
 {
@@ -264,7 +267,7 @@ I2cWaitCompletion (
   UINT16  Status;
 
   Elapsed = 0;
-  while (Elapsed < I2C_TIMEOUT_US) {
+  while (Elapsed < TimeoutUs) {
     Status = I2cRead (I2C_INTR_STAT);
     if ((Status & I2C_INTR_ALL) != 0) {
       I2cWrite (I2C_INTR_STAT, I2C_INTR_ALL);
@@ -307,16 +310,17 @@ I2cWriteBytes (
     I2cWrite (I2C_DATA_PORT, Data[i]);
   }
   I2cWrite (I2C_START, I2C_TRANSAC_START);
-  return I2cWaitCompletion (NULL);
+  return I2cWaitCompletion (I2C_TIMEOUT_US, NULL);
 }
 
 STATIC
 EFI_STATUS
-I2cWriteReadBytes (
+I2cWriteReadBytesEx (
   IN  UINT8  Slave,
   IN  UINT8  RegAddr,
   OUT UINT8  *Data,
-  IN  UINTN  Length
+  IN  UINTN  Length,
+  IN  UINTN  TimeoutUs
   )
 {
   UINTN  i;
@@ -331,13 +335,25 @@ I2cWriteReadBytes (
   I2cWrite (I2C_DATA_PORT, RegAddr);
   I2cWrite (I2C_START, I2C_TRANSAC_START);
 
-  if (EFI_ERROR (I2cWaitCompletion (NULL))) {
+  if (EFI_ERROR (I2cWaitCompletion (TimeoutUs, NULL))) {
     return EFI_DEVICE_ERROR;
   }
   for (i = 0; i < Length; i++) {
     Data[i] = (UINT8)(I2cRead (I2C_DATA_PORT) & 0xFFu);
   }
   return EFI_SUCCESS;
+}
+
+STATIC
+EFI_STATUS
+I2cWriteReadBytes (
+  IN  UINT8  Slave,
+  IN  UINT8  RegAddr,
+  OUT UINT8  *Data,
+  IN  UINTN  Length
+  )
+{
+  return I2cWriteReadBytesEx (Slave, RegAddr, Data, Length, I2C_TIMEOUT_US);
 }
 
 /* ------------------------------------------------------------------ */
@@ -429,6 +445,31 @@ Mt6370EnableOtg (OUT UINT8 *LgCtrl, OUT UINT8 *ChgCtrl1)
 }
 
 /* ------------------------------------------------------------------ */
+/* I2C bus scan                                                        */
+/* ------------------------------------------------------------------ */
+STATIC
+VOID
+I2cScan (
+  VOID
+  )
+{
+  UINT8   Addr;
+  UINT8   Val;
+  EFI_STATUS  Status;
+
+  mDiag.ScanCount = 0;
+  for (Addr = 0x08; Addr <= 0x77; Addr++) {
+    Status = I2cWriteReadBytesEx (Addr, 0x00, &Val, 1, 5000u);
+    if (!EFI_ERROR (Status)) {
+      if (mDiag.ScanCount < 16) {
+        mDiag.ScanList[mDiag.ScanCount] = Addr;
+      }
+      mDiag.ScanCount++;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* USB PHY: dump + minimal host-mode switch (experimental)             */
 /* ------------------------------------------------------------------ */
 STATIC
@@ -509,6 +550,9 @@ VbusBringup (
   // 3. probe MT6370
   mDiag.ReadStatus = Mt6370Read (MT6370_REG_CHGCTRL1, &mDiag.ChgCtrl1Read);
 
+  // 3b. scan the bus so we can tell whether the slave address is wrong
+  I2cScan ();
+
   // 4. turn on the boost
   mDiag.OtgStatus = Mt6370EnableOtg (&mDiag.LgCtrl, &mDiag.ChgCtrl1);
 
@@ -540,6 +584,23 @@ DrawDiagnostics (
   UnicodeSPrint (Buf, sizeof (Buf), L"I2C6 TIMING     before=0x%04x after=0x%04x\r\n",
                  mDiag.TimingBefore, mDiag.TimingAfter);
   ScreenLog (Buf);
+
+  {
+    UINTN  i;
+    CHAR16  Line[128];
+    CHAR16  Item[16];
+
+    UnicodeSPrint (Line, sizeof (Line), L"I2C6 scan    : %u device(s) ", mDiag.ScanCount);
+    for (i = 0; i < mDiag.ScanCount && i < 16; i++) {
+      UnicodeSPrint (Item, sizeof (Item), L"0x%02x ", mDiag.ScanList[i]);
+      StrCatS (Line, sizeof (Line) / sizeof (CHAR16), Item);
+    }
+    if (mDiag.ScanCount == 0) {
+      StrCatS (Line, sizeof (Line) / sizeof (CHAR16), L"(bus silent)");
+    }
+    StrCatS (Line, sizeof (Line) / sizeof (CHAR16), L"\r\n");
+    ScreenLog (Line);
+  }
 
   ScreenLog (L"------------------------------------------\r\n");
   UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 read  : %r val=0x%02x\r\n",
