@@ -111,3 +111,17 @@
   CI 未设置 `CLANG38_AARCH64_PREFIX`，于是调用系统 `objcopy`，它不认识 aarch64。
 - 修复：workflow 增加 `CLANG38_AARCH64_PREFIX: aarch64-linux-gnu-`（本次提交）。
 - 完整日志：[build-run45775922519.log](build-run45775922519.log)
+
+## Run #9 — 45777032530 (2026-11-26, failure)
+
+- 结果：**failure**，失败步骤：`Build platform` 的 post-build 打包阶段
+- **重要进展：EDK2 固件本体编译成功（`Build end time ... Done`），BootShim 编译成功。**
+- 错误原文：
+  ```
+  python3: can't open file '.../Platform/Tools/mkbootimg-a3.py': [Errno 2] No such file or directory
+  CRITICAL - boot.img build failed!
+  ```
+- 根因：`PlatformBuild.py` 计算仓库根目录时少了一层 `dirname`，把 Tools 路径算成了
+  `Platform/Tools/...`。
+- 修复：增加到四层 `dirname`，得到仓库根 `/Tools/mkbootimg-a3.py`（本次提交）。
+- 完整日志：[build-run45777032530.log](build-run45777032530.log)

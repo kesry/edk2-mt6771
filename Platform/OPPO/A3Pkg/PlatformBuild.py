@@ -266,7 +266,7 @@ class PlatformBuilder (UefiBuilder, BuildSettingsManager):
         dtb = os.path.join(blob_dir, "a3-v186-tgpio.dtb")
         ramdisk = os.path.join(blob_dir, "ramdisk")
         vbmeta = os.path.join(blob_dir, "stock-vbmeta.bin")
-        packager = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "Tools", "mkbootimg-a3.py")
+        packager = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Tools", "mkbootimg-a3.py")
 
         try:
             subprocess.run(
