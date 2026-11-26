@@ -190,3 +190,55 @@ host 序列参照 `mtu3_plat.c:ssusb_ip_sw_reset()` 与 `mtu3_dr.c` 的 force/sw
   需要补充 PHY/时钟初始化。
 - ⚠️ EDK2 pinned commit **没有 USB 串口类驱动**（CDC-ACM/CH340 均无）。
   要用 USB-TTL 适配器做串口控制台，需要额外移植 USB-serial 驱动。
+
+## 9. USB 主机的阻塞点：VBUS 5V 由 MT6370 控制（2026-11-26）
+
+### 现象
+
+刷入含 `Mt6771UsbHostDxe` 的固件后，插入 2.4G 接收器与 USB 键盘均无反应，
+**键盘 NUM LOCK 灯不亮** —— 说明端口没有输出 VBUS，设备根本未上电。
+
+### 供电关系（重要，易混）
+
+| 项目 | 电压 | 作用 |
+|---|---|---|
+| USB VBUS | **5V** | 给外接设备供电；host 模式下必须由手机升压输出 |
+| `ldo_vusb` / VUSB33 | 3.3V | 只给手机内部 USB PHY 供电 |
+
+3.3V 不能替代 VBUS：绝大多数 USB 设备要求 4.4–5.25V。
+
+### 厂商源码证据
+
+仓库：`https://github.com/oppo-source/A3-8.1-kernel-source`（branch `master`，
+commit `da97cfa58a40dd13bb30472f2c02eab2ff0c85df`）。原机 DTB 中充电节点为
+`mediatek,mt6370_pmu_charger`，即 **独立 MT6370 PMU 充电 IC**，不是 MT6358 内置充电器。
+
+`drivers/misc/mediatek/pmic/mt6370/mt6370_pmu_charger.c:1903` `mt6370_enable_otg()`：
+
+```
+enable hidden mode
+set OTG_OC = 500 mA
+write MT6370_PMU_REG_LG_CONTROL (0x33) = 0x7C      /* entering OTG */
+set   MT6370_PMU_REG_CHGCTRL1  (0x11) bit0 OPA_MODE
+msleep(20); verify bit
+write MT6370_PMU_REG_CHGHIDDENCTRL6 (0x35) = 0x00
+```
+
+关闭时：清 OPA_MODE、`LG_CONTROL = 0x73`、`CHGHIDDENCTRL6 = 0x0F`。
+
+### 仍缺的三块
+
+1. **MTK I2C 主控制器驱动**（UEFI 无现成实现）。原机 DTB 给出 12 个
+   `mediatek,i2c` 控制器基址（`0x11007000`/`0x11011000`/`0x11009000`…）。
+   MT6370 的 I2C 地址与总线归属需进一步确认（DTB 中 `mt6370_pmu_dts` 节点未带 `reg`）。
+2. **MT6370 "hidden mode" 访问**：OTG 序列依赖隐藏寄存器解锁流程。
+3. **USB PHY 初始化**：厂商 `drivers/misc/mediatek/mu3phy/mt6771/mtk-phy-asic.c`
+   （1462 行）含 MT6771 专用 PHY 寄存器表，需按 host 模式移植。
+
+### 结论
+
+USB host 能否工作不取决于 xHCI（那部分已实现），而取决于上述三块。
+其中 VBUS 是硬前提：没有 5V，插任何设备都不会枚举。
+
+诊断固件（含屏幕日志）已构建：run #29 `boot-uefi-29`，会在 Shell 画面打印
+IPPC 寄存器与 xHCI `CAPLENGTH`，用于判断 MTU3 是否已被时钟起来。
