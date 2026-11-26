@@ -53,7 +53,12 @@
 
 #define MT6370_SLAVE_ADDR       0x34u
 
-/* MTK I2C v1 offsets */
+/*
+ * MTK I2C **v2** offsets.  mt6771_compat in the vendor driver sets
+ *   .ver = 0x2, .set_dt_div = 1, .set_ltiming = 1, .idvfs_i2c = 1
+ * so the v1 layout used earlier was wrong for this controller.
+ * Source: drivers/i2c/busses/i2c-mtk.h  (enum I2C_REGS_OFFSET_V2)
+ */
 #define I2C_DATA_PORT           0x00u
 #define I2C_SLAVE_ADDR          0x04u
 #define I2C_INTR_MASK           0x08u
@@ -66,12 +71,14 @@
 #define I2C_START               0x24u
 #define I2C_EXT_CONF            0x28u
 #define I2C_LTIMING             0x2Cu
-#define I2C_FIFO_STAT           0x30u
+#define I2C_HS                  0x30u
+#define I2C_IO_CONFIG           0x34u
 #define I2C_FIFO_ADDR_CLR       0x38u
-#define I2C_IO_CONFIG           0x40u
+#define I2C_TRANSFER_LEN_AUX    0x44u
+#define I2C_CLOCK_DIV           0x48u
+#define I2C_HW_TIMEOUT          0x4Cu
 #define I2C_SOFTRESET           0x50u
-#define I2C_TRANSFER_LEN_AUX    0x6Cu
-#define I2C_CLOCK_DIV           0x70u
+#define I2C_FIFO_STAT           0xF4u
 
 #define I2C_TRANSAC_COMP        BIT0
 #define I2C_ACKERR              BIT1
@@ -81,6 +88,7 @@
 #define I2C_TRANSAC_START       BIT0
 #define I2C_CONTROL_DIR_CHANGE  BIT4
 #define I2C_CONTROL_ACKERR_DET  BIT5
+#define I2C_CONTROL_CLK_EXT_EN  BIT3
 #define I2C_INTR_ALL            0x01FFu
 
 /* MT6370 registers */
@@ -119,13 +127,25 @@
 #define PHY_DTM0_FORCE_SUSPENDM BIT18
 #define PHY_DTM1_VBUSVALID      BIT5
 
-/* Timing values computed from the vendor speed algorithm (26 MHz, 100 kHz). */
-#define I2C6_CLOCK_DIV_VAL      5u
-#define I2C6_TIMING_VAL         0x6A03u
-#define I2C6_LTIMING_VAL        0x3203u
-#define I2C6_DELAY_LEN_VAL      0x0002u
-#define I2C6_EXT_CONF_VAL       0x0002u
-#define I2C6_IO_CONFIG_VAL      0x0001u
+/*
+ * v2 register values, derived from the vendor algorithm for a 26 MHz i2c_sel
+ * parent at 100 kHz (sample = 5, step = 26; fast-mode reference step = 34,
+ * sample = 1):
+ *   timing_reg  = (sample << 8) | step              = 0x051A, plus TIMEOUT_EN
+ *   ltiming_reg = (lsample << 6) | lstep | (sample << 12) | (step << 9)
+ *   high_speed  = 0x0003 | (sample << 12) | (step << 8)
+ *   clock_div   = ((div - 1) << 8) | (div - 1), div = 5 from DT
+ */
+#define I2C_TIMEOUT_EN          0x0001u
+#define I2C_IO_CONFIG_OPEN_DRAIN 0x0003u
+#define I2C_SOFT_RST            0x0001u
+#define I2C_CLK_SRC_DIV         5u
+#define I2C6_TIMING_VAL         (((5u << 8) | 26u) | I2C_TIMEOUT_EN)
+#define I2C6_LTIMING_VAL        ((1u << 6) | 34u | (5u << 12) | (26u << 9))
+#define I2C6_HS_VAL             (0x0003u | (5u << 12) | (26u << 8))
+#define I2C6_CLOCK_DIV_VAL      (((I2C_CLK_SRC_DIV - 1u) << 8) | (I2C_CLK_SRC_DIV - 1u))
+#define I2C6_EXT_CONF_VAL       0x1801u
+#define I2C6_HW_TIMEOUT_VAL     0xFFFFu
 
 typedef struct {
   UINT32  GateStaBefore;
@@ -240,9 +260,10 @@ I2cPrepare (
   VOID
   )
 {
-  I2cWrite (I2C_SOFTRESET, 0x0001);
+  I2cWrite (I2C_INTR_MASK, 0x0000);
+  I2cWrite (I2C_INTR_STAT, I2C_INTR_ALL);
+  I2cWrite (I2C_SOFTRESET, I2C_SOFT_RST);
   MicroSecondDelay (1000);
-  I2cWrite (I2C_SOFTRESET, 0x0000);
   I2cWrite (I2C_FIFO_ADDR_CLR, 0x0001);
   I2cWrite (I2C_INTR_STAT, I2C_INTR_ALL);
 }
@@ -253,12 +274,13 @@ I2cProgramTiming (
   VOID
   )
 {
-  I2cWrite (I2C_CLOCK_DIV, I2C6_CLOCK_DIV_VAL);
+  I2cWrite (I2C_IO_CONFIG, I2C_IO_CONFIG_OPEN_DRAIN);
   I2cWrite (I2C_TIMING, I2C6_TIMING_VAL);
   I2cWrite (I2C_LTIMING, I2C6_LTIMING_VAL);
-  I2cWrite (I2C_DELAY_LEN, I2C6_DELAY_LEN_VAL);
+  I2cWrite (I2C_HS, I2C6_HS_VAL);
+  I2cWrite (I2C_CLOCK_DIV, I2C6_CLOCK_DIV_VAL);
+  I2cWrite (I2C_HW_TIMEOUT, I2C6_HW_TIMEOUT_VAL);
   I2cWrite (I2C_EXT_CONF, I2C6_EXT_CONF_VAL);
-  I2cWrite (I2C_IO_CONFIG, I2C6_IO_CONFIG_VAL);
 }
 
 STATIC
@@ -307,8 +329,8 @@ I2cWriteBytes (
   I2cPrepare ();
   I2cWrite (I2C_SLAVE_ADDR, (UINT16)(Slave << 1));
   I2cWrite (I2C_INTR_MASK, 0x0000);
-  I2cWrite (I2C_CONTROL, I2C_CONTROL_ACKERR_DET);
-  I2cWrite (I2C_TRANSAC_LEN, 0x0000);
+  I2cWrite (I2C_CONTROL, I2C_CONTROL_ACKERR_DET | I2C_CONTROL_CLK_EXT_EN);
+  I2cWrite (I2C_TRANSAC_LEN, 0x0001);
   I2cWrite (I2C_TRANSFER_LEN, (UINT16)Length);
   I2cWrite (I2C_TRANSFER_LEN_AUX, 0x0000);
   for (i = 0; i < Length; i++) {
@@ -333,8 +355,8 @@ I2cWriteReadBytesEx (
   I2cPrepare ();
   I2cWrite (I2C_SLAVE_ADDR, (UINT16)((Slave << 1) | 0x0001));
   I2cWrite (I2C_INTR_MASK, 0x0000);
-  I2cWrite (I2C_CONTROL, I2C_CONTROL_ACKERR_DET | I2C_CONTROL_DIR_CHANGE);
-  I2cWrite (I2C_TRANSAC_LEN, 0x0001);
+  I2cWrite (I2C_CONTROL, I2C_CONTROL_ACKERR_DET | I2C_CONTROL_CLK_EXT_EN | I2C_CONTROL_DIR_CHANGE);
+  I2cWrite (I2C_TRANSAC_LEN, 0x0002);
   I2cWrite (I2C_TRANSFER_LEN, (UINT16)Length);
   I2cWrite (I2C_TRANSFER_LEN_AUX, 0x0001);
   I2cWrite (I2C_DATA_PORT, RegAddr);
