@@ -253,6 +253,8 @@ class PlatformBuilder (UefiBuilder, BuildSettingsManager):
     def PlatformBuildBootImage (self):
         edk2_logging.log_progress("Building MT6771 boot.img")
 
+        platform = self.env.GetValue("PRODUCT_NAME")
+
         # Stable release name used by GitHub Actions artifacts and docs.
         # Keep it independent of PRODUCT_NAME so users always know which file
         # to flash: Build/boot-uefi.img -> boot partition.

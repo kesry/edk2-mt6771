@@ -160,3 +160,20 @@
 全部保留在本目录中，根因依次为：apt 包名、PyPI 包名、submodule gitlink、
 Mono/NuGet、DSC PackagesPath、`llvm-ar`、`iasl`、`CLANG38_AARCH64_PREFIX`、
 post-build 工具路径、runner apt 镜像缓慢（run10 被 run11 取代）。
+
+## Run #12 — 45789831583 (2026-11-26, failure)
+
+- 结果：**failure**，失败步骤：`Upload flashable boot image`
+- 编译本身成功，但 post-build 生成 boot.img 时报错：
+  ```
+  ERROR - Traceback (most recent call last):
+  NameError: name 'platform' is not defined. Did you forget to import 'platform'
+  ```
+  随后上传步骤：
+  ```
+  No files were found with the provided path: Build/boot-uefi.img
+  ```
+- 根因：上一次改名 `boot-a3.img` → `boot-uefi.img` 时，误删了
+  `platform = self.env.GetValue("PRODUCT_NAME")`，但下面构造 FD 路径仍用到 `platform`。
+- 修复：恢复该行赋值（本次提交）。
+- 完整日志：[build-run45789831583.log](build-run45789831583.log)
