@@ -1,0 +1,43 @@
+[Defines]
+  INF_VERSION                    = 1.25
+  BASE_NAME                      = Mt6771MmcHostDxe
+  FILE_GUID                      = 5A9D0F29-0D6F-4F0D-9A62-1F7D3B6C7A21
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = Mt6771MmcHostDxeInitialize
+
+[Sources]
+  Mt6771MmcHostDxe.c
+  Mt6771MmcHostDxe.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  MediaTekPkg/MediaTekPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  DevicePathLib
+  IoLib
+  MemoryAllocationLib
+  PcdLib
+  TimerLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  UefiLib
+
+[Protocols]
+  gEmbeddedMmcHostProtocolGuid
+  gEfiDevicePathProtocolGuid
+
+[Pcd]
+  gMediaTekTokenSpaceGuid.PcdMsdcMmioRegBase
+  gMediaTekTokenSpaceGuid.PcdMsdcTopMmioRegBase
+  gMediaTekTokenSpaceGuid.PcdMsdcUseTop
+  gMediaTekTokenSpaceGuid.PcdMsdcSourceClockHz
+
+[Depex]
+  TRUE

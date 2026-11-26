@@ -141,7 +141,7 @@ READ_LOCK_STATUS   = TRUE
   #
   # MT6771 eMMC (MSDC0): host -> MMC BlockIo -> disk stack
   #
-  INF MT6771Pkg/Drivers/MmcHostDxe/MmcHostDxe.inf
+  INF MediaTekPkg/Drivers/Mt6771MmcHostDxe/Mt6771MmcHostDxe.inf
   INF EmbeddedPkg/Universal/MmcDxe/MmcDxe.inf
 
   #

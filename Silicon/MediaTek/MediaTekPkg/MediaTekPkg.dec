@@ -34,5 +34,13 @@
   gMediaTekTokenSpaceGuid.PcdMipiFrameBufferLayers|2|UINT32|0x0000a406
   gMediaTekTokenSpaceGuid.PcdWatchdogBaseAddress|0x10007000|UINT32|0x0000a407
   gMediaTekTokenSpaceGuid.PcdWatchdogWorkingTimer|1|UINT32|0x0000a408
+
+  # OPPO A3 / MT6771 eMMC (MSDC0). Verified from original DTB and mainline
+  # Linux patches: msdc@0x11230000 (8-bit eMMC), msdc0_top@0x11f50000,
+  # msdcpll ~400 MHz. TODO: confirm clock state on real hardware.
+  gMediaTekTokenSpaceGuid.PcdMsdcMmioRegBase|0x11230000|UINT32|0x0000a500
+  gMediaTekTokenSpaceGuid.PcdMsdcTopMmioRegBase|0x11f50000|UINT32|0x0000a501
+  gMediaTekTokenSpaceGuid.PcdMsdcUseTop|TRUE|BOOLEAN|0x0000a502
+  gMediaTekTokenSpaceGuid.PcdMsdcSourceClockHz|400000000|UINT32|0x0000a503
   # RTC information
   gMediaTekTokenSpaceGuid.PcdBootShimInfo1|0xb0000000|UINT64|0x00000a601
