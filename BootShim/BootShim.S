@@ -1,71 +1,85 @@
+/*
+ * OPPO A3 (MT6771) BootShim - fake arm64 Linux Image header + EDK2 loader.
+ *
+ * The original LK on this board validates the arm64 Image header before it
+ * jumps. Facts from mainline-linux-mt6771/script/a3-prep-kernel.py:
+ *
+ *   - code0 must be a branch instruction (0x14xxxxxx); a plain adr/nop makes
+ *     LK hang at the logo until the watchdog resets the board.
+ *   - text_offset must be 0x80000 (stock value).
+ *   - image_size must be 0x257f000 (stock value); declaring the honest size
+ *     hangs LK.
+ *   - magic "ARM\x64" must be at offset 0x38.
+ *
+ * Stock header values were extracted from the original Android_boot.img:
+ *   code0=0x14574000, text_offset=0x80000, image_size=0x257f000, flags=0xa.
+ *
+ * Layout:
+ *   0x00  b _Start           (code0 - LK requires a branch)
+ *   0x04  nop                (code1)
+ *   0x08  text_offset        = 0x80000
+ *   0x10  image_size         = 0x257f000
+ *   0x18  flags              = 0xa
+ *   0x38  "ARM\x64"
+ *   0x40  _Start: real shim code (copy payload to UEFI_BASE and jump)
+ *
+ * This file is assembled into BootShim.bin and prepended to A3_UEFI.fd.
+ *
+ * SPDX-License-Identifier: BSD-2-Clause-Patent
+ */
+
 _Head:
-	/* Set _Entry address */
-	adr	x1, _Payload
-
-	/* Jump to the real code */
+	/* code0: branch into the real shim (LK requires a branch here) */
 	b	_Start
+	/* code1: reserved */
+	nop
 
-	/* Fake Linux kernel header */
+	/* ---- fake Linux kernel header (LK reads these) ---- */
+	.quad	0x00080000		/* text_offset */
+	.quad	0x0257f000		/* image_size (stock value required by LK) */
+	.quad	0x0000000a		/* flags (stock value) */
+	.quad	0			/* reserved */
+	.quad	0			/* reserved */
+	.quad	0			/* reserved */
 
-_StackBase0: //has to be 0 on some devices
-	/* Text Offset */
-	.quad 0
+	/* ARM64 magic at 0x38 */
+	.ascii	"ARM\x64"
+	.long	0
 
-_StackSize0:
-	/* Image Size */
-	.quad 0
-
-	/* Flags */
-	.quad 0
-
-	/* Reserved */
-	.quad 0
-
-	/* Reserved */
-	.quad 0
-
-	/* Reserved */
-	.quad 0
-
-	/* ARM64 Magic */
-	.ascii "ARM\x64"
-
-	/* Reserved */
-	.long 0
-
-	.ascii "EDK2-MTK"
-
-_StackBase:
-	/* Text Offset */
-	.quad UEFI_BASE
-
-_StackSize:
-	/* Image Size */
-	.quad UEFI_SIZE
-
+	/* ---- real shim code starts at 0x40 ---- */
+	.align	4
 _Start:
-	mov	x4, x1
-	ldr	x5, _StackBase
-	cmp	x4, x5
+	adr	x1, _Payload		/* runtime address of the EDK2 payload */
+	adr	x4, _BootBaseValue
+	ldr	x5, [x4]		/* x5 = UEFI_BASE */
+	cmp	x1, x5
 	beq	_Entry
-	ldr	x6,	_StackSize
+
+	adr	x4, _BootSizeValue
+	ldr	x6, [x4]		/* x6 = UEFI_SIZE */
 
 _CopyLoop:
-	ldp	x2, x3, [x4], #16
+	ldp	x2, x3, [x1], #16
 	stp	x2, x3, [x5], #16
 	subs	x6, x6, #16
 	b.ne	_CopyLoop
-	ldr	x5, _StackBase
+
+	adr	x4, _BootBaseValue
+	ldr	x5, [x4]
 
 _Entry:
 	br	x5
 
 _Dead:
-	/* We should never get here */
 	b	_Dead
 
-.text
-.align 4
+	.align	3
+_BootBaseValue:
+	.quad	UEFI_BASE
+_BootSizeValue:
+	.quad	UEFI_SIZE
 
+.text
+.align	4
 _Payload:
-	/* Your code will get ran right after this binary */
+	/* A3_UEFI.fd is appended immediately after this binary. */
