@@ -691,6 +691,7 @@ Mt6771MmcSendCommand (
   UINT32      RawCmd;
   UINT32      ResponseType;
   UINT32      IntStatus;
+  UINT32      TraceInt;
 
   Index = MMC_GET_INDX (Cmd);
   if (Index > 0x3f) {
