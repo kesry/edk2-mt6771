@@ -1,3 +1,4 @@
+# ci-trigger: force rerun after path-fix
 name: Build MT6771 UEFI
 
 on:
