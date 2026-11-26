@@ -25,13 +25,13 @@ from edk2toollib.utility_functions import RunCmd
 #                                Common Configuration                                     #
 # ####################################################################################### #
 class CommonPlatform ():
-    PackagesSupported = ("A3Pkg")
+    PackagesSupported = ("A3Pkg",)
     ArchSupported = ("AARCH64")
     TargetsSupported = ("DEBUG", "RELEASE")
     Scopes = ('a3', 'gcc_aarch64_linux', 'edk2-build')
     WorkspaceRoot = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     PackagesPath = (
-        "Platform/Mashtab",
+        "Platform/OPPO",
         "Common/edk2",
         "Common/edk2-platforms",
         "Silicon/MediaTek"

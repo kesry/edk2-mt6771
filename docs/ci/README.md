@@ -56,3 +56,19 @@
 - 根因：EDK2 stuart 在 Linux 上需要 Mono 运行 NuGet 拉取 `mu_nasm` 等 ext_dep。
 - 修复：在 apt 依赖中加入 `mono-complete`（本次提交）。
 - 完整日志：[run-45772997971.log](run-45772997971.log)
+
+## Run #5 — 45773461419 (2026-11-26, failure)
+
+- 结果：**failure**，失败步骤：`Build platform`（`continue-on-error` 后由末步判失败）
+- 进展：apt、submodule、Python 工具、`stuart_setup/update`、BaseTools 全部成功；
+  真正进入 EDK2 编译阶段后失败。
+- 错误原文：
+  ```
+  ERROR - Failed to convert Edk2Relative Path to an Absolute Path on this system.
+  ERROR - Relative Path: A3Pkg/a3.dsc
+  TypeError: stat: path should be string, bytes, os.PathLike or integer, not NoneType
+  ```
+- 根因：`PlatformBuild.py` 从 T1 模板复制后，`PackagesPath` 仍是 `"Platform/Mashtab"`，
+  导致 `A3Pkg/a3.dsc` 无法解析；同时 `PackagesSupported = ("A3Pkg")` 少了逗号，不是 tuple。
+- 修复：改为 `"Platform/OPPO"` 和 `("A3Pkg",)`（本次提交）。
+- 完整日志：[build-run45773461419.log](build-run45773461419.log)
