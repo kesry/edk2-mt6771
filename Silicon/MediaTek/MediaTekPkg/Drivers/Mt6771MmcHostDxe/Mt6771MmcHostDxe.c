@@ -708,7 +708,24 @@ Mt6771MmcSendCommand (
   RawCmd = Index & 0x3f;
 
   if ((Cmd & MMC_CMD_NO_CRC_RESPONSE) != 0) {
-    ResponseType = 0;
+    //
+    // No CRC does NOT mean no response: CMD1/ACMD41 return OCR as R3 and CMD5
+    // returns R4. Using response type 0 here makes the controller skip the
+    // response entirely, so OCR reads back as 0 and MmcDxe aborts with
+    // "Card initialisation failure" right after CMD1.
+    //
+    switch (Index) {
+      case 1:
+      case 41:
+        ResponseType = 3;   // R3 (OCR)
+        break;
+      case 5:
+        ResponseType = 4;   // R4 (SDIO OCR)
+        break;
+      default:
+        ResponseType = 0;
+        break;
+    }
   } else if ((Cmd & MMC_CMD_LONG_RESPONSE) != 0) {
     ResponseType = 2;
   } else {
@@ -785,8 +802,8 @@ Mt6771MmcSendCommand (
   if (mMmcTraceCount < 32) {
     TraceInt = MsdcRead (MSDC_INT);
     MmcTrace (
-      L"MMC CMD%u arg=%08x raw=%04x -> %r  INT=%04x\r\n",
-      MMC_GET_INDX (Cmd), Argument, RawCmd, Status, TraceInt
+      L"MMC CMD%u arg=%08x raw=%04x -> %r INT=%04x resp0=%08x\r\n",
+      MMC_GET_INDX (Cmd), Argument, RawCmd, Status, TraceInt, mHost.Response[0]
       );
     mMmcTraceCount++;
   }
@@ -795,8 +812,8 @@ Mt6771MmcSendCommand (
     return Status;
   }
 
-  if ((Cmd & MMC_CMD_NO_CRC_RESPONSE) == 0) {
-    if ((Cmd & MMC_CMD_LONG_RESPONSE) != 0) {
+  if (ResponseType != 0) {
+    if (ResponseType == 2) {
       mHost.Response[3] = MsdcRead (SDC_RESP3);
       mHost.Response[2] = MsdcRead (SDC_RESP2);
       mHost.Response[1] = MsdcRead (SDC_RESP1);
