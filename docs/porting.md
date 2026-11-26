@@ -311,3 +311,37 @@ MT6370 OTG   : <status>
 PHY DTM0 / DTM1 / ACR6  before -> after
 xHCI CAP0=0x........ caplen=..
 ```
+
+### 11. 诊断版迭代记录（2026-11-26 晚）
+
+| run | 改动 | 目的 |
+|---|---|---|
+| #31 | framebuffer 涂黑 + 第 5 行起打印 + 2 s 定时重绘 | Shell 清屏会吃掉 ReadyToBoot 的输出 |
+| #32 | 解 I2C6 时钟门控 + 补时序 | `INTR_STAT=0x0000` 疑为无时钟 |
+| #33 | USB PHY 诊断 + 最小 host 位 | 为 VBUS 通了之后做准备 |
+| #34 | 内嵌 `startup.nsh` | 无输入设备时也能自动跑 `map -r` / `dh` |
+| #35 | I2C 总线扫描（0x08–0x77，5 ms/地址） | 若 0x34 不通，看设备到底在哪 |
+| #36 | **INFRA_AO 改为 32 位访问** + dump `0x11000600` pad 区 | 之前用 16 位写 CG 寄存器，几乎肯定没打开门控 |
+
+关于 #36 的推断：MTK 的 `INFRA_AO` 时钟门控寄存器是 32 位；用 `MmioWrite16`
+写 `+0xC0` 很可能无效，这解释了 #32 之后 `INFRA3_CG_STA` 仍未置位。
+
+### startup.nsh 机制
+
+`Platform/OPPO/A3Pkg/startup.nsh` 以 `FILE FREEFORM` + `SECTION UI="startup.nsh"`
+嵌入 `[FV.FvMain]`，由 `FvSimpleFileSystemDxe` 暴露给 Shell 自动执行：
+
+```
+map -r            filesystem 列表（看 fs0: 是否出现 eMMC/U 盘）
+dh -p BlockIo     块设备协议（eMMC 是否产出 BlockIo）
+dh -p UsbHc       USB host controller
+dh -p UsbIo       已枚举的 USB 设备
+dh -p SerialIo    串口
+```
+
+注意：`A3_UEFI.fd` 里的 FVMAIN 被压缩在 FVMAIN_COMPACT 中，直接在 FD 二进制里
+搜字符串是搜不到的；用构建日志中 FVMAIN 的字节数变化可以确认是否被打入
+（加 startup.nsh 后从 5478784 增到 5479552）。
+
+副作用：诊断驱动的黑屏重绘（6 次 × 2 s）会覆盖 Shell 自己打印的 startup.nsh 输出。
+如果需要看 Shell 输出，把 `Mt6771VbusDxe` 的重绘次数改成 0 再构建。
