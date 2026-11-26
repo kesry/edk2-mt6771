@@ -44,3 +44,15 @@
      （`Common/edk2@e7aac7fc...`、`Common/edk2-platforms@98221266...`，与上游锁定值一致）；
   2. workflow 改为 `actions/checkout` 的 `submodules: true`，删除手工 fetch 目录的步骤。
 - 完整日志：[run-45772445402.log](run-45772445402.log)
+
+## Run #4 — 45772997971 (2026-11-26, failure)
+
+- 结果：**failure**，失败步骤：`Initialize EDK2 environment`（stuart_update）
+- 错误原文：
+  ```
+  ERROR - Mono is required to run NuGet on non-Windows platforms but was not found on the PATH.
+  WARNING - [SDE] Failed to fetch NugetDependecy: mu_nasm@2.15.5
+  ```
+- 根因：EDK2 stuart 在 Linux 上需要 Mono 运行 NuGet 拉取 `mu_nasm` 等 ext_dep。
+- 修复：在 apt 依赖中加入 `mono-complete`（本次提交）。
+- 完整日志：[run-45772997971.log](run-45772997971.log)
