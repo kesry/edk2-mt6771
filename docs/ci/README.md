@@ -85,3 +85,15 @@
   CI 未安装 `llvm-ar` 所在的 `llvm` 包。
 - 修复：apt 依赖加入 `llvm clang`（本次提交）。
 - 完整日志：[build-run45774355830.log](build-run45774355830.log)
+
+## Run #7 — 45775389292 (2026-11-26, failure)
+
+- 结果：**failure**，失败步骤：`Build platform`（EDS 编译阶段）
+- 错误原文：
+  ```
+  INFO - /bin/sh: 1: iasl: not found
+  INFO - error F002: Failed to build module ... RamDiskDxe.inf
+  ```
+- 根因：EDK2 编译 ASL/ACPI 需要 `iasl`（ACPI Component Architecture ASL Compiler）。
+- 修复：apt 依赖加入 `iasl`（本次提交）。
+- 完整日志：[build-run45775389292.log](build-run45775389292.log)
