@@ -30,6 +30,27 @@
 //
 #define MMC_USE_MT6789_QUIRKS   0
 
+//
+// eMMC clock gates. Vendor DT: clocks = <&infracfg_ao INFRACFG_AO_MSDC0_SCK_CG>,
+// <&infracfg_ao INFRACFG_AO_MSDC0_CG>; vendor clk-mt6771.c maps both to the
+// infra1 gate group:
+//   GATE_INFRA1(INFRACFG_AO_MSDC0_CG,     ..., 2)
+//   GATE_INFRA1(INFRACFG_AO_MSDC0_SCK_CG, ..., 6)
+// infra1 set/clr/sta = 0x88 / 0x8C / 0x94 in INFRA_AO (0x10001000).
+//
+#define MT6771_INFRA_AO_BASE    0x10001000u
+#define INFRA1_CG_SET           0x0088u
+#define INFRA1_CG_STA           0x0094u
+#define INFRA1_MSDC0_BIT        BIT2
+#define INFRA1_MSDC0_SCK_BIT    BIT6
+
+//
+// eMMC supply: vendor DT vmmc-supply = <&mt_pmic_vemc_ldo_reg> (MT6358 LDO_VEMC,
+// 3.3 V). LK powers it before loading boot.img; this firmware has no LDO control
+// yet, so the rail is assumed to stay on. TODO: drive LDO_VEMC through the MT6358
+// PMIC wrapper if the card stays silent.
+//
+
 STATIC UINTN  mMmcTraceCount;
 
 #define MMC_TRACE_LINES  40
@@ -942,6 +963,21 @@ Mt6771MmcHostInit (
   mHost.MsdcBase      = FixedPcdGet32 (PcdMsdcMmioRegBase);
   mHost.TopBase       = FixedPcdGet32 (PcdMsdcTopMmioRegBase);
   mHost.UseTop        = FixedPcdGetBool (PcdMsdcUseTop);
+  //
+  // Open the eMMC clock gates first: LK may have left them closed, and a
+  // controller without clocks never answers a command.
+  //
+  MmioWrite32 (
+    MT6771_INFRA_AO_BASE + INFRA1_CG_SET,
+    (UINT32)(INFRA1_MSDC0_BIT | INFRA1_MSDC0_SCK_BIT)
+    );
+  MicroSecondDelay (1000);
+
+  MmcTrace (
+    L"INFRA1 CG sta=%08x (msdc0 b2, sck b6)\r\n",
+    MmioRead32 (MT6771_INFRA_AO_BASE + INFRA1_CG_STA)
+    );
+
   mHost.SourceClockHz = FixedPcdGet32 (PcdMsdcSourceClockHz);
   mHost.BusWidth      = 1;
 

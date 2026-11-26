@@ -426,3 +426,41 @@ dd if=/dev/block/by-name/cache bs=1M skip=428 count=4 of=/tmp/uefi.log
 ```
 
 即可取回。风险：写坏 cache 一般只会导致 OTA 失败，系统可自行重格式化。
+
+### 14. eMMC 供电与引脚（对照主线仓库）
+
+来源：`kesry/mainline-linux-mt6771` `patch/0005-a3-OPPO-A3-MT6771-bring-up.patch:214-225`
+与厂商 `arch/arm64/boot/dts/mediatek/cust_mt6771_msdc.dtsi:17-37`。
+
+| 项目 | 事实 | 对 UEFI 的含义 |
+|---|---|---|
+| eMMC 供电 | `vmmc-supply = <&mt_pmic_vemc_ldo_reg>`（MT6358 LDO_VEMC，3.3V） | 固件无 LDO 控制，依赖 LK 保持上电；若卡不应答需通过 MT6358 PMIC wrapper 打开 |
+| 时钟源 | `clk_msdcpll` 400 MHz 作 "source"，`clk26m` 作 "hclk" | `PcdMsdcSourceClockHz = 400000000` |
+| 分频 | 主线明确警告：分频由**假定源频**推导，源频写错会 overclock 并产生 I/O 错误 | 我们的 `MsdcSetClock` 按 400 MHz 计算，若实际源频不同则分频错误 → 表现为 CMD1 CRC 错 |
+| 时钟门控 | `INFRACFG_AO_MSDC0_CG`(infra1 bit2)、`INFRACFG_AO_MSDC0_SCK_CG`(infra1 bit6) | 已加入驱动：写 `0x10001000+0x88` 置位，读 `+0x94` 校验 |
+| 引脚 | 主线用 `A3_MMC_NO_PINCTRL`，LK 已 mux eMMC 引脚 | 固件不改 pinmux（与 I2C6 同样教训） |
+| 速率能力 | 主线移除 high-speed（HS400 需 200 MHz + tuning） | 固件只做 default speed |
+
+INFRA_AO infra1 CG：`set 0x88 / clr 0x8C / sta 0x94`（`clk-mt6771.c:1065`）。
+
+### 15. 编译期自动验证
+
+新增 `Tools/verify_firmware.py`，在 CI 中紧跟构建执行：
+
+```
+python3 Tools/verify_firmware.py Build/boot-uefi.img <A3_UEFI.fd>
+```
+
+检查项：
+
+1. boot.img：32 MiB、`ANDROID!`、header v2、page 2048、各地址
+2. kernel 段 gzip、MTK 追加 DTB 头 magic `0xD7B7AB1E`、独立段 FDT magic
+3. `AVB0` / `AVBf` 存在
+4. 解压后伪 Image 头：`code0` 是分支、`ARMd`@0x38、`text_offset=0x80000`、
+   `image_size=0x257f000`（LK 硬性要求）
+5. 平台 PCD 与文档事实一致（framebuffer `0x77440000`/1088/2280、
+   MSDC `0x11230000`、TOP `0x11f50000`）
+6. DSC/FDF 中必须包含的驱动（MmcHost/Vbus/UsbHost/MmcDiag/Xhci/…）
+7. `startup.nsh` 已内嵌
+
+注意：脚本只证明"镜像结构正确"，不证明"能启动"。

@@ -82,6 +82,13 @@ jobs:
           ./build.sh -t "$TARGET" "$PLATFORM" 2>&1 | tee build.log
         continue-on-error: true
 
+      - name: Verify firmware image
+        run: |
+          set -euo pipefail
+          python3 Tools/verify_firmware.py \
+            Build/boot-uefi.img \
+            "$(find Build -name 'A3_UEFI.fd' | head -1)"
+
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
