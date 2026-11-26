@@ -184,3 +184,14 @@ post-build 工具路径、runner apt 镜像缓慢（run10 被 run11 取代）。
 - 本次固件首次包含 `Mt6771MmcHostDxe` 与 `EmbeddedPkg/MmcDxe`（从产物 map 文件确认）。
 - 产物：`mt6771-uefi-18`、`boot-uefi-18`、`build-log-18`。
 - 注意：只验证编译与打包；eMMC BlockIo 的真机功能尚未验证。
+
+## Run pending — 45810270188 (BootShim LK header fix)
+
+- 背景：用户真机刷入 run #18 的 `boot-uefi.img` 后卡在原厂 logo。
+- 根因判断：旧 BootShim 的 arm64 Image 头不满足 OPPO A3 LK 要求：
+  - `code0` 是 `adr`，不是 branch；
+  - `text_offset=0`、`image_size=0`（LK 要求原机值 `0x80000` / `0x257f000`）。
+- 依据：`mainline-linux-mt6771/script/a3-prep-kernel.py` 与原机 `Android_boot.img`
+  解出的 header 字段。
+- 修复：BootShim 改为 `code0=b _Start`，并填入原机 header 值。
+- 状态：CI run 45810270188 进行中；**不要再用 run #18 的镜像刷机**。
