@@ -181,7 +181,7 @@ def verify_platform(root):
 
     def lookup_pcd(name):
         for text in (dsc_text, dec_text):
-            m = re.search(rf"{re.escape(name)}\|([0-9A-Fa-fx]+)", text)
+            m = re.search(rf"{re.escape(name)}\|([^\s|]+)", text)
             if m:
                 return m.group(1)
         return None
