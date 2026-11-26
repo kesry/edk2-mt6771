@@ -8,7 +8,8 @@ EDK2 (UEFI) port for MediaTek MT6771, currently targeting **OPPO A3 / PADT00**.
 - [x] Platform package `Platform/OPPO/A3Pkg` added (AARCH64, DEBUG/RELEASE)
 - [x] Boot/DT/PMIC facts extracted from the original `Android_boot.img` and reference repos
 - [x] GitHub Actions build workflow added
-- [ ] UEFI firmware builds successfully in CI (TODO: first build)
+- [x] UEFI firmware builds successfully in CI (run #9, 2026-11-26; see docs/ci)
+- [ ] boot.img packaging passes in CI (TODO: path fix pushed; awaiting next run)
 - [ ] Runtime boot on device verified (TODO: needs physical device + backup)
 - [ ] Storage / display / input verified under UEFI (TODO)
 
