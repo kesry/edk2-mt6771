@@ -135,6 +135,7 @@ READ_LOCK_STATUS   = TRUE
   # USB Host Support
   #
   INF MdeModulePkg/Bus/Pci/NonDiscoverablePciDeviceDxe/NonDiscoverablePciDeviceDxe.inf
+  INF MediaTekPkg/Drivers/Mt6771VbusDxe/Mt6771VbusDxe.inf
   INF MediaTekPkg/Drivers/Mt6771UsbHostDxe/Mt6771UsbHostDxe.inf
   INF MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
   INF MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf

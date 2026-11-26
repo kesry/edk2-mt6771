@@ -1,0 +1,36 @@
+## @file
+#  MT6771 VBUS 5V (OTG boost) enable through the MT6370 PMU charger on I2C6.
+#
+#  Copyright (c) 2026, kesry. All rights reserved.
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Mt6771VbusDxe
+  FILE_GUID                      = 3F6E1C88-9A2B-4C71-9E30-5D8B47A2C164
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = Mt6771VbusDxeInitialize
+
+[Sources]
+  Mt6771VbusDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  BaseLib
+  DebugLib
+  IoLib
+  PrintLib
+  TimerLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  UefiLib
+
+[Guids]
+  gEfiEventReadyToBootGuid
+
+[Depex]
+  TRUE
