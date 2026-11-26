@@ -41,6 +41,8 @@
 #include <Library/DebugLib.h>
 #include <Library/IoLib.h>
 #include <Library/PrintLib.h>
+#include <Library/PcdLib.h>
+#include <Library/BaseMemoryLib.h>
 #include <Library/TimerLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiDriverEntryPoint.h>
@@ -107,6 +109,52 @@
 #define MT6370_OPA_MODE            BIT0
 
 #define I2C_TIMEOUT_US          100000u
+
+//
+// Direct framebuffer console.
+//
+// The UEFI Shell clears the screen when it starts, which wiped our earlier
+// ReadyToBoot diagnostics. Fill the panel black and draw our own status text,
+// starting a few rows down so nothing is clipped, and repeat it on a timer so
+// the shell cannot erase it before the user reads it.
+//
+#define FB_WIDTH   1080u
+#define FB_HEIGHT  2280u
+#define FB_STRIDE  4352u
+#define FB_START_ROW 5u
+
+STATIC UINT8  *mFb;
+STATIC UINTN  mRedraws;
+
+STATIC
+VOID
+FbFillBlack (
+  VOID
+  )
+{
+  UINTN  y;
+  UINT8  *Row;
+
+  if (mFb == NULL) {
+    return;
+  }
+  for (y = 0; y < FB_HEIGHT; y++) {
+    Row = mFb + (UINTN)y * FB_STRIDE;
+    SetMem (Row, FB_STRIDE, 0x00);
+  }
+}
+
+STATIC
+VOID
+ScreenClearAndHome (
+  VOID
+  )
+{
+  FbFillBlack ();
+  if ((gST != NULL) && (gST->ConOut != NULL)) {
+    gST->ConOut->SetCursorPosition (gST->ConOut, 0, FB_START_ROW);
+  }
+}
 
 STATIC
 VOID
@@ -377,61 +425,76 @@ Mt6370EnableOtg (
 
 STATIC
 VOID
-PrintProbe (
-  IN EFI_STATUS  Status,
-  IN UINT8       LgCtrl,
-  IN UINT8       ChgCtrl1
+DrawDiagnostics (
+  VOID
   )
 {
-  CHAR16  Buf[160];
+  CHAR16      Buf[192];
+  EFI_STATUS  Status;
+  UINT8       LgCtrl;
+  UINT8       ChgCtrl1;
+  UINT32      Cap;
+
+  ScreenClearAndHome ();
+
+  UnicodeSPrint (Buf, sizeof (Buf), L"MT6771 VBUS/USB diagnostic   pass %u\r\n", mRedraws);
+  ScreenLog (Buf);
+  ScreenLog (L"--------------------------------------\r\n");
 
   UnicodeSPrint (
-    Buf,
-    sizeof (Buf),
-    L"VBUS: mt6370 otg=%r LG_CONTROL(0x33)=0x%02x CHGCTRL1(0x11)=0x%02x\r\n",
-    Status,
-    LgCtrl,
-    ChgCtrl1
+    Buf, sizeof (Buf),
+    L"I2C6   base=0x%08x  INTR_STAT=0x%04x\r\n",
+    MT6771_I2C6_BASE, I2cReadReg16 (I2C_INTR_STAT)
     );
   ScreenLog (Buf);
 
+  LgCtrl = 0;
+  ChgCtrl1 = 0;
+  Status = Mt6370Read (MT6370_REG_CHGCTRL1, &ChgCtrl1);
+  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 CHGCTRL1 read: %r val=0x%02x\r\n", Status, ChgCtrl1);
+  ScreenLog (Buf);
+
+  Status = Mt6370EnableOtg (&LgCtrl, &ChgCtrl1);
+  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 OTG enable : %r\r\n", Status);
+  ScreenLog (Buf);
+  UnicodeSPrint (Buf, sizeof (Buf), L"       LG_CONTROL=0x%02x CHGCTRL1=0x%02x\r\n", LgCtrl, ChgCtrl1);
+  ScreenLog (Buf);
+
   if (!EFI_ERROR (Status) && ((ChgCtrl1 & MT6370_OPA_MODE) != 0)) {
-    ScreenLog (L"VBUS: OTG boost ON -> port should now source 5V\r\n");
+    ScreenLog (L"       => boost ON, port should source 5V\r\n");
   } else {
-    ScreenLog (L"VBUS: OTG boost FAILED (i2c or pmic)\r\n");
+    ScreenLog (L"       => boost NOT on (i2c or pmic problem)\r\n");
   }
+
+  ScreenLog (L"--------------------------------------\r\n");
+  Cap = MmioRead32 (0x11200000u);
+  UnicodeSPrint (Buf, sizeof (Buf), L"xHCI   CAP0=0x%08x caplen=%u\r\n", Cap, Cap & 0xFFu);
+  ScreenLog (Buf);
+  UnicodeSPrint (
+    Buf, sizeof (Buf),
+    L"IPPC   ctrl0=0x%08x ctrl1=0x%08x\r\n",
+    MmioRead32 (0x11203E00u), MmioRead32 (0x11203E04u)
+    );
+  ScreenLog (Buf);
+
+  ScreenLog (L"\r\nPlug a USB mouse: LED on => VBUS ok\r\n");
 }
 
 STATIC
 VOID
 EFIAPI
-OnReadyToBoot (
+OnTimer (
   IN EFI_EVENT  Event,
   IN VOID       *Context
   )
 {
-  EFI_STATUS  Status;
-  UINT8       LgCtrl = 0;
-  UINT8       ChgCtrl1 = 0;
-  UINT16      Intr;
-  CHAR16      Buf[160];
-
-  Intr = I2cReadReg16 (I2C_INTR_STAT);
-  UnicodeSPrint (
-    Buf,
-    sizeof (Buf),
-    L"VBUS: i2c6 base=0x%08x INTR_STAT=0x%04x\r\n",
-    MT6771_I2C6_BASE,
-    Intr
-    );
-  ScreenLog (Buf);
-
-  Status = Mt6370EnableOtg (&LgCtrl, &ChgCtrl1);
-  PrintProbe (Status, LgCtrl, ChgCtrl1);
-
-  if (Event != NULL) {
-    gBS->CloseEvent (Event);
+  if (mRedraws >= 10) {
+    gBS->SetTimer (Event, TimerCancel, 0);
+    return;
   }
+
+  mRedraws++;
+  DrawDiagnostics ();
 }
 
 EFI_STATUS
@@ -444,27 +507,32 @@ Mt6771VbusDxeInitialize (
   EFI_STATUS  Status;
   EFI_EVENT   Event;
 
+  mFb      = (UINT8 *)(UINTN)FixedPcdGet32 (PcdMipiFrameBufferAddress);
+  mRedraws = 0;
+
   //
-  // Enable VBUS as early as possible (so a device plugged before boot is
-  // powered), then re-assert and report at ReadyToBoot when the console is
-  // up and the text will not be cleared by the shell.
+  // Try to bring VBUS up immediately so a device plugged before the timer
+  // fires is already powered.
   //
   Status = Mt6370EnableOtg (NULL, NULL);
   DEBUG ((DEBUG_INFO, "Mt6771Vbus: early OTG enable -> %r\n", Status));
 
   Event = NULL;
-  Status = gBS->CreateEventEx (
-                  EVT_NOTIFY_SIGNAL,
+  Status = gBS->CreateEvent (
+                  EVT_TIMER | EVT_NOTIFY_SIGNAL,
                   TPL_CALLBACK,
-                  OnReadyToBoot,
+                  OnTimer,
                   NULL,
-                  &gEfiEventReadyToBootGuid,
                   &Event
                   );
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "Mt6771Vbus: cannot hook ReadyToBoot: %r\n", Status));
     return EFI_SUCCESS;
   }
 
+  //
+  // Redraw a few times: the shell clears the screen when it starts, so the
+  // first pass may be wiped.
+  //
+  gBS->SetTimer (Event, TimerPeriodic, 20000000u);   // 2 s
   return EFI_SUCCESS;
 }

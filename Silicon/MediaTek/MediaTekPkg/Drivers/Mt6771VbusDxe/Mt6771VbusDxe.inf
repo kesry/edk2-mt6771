@@ -18,16 +18,21 @@
 [Packages]
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
+  MediaTekPkg/MediaTekPkg.dec
 
 [LibraryClasses]
   BaseLib
   DebugLib
   IoLib
   PrintLib
+  PcdLib
   TimerLib
   UefiBootServicesTableLib
   UefiDriverEntryPoint
   UefiLib
+
+[Pcd]
+  gMediaTekTokenSpaceGuid.PcdMipiFrameBufferAddress
 
 [Guids]
   gEfiEventReadyToBootGuid
