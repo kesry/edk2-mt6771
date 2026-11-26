@@ -125,3 +125,9 @@
   `Platform/Tools/...`。
 - 修复：增加到四层 `dirname`，得到仓库根 `/Tools/mkbootimg-a3.py`（本次提交）。
 - 完整日志：[build-run45777032530.log](build-run45777032530.log)
+
+## 备注：CI apt 步骤偶发极慢
+
+- 2026-11-26 的某次 runner 上 `Install build dependencies` 曾持续 >15 分钟，
+  属于 GitHub-hosted runner 的 apt 镜像波动，不是仓库配置错误。
+- workflow 设置了 `timeout-minutes: 120`；若长时间无进展，以新的 push 触发的新运行为准。
