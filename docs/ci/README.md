@@ -16,3 +16,15 @@
 完整日志：[run-45771069163.log](run-45771069163.log)
 
 > 后续每次修复只追加记录，不覆盖历史日志。
+
+## Run #2 — 45771408216 (2026-11-26, failure)
+
+- 结果：**failure**，失败步骤：`Install Python build tools`
+- 错误原文：
+  ```
+  ERROR: Could not find a version that satisfies the requirement edk2toolext (from versions: none)
+  ```
+- 根因：PyPI 上真实的包名是 `edk2-pytool-extensions` 和 `edk2-pytool-library`，
+  不是 `edk2toolext` / `edk2toollib`（已用 `https://pypi.org/pypi/<name>/json` 核对）。
+- 修复：workflow 改用正确包名（本次提交）。
+- 完整日志：[run-45771408216.log](run-45771408216.log)

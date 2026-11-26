@@ -1,0 +1,432 @@
+﻿2026-11-26T06:54:05.0243879Z Current runner version: '2.338.2'
+2026-11-26T06:54:05.0267238Z ##[group]Runner Image Provisioner
+2026-11-26T06:54:05.0268017Z Hosted Compute Agent
+2026-11-26T06:54:05.0268590Z Version: 20261111.635
+2026-11-26T06:54:05.0269168Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+2026-11-26T06:54:05.0269794Z Build Date: 2026-11-11T01:49:01Z
+2026-11-26T06:54:05.0270376Z Worker ID: {c9bf5713-1fab-47de-8d89-3e02ac473aeb}
+2026-11-26T06:54:05.0270991Z Region: centralus
+2026-11-26T06:54:05.0271878Z Cloud: Azure
+2026-11-26T06:54:05.0272342Z ##[endgroup]
+2026-11-26T06:54:05.0273511Z ##[group]Operating System
+2026-11-26T06:54:05.0274117Z Ubuntu
+2026-11-26T06:54:05.0274767Z 24.04.5
+2026-11-26T06:54:05.0275221Z LTS
+2026-11-26T06:54:05.0275717Z ##[endgroup]
+2026-11-26T06:54:05.0276176Z ##[group]Runner Image
+2026-11-26T06:54:05.0276753Z Image: ubuntu-24.04
+2026-11-26T06:54:05.0277264Z Version: 20261116.376.1
+2026-11-26T06:54:05.0278408Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261116.376/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-26T06:54:05.0279955Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261116.376
+2026-11-26T06:54:05.0281154Z ##[endgroup]
+2026-11-26T06:54:05.0282523Z ##[group]GITHUB_TOKEN Permissions
+2026-11-26T06:54:05.0285150Z Contents: read
+2026-11-26T06:54:05.0285864Z Metadata: read
+2026-11-26T06:54:05.0286614Z ##[endgroup]
+2026-11-26T06:54:05.0289048Z Secret source: Actions
+2026-11-26T06:54:05.0290242Z Cache mode: write
+2026-11-26T06:54:05.0291271Z Prepare workflow directory
+2026-11-26T06:54:05.0627755Z Prepare all required actions
+2026-11-26T06:54:05.0670962Z Getting action download info
+2026-11-26T06:54:05.3371409Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-26T06:54:05.4576628Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-26T06:54:05.7063064Z Complete job name: build
+2026-11-26T06:54:05.7809920Z ##[group]Run actions/checkout@v4
+2026-11-26T06:54:05.7810624Z with:
+2026-11-26T06:54:05.7810966Z   submodules: false
+2026-11-26T06:54:05.7811339Z   repository: kesry/edk2-mt6771
+2026-11-26T06:54:05.7814934Z   token: ***
+2026-11-26T06:54:05.7815286Z   ssh-strict: true
+2026-11-26T06:54:05.7815646Z   ssh-user: git
+2026-11-26T06:54:05.7815993Z   persist-credentials: true
+2026-11-26T06:54:05.7816371Z   clean: true
+2026-11-26T06:54:05.7816719Z   sparse-checkout-cone-mode: true
+2026-11-26T06:54:05.7817126Z   fetch-depth: 1
+2026-11-26T06:54:05.7817466Z   fetch-tags: false
+2026-11-26T06:54:05.7817815Z   show-progress: true
+2026-11-26T06:54:05.7818170Z   lfs: false
+2026-11-26T06:54:05.7818502Z   set-safe-directory: true
+2026-11-26T06:54:05.7818898Z   allow-unsafe-pr-checkout: false
+2026-11-26T06:54:05.7819459Z env:
+2026-11-26T06:54:05.7819774Z   TARGET: RELEASE
+2026-11-26T06:54:05.7820122Z   PLATFORM: OPPO/A3Pkg
+2026-11-26T06:54:05.7820473Z ##[endgroup]
+2026-11-26T06:54:05.9941644Z Syncing repository: kesry/edk2-mt6771
+2026-11-26T06:54:05.9943432Z ##[group]Getting Git version info
+2026-11-26T06:54:05.9944037Z Working directory is '/home/runner/work/edk2-mt6771/edk2-mt6771'
+2026-11-26T06:54:05.9945129Z [command]/usr/bin/git version
+2026-11-26T06:54:06.0027576Z git version 2.56.1
+2026-11-26T06:54:06.0048069Z ##[endgroup]
+2026-11-26T06:54:06.0058622Z Temporarily overriding HOME='/home/runner/work/_temp/3c53caeb-927e-430c-ab22-fce72cd401e8' before making global git config changes
+2026-11-26T06:54:06.0060517Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-26T06:54:06.0063404Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/edk2-mt6771/edk2-mt6771
+2026-11-26T06:54:06.0110970Z Deleting the contents of '/home/runner/work/edk2-mt6771/edk2-mt6771'
+2026-11-26T06:54:06.0114154Z ##[group]Initializing the repository
+2026-11-26T06:54:06.0118539Z [command]/usr/bin/git init /home/runner/work/edk2-mt6771/edk2-mt6771
+2026-11-26T06:54:06.0209931Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-26T06:54:06.0211191Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-26T06:54:06.0212044Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-26T06:54:06.0212933Z hint: call:
+2026-11-26T06:54:06.0213407Z hint:
+2026-11-26T06:54:06.0213866Z hint: 	git config --global init.defaultBranch <name>
+2026-11-26T06:54:06.0214632Z hint:
+2026-11-26T06:54:06.0215320Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-26T06:54:06.0216451Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-26T06:54:06.0217337Z hint:
+2026-11-26T06:54:06.0217815Z hint: 	git branch -m <name>
+2026-11-26T06:54:06.0218355Z hint:
+2026-11-26T06:54:06.0219070Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-26T06:54:06.0220798Z Initialized empty Git repository in /home/runner/work/edk2-mt6771/edk2-mt6771/.git/
+2026-11-26T06:54:06.0225760Z [command]/usr/bin/git remote add origin https://github.com/kesry/edk2-mt6771
+2026-11-26T06:54:06.0317706Z ##[endgroup]
+2026-11-26T06:54:06.0318725Z ##[group]Disabling automatic garbage collection
+2026-11-26T06:54:06.0321255Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-26T06:54:06.0360468Z ##[endgroup]
+2026-11-26T06:54:06.0361489Z ##[group]Setting up auth
+2026-11-26T06:54:06.0367887Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-26T06:54:06.0403863Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-26T06:54:06.0777239Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-26T06:54:06.0820871Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-26T06:54:06.1059394Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-26T06:54:06.1102160Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-26T06:54:06.1333743Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-26T06:54:06.1381763Z ##[endgroup]
+2026-11-26T06:54:06.1382662Z ##[group]Fetching the repository
+2026-11-26T06:54:06.1392343Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +af24c9f2034852f1e69872c4f55042a4e1cacd9e:refs/remotes/origin/main
+2026-11-26T06:54:06.5650147Z From https://github.com/kesry/edk2-mt6771
+2026-11-26T06:54:06.5651457Z  * [new ref]         af24c9f2034852f1e69872c4f55042a4e1cacd9e -> origin/main
+2026-11-26T06:54:06.5654784Z ##[endgroup]
+2026-11-26T06:54:06.5655867Z ##[group]Determining the checkout info
+2026-11-26T06:54:06.5657775Z ##[endgroup]
+2026-11-26T06:54:06.5662233Z [command]/usr/bin/git sparse-checkout disable
+2026-11-26T06:54:06.5728071Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-26T06:54:06.5773067Z ##[group]Checking out the ref
+2026-11-26T06:54:06.5785339Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-11-26T06:54:06.6042141Z Switched to a new branch 'main'
+2026-11-26T06:54:06.6044955Z branch 'main' set up to track 'origin/main'.
+2026-11-26T06:54:06.6052812Z ##[endgroup]
+2026-11-26T06:54:06.6100827Z [command]/usr/bin/git log -1 --format=%H
+2026-11-26T06:54:06.6130990Z af24c9f2034852f1e69872c4f55042a4e1cacd9e
+2026-11-26T06:54:06.6370378Z ##[group]Run echo "Platform: $PLATFORM"
+2026-11-26T06:54:06.6371610Z [36;1mecho "Platform: $PLATFORM"[0m
+2026-11-26T06:54:06.6372631Z [36;1mecho "Target: $TARGET"[0m
+2026-11-26T06:54:06.6373624Z [36;1mecho "Runner: $(uname -a)"[0m
+2026-11-26T06:54:06.6375059Z [36;1mecho "Commit: $(git rev-parse HEAD)"[0m
+2026-11-26T06:54:06.6397720Z shell: /usr/bin/bash -e {0}
+2026-11-26T06:54:06.6398645Z env:
+2026-11-26T06:54:06.6399395Z   TARGET: RELEASE
+2026-11-26T06:54:06.6400203Z   PLATFORM: OPPO/A3Pkg
+2026-11-26T06:54:06.6401044Z ##[endgroup]
+2026-11-26T06:54:06.6470891Z Platform: OPPO/A3Pkg
+2026-11-26T06:54:06.6472115Z Target: RELEASE
+2026-11-26T06:54:06.6484834Z Runner: Linux runnervmeozm8 7.0.0-1017-azure #17~24.04.1-Ubuntu SMP PREEMPT Thu Sep 24 18:46:57 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+2026-11-26T06:54:06.6501117Z Commit: af24c9f2034852f1e69872c4f55042a4e1cacd9e
+2026-11-26T06:54:06.6653849Z ##[group]Run sudo apt-get update
+2026-11-26T06:54:06.6655106Z [36;1msudo apt-get update[0m
+2026-11-26T06:54:06.6656152Z [36;1msudo apt-get install -y --no-install-recommends \[0m
+2026-11-26T06:54:06.6657503Z [36;1m  build-essential gcc gcc-aarch64-linux-gnu libc6-dev-arm64-cross \[0m
+2026-11-26T06:54:06.6658911Z [36;1m  python3 python3-pip make git curl ca-certificates \[0m
+2026-11-26T06:54:06.6660298Z [36;1m  device-tree-compiler uuid-dev libssl-dev nasm[0m
+2026-11-26T06:54:06.6679467Z shell: /usr/bin/bash -e {0}
+2026-11-26T06:54:06.6680268Z env:
+2026-11-26T06:54:06.6680931Z   TARGET: RELEASE
+2026-11-26T06:54:06.6681659Z   PLATFORM: OPPO/A3Pkg
+2026-11-26T06:54:06.6682414Z ##[endgroup]
+2026-11-26T06:54:06.7545952Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-11-26T06:54:06.7863404Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-11-26T06:54:06.8535399Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [880 kB]
+2026-11-26T06:54:06.8697991Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [804 kB]
+2026-11-26T06:54:18.7568179Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-11-26T06:54:18.7584976Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-11-26T06:54:18.7628914Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-11-26T06:54:18.7644660Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-11-26T06:54:19.2710074Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1492 kB]
+2026-11-26T06:54:19.2836051Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [321 kB]
+2026-11-26T06:54:19.2842794Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1716 kB]
+2026-11-26T06:54:19.3966145Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [346 kB]
+2026-11-26T06:54:19.3983404Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1949 kB]
+2026-11-26T06:54:19.4057387Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [448 kB]
+2026-11-26T06:54:19.4082077Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1230 kB]
+2026-11-26T06:54:19.5006793Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [243 kB]
+2026-11-26T06:54:19.5021136Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1233 kB]
+2026-11-26T06:54:19.5074632Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [249 kB]
+2026-11-26T06:54:19.5535284Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1842 kB]
+2026-11-26T06:54:19.5609258Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [429 kB]
+2026-11-26T06:54:26.7162405Z Fetched 13.6 MB in 13s (1009 kB/s)
+2026-11-26T06:54:27.8866449Z Reading package lists...
+2026-11-26T06:54:27.9213239Z Reading package lists...
+2026-11-26T06:54:28.2357608Z Building dependency tree...
+2026-11-26T06:54:28.2364160Z Reading state information...
+2026-11-26T06:54:28.4703223Z gcc is already the newest version (4:13.2.0-7ubuntu1).
+2026-11-26T06:54:28.4703855Z python3 is already the newest version (3.12.3-0ubuntu2.1).
+2026-11-26T06:54:28.4705474Z python3-pip is already the newest version (24.0+dfsg-1ubuntu1.3).
+2026-11-26T06:54:28.4705917Z make is already the newest version (4.3-4.1build2).
+2026-11-26T06:54:28.4706364Z git is already the newest version (1:2.56.1-0ppa1~ubuntu24.04.1).
+2026-11-26T06:54:28.4706791Z git set to manually installed.
+2026-11-26T06:54:28.4707178Z curl is already the newest version (8.5.0-2ubuntu10.16).
+2026-11-26T06:54:28.4707668Z ca-certificates is already the newest version (20260816ubuntu0.24.04.2).
+2026-11-26T06:54:28.4708589Z libssl-dev is already the newest version (3.0.13-0ubuntu3.16).
+2026-11-26T06:54:28.4709227Z The following additional packages will be installed:
+2026-11-26T06:54:28.4709740Z   binutils-aarch64-linux-gnu cpp-13-aarch64-linux-gnu cpp-aarch64-linux-gnu
+2026-11-26T06:54:28.4710387Z   gcc-13-aarch64-linux-gnu gcc-13-aarch64-linux-gnu-base gcc-13-cross-base
+2026-11-26T06:54:28.4710947Z   gcc-14-cross-base libasan8-arm64-cross libatomic1-arm64-cross
+2026-11-26T06:54:28.4711561Z   libc6-arm64-cross libfdt1 libgcc-13-dev-arm64-cross libgcc-s1-arm64-cross
+2026-11-26T06:54:28.4712135Z   libgomp1-arm64-cross libhwasan0-arm64-cross libitm1-arm64-cross
+2026-11-26T06:54:28.4712673Z   liblsan0-arm64-cross libstdc++6-arm64-cross libtsan2-arm64-cross
+2026-11-26T06:54:28.4714677Z   libubsan1-arm64-cross linux-libc-dev-arm64-cross
+2026-11-26T06:54:28.4723985Z Suggested packages:
+2026-11-26T06:54:28.4724816Z   binutils-doc gcc-13-locales cpp-13-doc cpp-doc gcc-13-doc manpages-dev
+2026-11-26T06:54:28.4725327Z   gdb-aarch64-linux-gnu gcc-doc
+2026-11-26T06:54:28.5186928Z The following NEW packages will be installed:
+2026-11-26T06:54:28.5187530Z   binutils-aarch64-linux-gnu build-essential cpp-13-aarch64-linux-gnu
+2026-11-26T06:54:28.5187994Z   cpp-aarch64-linux-gnu device-tree-compiler gcc-13-aarch64-linux-gnu
+2026-11-26T06:54:28.5188381Z   gcc-13-aarch64-linux-gnu-base gcc-13-cross-base gcc-14-cross-base
+2026-11-26T06:54:28.5189158Z   gcc-aarch64-linux-gnu libasan8-arm64-cross libatomic1-arm64-cross
+2026-11-26T06:54:28.5189865Z   libc6-arm64-cross libc6-dev-arm64-cross libfdt1 libgcc-13-dev-arm64-cross
+2026-11-26T06:54:28.5190954Z   libgcc-s1-arm64-cross libgomp1-arm64-cross libhwasan0-arm64-cross
+2026-11-26T06:54:28.5196004Z   libitm1-arm64-cross liblsan0-arm64-cross libstdc++6-arm64-cross
+2026-11-26T06:54:28.5202169Z   libtsan2-arm64-cross libubsan1-arm64-cross linux-libc-dev-arm64-cross nasm
+2026-11-26T06:54:28.5202670Z   uuid-dev
+2026-11-26T06:54:28.5451771Z 0 upgraded, 27 newly installed, 0 to remove and 90 not upgraded.
+2026-11-26T06:54:28.5452210Z Need to get 45.9 MB of archives.
+2026-11-26T06:54:28.5452490Z After this operation, 172 MB of additional disk space will be used.
+2026-11-26T06:54:28.5452820Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-11-26T06:54:43.4329155Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 build-essential amd64 12.10ubuntu1 [4928 B]
+2026-11-26T06:54:43.6875170Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 gcc-13-aarch64-linux-gnu-base amd64 13.3.0-6ubuntu2~24.04.1cross1 [51.9 kB]
+2026-11-26T06:54:44.1394964Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 cpp-13-aarch64-linux-gnu amd64 13.3.0-6ubuntu2~24.04.1cross1 [10.8 MB]
+2026-11-26T06:56:16.3429661Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 cpp-aarch64-linux-gnu amd64 4:13.2.0-7ubuntu1 [5332 B]
+2026-11-26T06:56:16.8972338Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 binutils-aarch64-linux-gnu amd64 2.42-4ubuntu2.10 [3711 kB]
+2026-11-26T06:56:58.1168468Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 gcc-13-cross-base all 13.3.0-6ubuntu2~24.04.1cross1 [46.5 kB]
+2026-11-26T06:56:58.6750329Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 gcc-14-cross-base all 14.2.0-4ubuntu2~24.04.1cross1 [46.1 kB]
+2026-11-26T06:56:59.5285964Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libc6-arm64-cross all 2.39-0ubuntu8cross1 [1197 kB]
+2026-11-26T06:57:11.7113005Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libgcc-s1-arm64-cross all 14.2.0-4ubuntu2~24.04.1cross1 [61.9 kB]
+2026-11-26T06:57:12.5047077Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libgomp1-arm64-cross all 14.2.0-4ubuntu2~24.04.1cross1 [110 kB]
+2026-11-26T06:57:13.8321753Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libitm1-arm64-cross all 14.2.0-4ubuntu2~24.04.1cross1 [31.1 kB]
+2026-11-26T06:57:14.3578145Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libatomic1-arm64-cross all 14.2.0-4ubuntu2~24.04.1cross1 [11.5 kB]
+2026-11-26T06:57:16.0549013Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libasan8-arm64-cross all 14.2.0-4ubuntu2~24.04.1cross1 [524 kB]
+2026-11-26T06:57:21.4572957Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 liblsan0-arm64-cross all 14.2.0-4ubuntu2~24.04.1cross1 [238 kB]
+2026-11-26T06:57:24.0457744Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libtsan2-arm64-cross all 14.2.0-4ubuntu2~24.04.1cross1 [500 kB]
+2026-11-26T06:57:29.3041399Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libstdc++6-arm64-cross all 14.2.0-4ubuntu2~24.04.1cross1 [659 kB]
+2026-11-26T06:57:35.8636442Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libubsan1-arm64-cross all 14.2.0-4ubuntu2~24.04.1cross1 [219 kB]
+2026-11-26T06:57:38.0764758Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libhwasan0-arm64-cross all 14.2.0-4ubuntu2~24.04.1cross1 [304 kB]
+2026-11-26T06:57:41.0771608Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libgcc-13-dev-arm64-cross all 13.3.0-6ubuntu2~24.04.1cross1 [2616 kB]
+2026-11-26T06:58:04.7781355Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 gcc-13-aarch64-linux-gnu amd64 13.3.0-6ubuntu2~24.04.1cross1 [21.1 MB]
+2026-11-26T07:00:44.8539876Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 gcc-aarch64-linux-gnu amd64 4:13.2.0-7ubuntu1 [1210 B]
+2026-11-26T07:00:44.9558937Z Get:23 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 nasm amd64 2.16.01-1build1 [459 kB]
+2026-11-26T07:00:48.4531103Z Get:24 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libfdt1 amd64 1.7.0-2build1 [20.1 kB]
+2026-11-26T07:00:48.7942540Z Get:25 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 device-tree-compiler amd64 1.7.0-2build1 [228 kB]
+2026-11-26T07:00:50.6806861Z Get:26 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 linux-libc-dev-arm64-cross all 6.8.0-25.25cross1 [1375 kB]
+2026-11-26T07:01:01.5188361Z Get:27 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libc6-dev-arm64-cross all 2.39-0ubuntu8cross1 [1629 kB]
+2026-11-26T07:01:13.4698961Z Get:28 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 uuid-dev amd64 2.39.3-9ubuntu6.6 [33.5 kB]
+2026-11-26T07:01:14.0640427Z Fetched 45.9 MB in 6min 45s (113 kB/s)
+2026-11-26T07:01:14.0920594Z Selecting previously unselected package build-essential.
+2026-11-26T07:01:14.1101889Z (Reading database ... 
+2026-11-26T07:01:14.1102502Z (Reading database ... 5%
+2026-11-26T07:01:14.1102817Z (Reading database ... 10%
+2026-11-26T07:01:14.1103025Z (Reading database ... 15%
+2026-11-26T07:01:14.1103212Z (Reading database ... 20%
+2026-11-26T07:01:14.1103398Z (Reading database ... 25%
+2026-11-26T07:01:14.1103579Z (Reading database ... 30%
+2026-11-26T07:01:14.1103765Z (Reading database ... 35%
+2026-11-26T07:01:14.1103942Z (Reading database ... 40%
+2026-11-26T07:01:14.1104277Z (Reading database ... 45%
+2026-11-26T07:01:14.1104727Z (Reading database ... 50%
+2026-11-26T07:01:14.1146247Z (Reading database ... 55%
+2026-11-26T07:01:14.2471267Z (Reading database ... 60%
+2026-11-26T07:01:14.4520672Z (Reading database ... 65%
+2026-11-26T07:01:14.5652714Z (Reading database ... 70%
+2026-11-26T07:01:14.7495835Z (Reading database ... 75%
+2026-11-26T07:01:14.8910512Z (Reading database ... 80%
+2026-11-26T07:01:15.0976325Z (Reading database ... 85%
+2026-11-26T07:01:15.2851172Z (Reading database ... 90%
+2026-11-26T07:01:15.4541162Z (Reading database ... 95%
+2026-11-26T07:01:15.4541537Z (Reading database ... 100%
+2026-11-26T07:01:15.4541893Z (Reading database ... 217092 files and directories currently installed.)
+2026-11-26T07:01:15.4583800Z Preparing to unpack .../00-build-essential_12.10ubuntu1_amd64.deb ...
+2026-11-26T07:01:15.4711347Z Unpacking build-essential (12.10ubuntu1) ...
+2026-11-26T07:01:15.4903650Z Selecting previously unselected package gcc-13-aarch64-linux-gnu-base:amd64.
+2026-11-26T07:01:15.5026754Z Preparing to unpack .../01-gcc-13-aarch64-linux-gnu-base_13.3.0-6ubuntu2~24.04.1cross1_amd64.deb ...
+2026-11-26T07:01:15.5032704Z Unpacking gcc-13-aarch64-linux-gnu-base:amd64 (13.3.0-6ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:15.5234034Z Selecting previously unselected package cpp-13-aarch64-linux-gnu.
+2026-11-26T07:01:15.5352190Z Preparing to unpack .../02-cpp-13-aarch64-linux-gnu_13.3.0-6ubuntu2~24.04.1cross1_amd64.deb ...
+2026-11-26T07:01:15.5383946Z Unpacking cpp-13-aarch64-linux-gnu (13.3.0-6ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:15.8028329Z Selecting previously unselected package cpp-aarch64-linux-gnu.
+2026-11-26T07:01:15.8154107Z Preparing to unpack .../03-cpp-aarch64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb ...
+2026-11-26T07:01:15.8180211Z Unpacking cpp-aarch64-linux-gnu (4:13.2.0-7ubuntu1) ...
+2026-11-26T07:01:15.8372834Z Selecting previously unselected package binutils-aarch64-linux-gnu.
+2026-11-26T07:01:15.8493013Z Preparing to unpack .../04-binutils-aarch64-linux-gnu_2.42-4ubuntu2.10_amd64.deb ...
+2026-11-26T07:01:15.8507236Z Unpacking binutils-aarch64-linux-gnu (2.42-4ubuntu2.10) ...
+2026-11-26T07:01:16.0100880Z Selecting previously unselected package gcc-13-cross-base.
+2026-11-26T07:01:16.0227703Z Preparing to unpack .../05-gcc-13-cross-base_13.3.0-6ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.0233422Z Unpacking gcc-13-cross-base (13.3.0-6ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.0422290Z Selecting previously unselected package gcc-14-cross-base.
+2026-11-26T07:01:16.0544754Z Preparing to unpack .../06-gcc-14-cross-base_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.0550551Z Unpacking gcc-14-cross-base (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.0737432Z Selecting previously unselected package libc6-arm64-cross.
+2026-11-26T07:01:16.0857180Z Preparing to unpack .../07-libc6-arm64-cross_2.39-0ubuntu8cross1_all.deb ...
+2026-11-26T07:01:16.0864175Z Unpacking libc6-arm64-cross (2.39-0ubuntu8cross1) ...
+2026-11-26T07:01:16.1378150Z Selecting previously unselected package libgcc-s1-arm64-cross.
+2026-11-26T07:01:16.1500434Z Preparing to unpack .../08-libgcc-s1-arm64-cross_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.1508617Z Unpacking libgcc-s1-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.1698734Z Selecting previously unselected package libgomp1-arm64-cross.
+2026-11-26T07:01:16.1819072Z Preparing to unpack .../09-libgomp1-arm64-cross_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.1826036Z Unpacking libgomp1-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.2031264Z Selecting previously unselected package libitm1-arm64-cross.
+2026-11-26T07:01:16.2150516Z Preparing to unpack .../10-libitm1-arm64-cross_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.2157038Z Unpacking libitm1-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.2350866Z Selecting previously unselected package libatomic1-arm64-cross.
+2026-11-26T07:01:16.2470994Z Preparing to unpack .../11-libatomic1-arm64-cross_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.2477021Z Unpacking libatomic1-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.2667052Z Selecting previously unselected package libasan8-arm64-cross.
+2026-11-26T07:01:16.2787164Z Preparing to unpack .../12-libasan8-arm64-cross_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.2793819Z Unpacking libasan8-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.3200393Z Selecting previously unselected package liblsan0-arm64-cross.
+2026-11-26T07:01:16.3323666Z Preparing to unpack .../13-liblsan0-arm64-cross_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.3330893Z Unpacking liblsan0-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.3575383Z Selecting previously unselected package libtsan2-arm64-cross.
+2026-11-26T07:01:16.3695863Z Preparing to unpack .../14-libtsan2-arm64-cross_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.3702323Z Unpacking libtsan2-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.4054145Z Selecting previously unselected package libstdc++6-arm64-cross.
+2026-11-26T07:01:16.4175744Z Preparing to unpack .../15-libstdc++6-arm64-cross_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.4181982Z Unpacking libstdc++6-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.4614761Z Selecting previously unselected package libubsan1-arm64-cross.
+2026-11-26T07:01:16.4736967Z Preparing to unpack .../16-libubsan1-arm64-cross_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.4743120Z Unpacking libubsan1-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.4993372Z Selecting previously unselected package libhwasan0-arm64-cross.
+2026-11-26T07:01:16.5115232Z Preparing to unpack .../17-libhwasan0-arm64-cross_14.2.0-4ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.5120860Z Unpacking libhwasan0-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.5387711Z Selecting previously unselected package libgcc-13-dev-arm64-cross.
+2026-11-26T07:01:16.5507528Z Preparing to unpack .../18-libgcc-13-dev-arm64-cross_13.3.0-6ubuntu2~24.04.1cross1_all.deb ...
+2026-11-26T07:01:16.5514989Z Unpacking libgcc-13-dev-arm64-cross (13.3.0-6ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:16.6897168Z Selecting previously unselected package gcc-13-aarch64-linux-gnu.
+2026-11-26T07:01:16.7022799Z Preparing to unpack .../19-gcc-13-aarch64-linux-gnu_13.3.0-6ubuntu2~24.04.1cross1_amd64.deb ...
+2026-11-26T07:01:16.7054623Z Unpacking gcc-13-aarch64-linux-gnu (13.3.0-6ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.1652360Z Selecting previously unselected package gcc-aarch64-linux-gnu.
+2026-11-26T07:01:17.1778514Z Preparing to unpack .../20-gcc-aarch64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb ...
+2026-11-26T07:01:17.1784054Z Unpacking gcc-aarch64-linux-gnu (4:13.2.0-7ubuntu1) ...
+2026-11-26T07:01:17.1977799Z Selecting previously unselected package nasm.
+2026-11-26T07:01:17.2097661Z Preparing to unpack .../21-nasm_2.16.01-1build1_amd64.deb ...
+2026-11-26T07:01:17.2105358Z Unpacking nasm (2.16.01-1build1) ...
+2026-11-26T07:01:17.2495799Z Selecting previously unselected package libfdt1:amd64.
+2026-11-26T07:01:17.2621012Z Preparing to unpack .../22-libfdt1_1.7.0-2build1_amd64.deb ...
+2026-11-26T07:01:17.2628266Z Unpacking libfdt1:amd64 (1.7.0-2build1) ...
+2026-11-26T07:01:17.2813447Z Selecting previously unselected package device-tree-compiler.
+2026-11-26T07:01:17.2933550Z Preparing to unpack .../23-device-tree-compiler_1.7.0-2build1_amd64.deb ...
+2026-11-26T07:01:17.2940868Z Unpacking device-tree-compiler (1.7.0-2build1) ...
+2026-11-26T07:01:17.3168501Z Selecting previously unselected package linux-libc-dev-arm64-cross.
+2026-11-26T07:01:17.3289031Z Preparing to unpack .../24-linux-libc-dev-arm64-cross_6.8.0-25.25cross1_all.deb ...
+2026-11-26T07:01:17.3295925Z Unpacking linux-libc-dev-arm64-cross (6.8.0-25.25cross1) ...
+2026-11-26T07:01:17.5082253Z Selecting previously unselected package libc6-dev-arm64-cross.
+2026-11-26T07:01:17.5211370Z Preparing to unpack .../25-libc6-dev-arm64-cross_2.39-0ubuntu8cross1_all.deb ...
+2026-11-26T07:01:17.5216479Z Unpacking libc6-dev-arm64-cross (2.39-0ubuntu8cross1) ...
+2026-11-26T07:01:17.6362881Z Selecting previously unselected package uuid-dev:amd64.
+2026-11-26T07:01:17.6490730Z Preparing to unpack .../26-uuid-dev_2.39.3-9ubuntu6.6_amd64.deb ...
+2026-11-26T07:01:17.6501299Z Unpacking uuid-dev:amd64 (2.39.3-9ubuntu6.6) ...
+2026-11-26T07:01:17.7022914Z Setting up binutils-aarch64-linux-gnu (2.42-4ubuntu2.10) ...
+2026-11-26T07:01:17.7042463Z Setting up gcc-14-cross-base (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7058907Z Setting up libfdt1:amd64 (1.7.0-2build1) ...
+2026-11-26T07:01:17.7074719Z Setting up uuid-dev:amd64 (2.39.3-9ubuntu6.6) ...
+2026-11-26T07:01:17.7090725Z Setting up gcc-13-cross-base (13.3.0-6ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7105929Z Setting up libc6-arm64-cross (2.39-0ubuntu8cross1) ...
+2026-11-26T07:01:17.7121296Z Setting up device-tree-compiler (1.7.0-2build1) ...
+2026-11-26T07:01:17.7139286Z Setting up libitm1-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7156590Z Setting up nasm (2.16.01-1build1) ...
+2026-11-26T07:01:17.7172872Z Setting up linux-libc-dev-arm64-cross (6.8.0-25.25cross1) ...
+2026-11-26T07:01:17.7189458Z Setting up build-essential (12.10ubuntu1) ...
+2026-11-26T07:01:17.7205786Z Setting up gcc-13-aarch64-linux-gnu-base:amd64 (13.3.0-6ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7220906Z Setting up libgcc-s1-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7236047Z Setting up libatomic1-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7251041Z Setting up liblsan0-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7265219Z Setting up libgomp1-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7278786Z Setting up cpp-13-aarch64-linux-gnu (13.3.0-6ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7295687Z Setting up libhwasan0-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7311025Z Setting up libc6-dev-arm64-cross (2.39-0ubuntu8cross1) ...
+2026-11-26T07:01:17.7327365Z Setting up libstdc++6-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7342786Z Setting up cpp-aarch64-linux-gnu (4:13.2.0-7ubuntu1) ...
+2026-11-26T07:01:17.7358219Z Setting up libasan8-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7374206Z Setting up libtsan2-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7392640Z Setting up libubsan1-arm64-cross (14.2.0-4ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7408807Z Setting up libgcc-13-dev-arm64-cross (13.3.0-6ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7423576Z Setting up gcc-13-aarch64-linux-gnu (13.3.0-6ubuntu2~24.04.1cross1) ...
+2026-11-26T07:01:17.7439973Z Setting up gcc-aarch64-linux-gnu (4:13.2.0-7ubuntu1) ...
+2026-11-26T07:01:17.7459736Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-11-26T07:01:17.7479104Z Not building database; man-db/auto-update is not 'true'.
+2026-11-26T07:01:17.7489280Z Processing triggers for libc-bin (2.39-0ubuntu8.12) ...
+2026-11-26T07:01:18.4613914Z 
+2026-11-26T07:01:18.4614436Z Running kernel seems to be up-to-date.
+2026-11-26T07:01:18.4614854Z 
+2026-11-26T07:01:18.4614949Z No services need to be restarted.
+2026-11-26T07:01:18.4615094Z 
+2026-11-26T07:01:18.4615185Z No containers need to be restarted.
+2026-11-26T07:01:18.4615370Z 
+2026-11-26T07:01:18.4615471Z No user sessions are running outdated binaries.
+2026-11-26T07:01:18.4615645Z 
+2026-11-26T07:01:18.4615797Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-11-26T07:01:19.4114372Z ##[group]Run set -euo pipefail
+2026-11-26T07:01:19.4114940Z [36;1mset -euo pipefail[0m
+2026-11-26T07:01:19.4115178Z [36;1m# Pinned by the base repo's .gitmodules at fdb0ef9.[0m
+2026-11-26T07:01:19.4115488Z [36;1mED2_COMMIT=e7aac7fc137e247edad22f7ee53b9a1fba227397[0m
+2026-11-26T07:01:19.4115800Z [36;1mEDP_COMMIT=982212662c71b6c734b7578526071d6b78da3bcc[0m
+2026-11-26T07:01:19.4116112Z [36;1mfor pair in "edk2:$ED2_COMMIT" "edk2-platforms:$EDP_COMMIT"; do[0m
+2026-11-26T07:01:19.4116409Z [36;1m  name=${pair%%:*}; sha=${pair##*:}[0m
+2026-11-26T07:01:19.4116682Z [36;1m  url="https://github.com/tianocore/$name.git"[0m
+2026-11-26T07:01:19.4116932Z [36;1m  echo "Fetching $name @ $sha"[0m
+2026-11-26T07:01:19.4117152Z [36;1m  mkdir -p "Common/$name"[0m
+2026-11-26T07:01:19.4117542Z [36;1m  git -C "Common/$name" init -q[0m
+2026-11-26T07:01:19.4117836Z [36;1m  git -C "Common/$name" remote add origin "$url" 2>/dev/null || true[0m
+2026-11-26T07:01:19.4118209Z [36;1m  git -C "Common/$name" fetch --depth=1 -q origin "$sha"[0m
+2026-11-26T07:01:19.4118521Z [36;1m  git -C "Common/$name" checkout -q --detach FETCH_HEAD[0m
+2026-11-26T07:01:19.4118770Z [36;1mdone[0m
+2026-11-26T07:01:19.4119013Z [36;1m# submodules expect edk2Platforms at Common/edk2-platforms (ok).[0m
+2026-11-26T07:01:19.4137537Z shell: /usr/bin/bash -e {0}
+2026-11-26T07:01:19.4137744Z env:
+2026-11-26T07:01:19.4137898Z   TARGET: RELEASE
+2026-11-26T07:01:19.4138084Z   PLATFORM: OPPO/A3Pkg
+2026-11-26T07:01:19.4138271Z ##[endgroup]
+2026-11-26T07:01:19.4173894Z Fetching edk2 @ e7aac7fc137e247edad22f7ee53b9a1fba227397
+2026-11-26T07:01:24.1395667Z Fetching edk2-platforms @ 982212662c71b6c734b7578526071d6b78da3bcc
+2026-11-26T07:01:26.3224133Z ##[group]Run set -euo pipefail
+2026-11-26T07:01:26.3224410Z [36;1mset -euo pipefail[0m
+2026-11-26T07:01:26.3224918Z [36;1mpython3 -m pip install --break-system-packages \[0m
+2026-11-26T07:01:26.3225221Z [36;1m  edk2toolext edk2toollib pyyaml[0m
+2026-11-26T07:01:26.3242643Z shell: /usr/bin/bash -e {0}
+2026-11-26T07:01:26.3242868Z env:
+2026-11-26T07:01:26.3243023Z   TARGET: RELEASE
+2026-11-26T07:01:26.3243203Z   PLATFORM: OPPO/A3Pkg
+2026-11-26T07:01:26.3243386Z ##[endgroup]
+2026-11-26T07:01:26.6580371Z Defaulting to user installation because normal site-packages is not writeable
+2026-11-26T07:01:27.0519814Z ERROR: Could not find a version that satisfies the requirement edk2toolext (from versions: none)
+2026-11-26T07:01:27.0520490Z ERROR: No matching distribution found for edk2toolext
+2026-11-26T07:01:27.0984737Z ##[error]Process completed with exit code 1.
+2026-11-26T07:01:27.1072341Z ##[group]Run actions/upload-artifact@v4
+2026-11-26T07:01:27.1072578Z with:
+2026-11-26T07:01:27.1072747Z   name: build-log-2
+2026-11-26T07:01:27.1072919Z   path: build.log
+2026-11-26T07:01:27.1073119Z   if-no-files-found: warn
+2026-11-26T07:01:27.1073308Z   retention-days: 30
+2026-11-26T07:01:27.1073485Z   compression-level: 6
+2026-11-26T07:01:27.1073674Z   overwrite: false
+2026-11-26T07:01:27.1073849Z   include-hidden-files: false
+2026-11-26T07:01:27.1074036Z env:
+2026-11-26T07:01:27.1074200Z   TARGET: RELEASE
+2026-11-26T07:01:27.1074370Z   PLATFORM: OPPO/A3Pkg
+2026-11-26T07:01:27.1074719Z ##[endgroup]
+2026-11-26T07:01:27.2457036Z (node:2974) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-26T07:01:27.2457950Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-26T07:01:27.2482558Z ##[warning]No files were found with the provided path: build.log. No artifacts will be uploaded.
+2026-11-26T07:01:27.2687521Z Post job cleanup.
+2026-11-26T07:01:27.3444894Z [command]/usr/bin/git version
+2026-11-26T07:01:27.3484405Z git version 2.56.1
+2026-11-26T07:01:27.3518111Z Temporarily overriding HOME='/home/runner/work/_temp/51e93cc3-70c0-4a4c-9b99-d4a527700059' before making global git config changes
+2026-11-26T07:01:27.3519149Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-26T07:01:27.3523103Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/edk2-mt6771/edk2-mt6771
+2026-11-26T07:01:27.3560314Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-26T07:01:27.3605580Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-26T07:01:27.3821262Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-26T07:01:27.3850066Z http.https://github.com/.extraheader
+2026-11-26T07:01:27.3859981Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-26T07:01:27.3901264Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-26T07:01:27.4151506Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-26T07:01:27.4193587Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-26T07:01:27.4547792Z Cleaning up orphan processes
+2026-11-26T07:01:27.4850710Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

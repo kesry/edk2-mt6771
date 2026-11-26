@@ -72,7 +72,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m pip install --break-system-packages \
-            edk2toolext edk2toollib pyyaml
+            edk2-pytool-extensions edk2-pytool-library pyyaml
 
       - name: Initialize EDK2 environment
         run: |
