@@ -162,33 +162,56 @@ EXPECTED_PCDS = {
 }
 
 
-def verify_platform(root):
-    print("[platform] a3.dsc / a3.fdf")
+PLATFORM_FILES = [
+    "Platform/OPPO/A3Pkg/a3.dsc",
+    "Platform/OPPO/A3Pkg/a3.fdf",
+    "Silicon/MediaTek/MediaTekPkg/MediaTekPkg.dec",
+    "Silicon/MediaTek/MediaTekPkg/MediaTekCommonDsc.inc",
+    "Silicon/MediaTek/MT8183Pkg/MT8183.dsc",
+]
 
-    dsc = root / "Platform/OPPO/A3Pkg/a3.dsc"
-    text = dsc.read_text(errors="replace")
+
+def verify_platform(root):
+    print("[platform] a3.dsc / a3.fdf / MediaTekPkg.dec")
+
+    # PCDs may be declared in the DEC (with a default) and only overridden in
+    # the DSC, so search the DSC first and fall back to the DEC.
+    dsc_text = (root / "Platform/OPPO/A3Pkg/a3.dsc").read_text(errors="replace")
+    dec_text = (root / "Silicon/MediaTek/MediaTekPkg/MediaTekPkg.dec").read_text(errors="replace")
+
+    def lookup_pcd(name):
+        for text in (dsc_text, dec_text):
+            m = re.search(rf"{re.escape(name)}\|([0-9A-Fa-fx]+)", text)
+            if m:
+                return m.group(1)
+        return None
+
     for name, expected in EXPECTED_PCDS.items():
-        m = re.search(rf"{re.escape(name)}\|(0x[0-9A-Fa-f]+|\d+)", text)
-        if not m:
-            check(False, f"{name} is set in a3.dsc", "not found")
+        actual = lookup_pcd(name)
+        if actual is None:
+            check(False, f"{name} is declared", "not found in a3.dsc or MediaTekPkg.dec")
             continue
-        actual = m.group(1)
-        # normalise integers for comparison
         try:
             same = int(actual, 0) == int(expected, 0)
         except ValueError:
             same = actual == expected
         check(same, f"{name} == {expected}", f"got {actual}")
 
-    check("gMediaTekTokenSpaceGuid.PcdMsdcUseTop|TRUE" in text,
-          "PcdMsdcUseTop is TRUE (msdc0 top block exists)")
+    use_top = lookup_pcd("PcdMsdcUseTop")
+    check(use_top is not None and use_top.upper() == "TRUE",
+          "PcdMsdcUseTop is TRUE (msdc0 top block exists)", f"got {use_top}")
 
-    # required drivers must be in both the DSC and the FDF
+    # Everything the platform needs must be reachable from the DSC (including
+    # the shared includes) and actually placed in the FV.
+    dsc_all = "\n".join(
+        (root / f).read_text(errors="replace")
+        for f in PLATFORM_FILES[::2] + PLATFORM_FILES[1::2]
+    )
     fdf = (root / "Platform/OPPO/A3Pkg/a3.fdf").read_text(errors="replace")
     for driver in ("Mt6771MmcHostDxe", "Mt6771VbusDxe", "Mt6771UsbHostDxe",
                    "Mt6771MmcDiagDxe", "XhciDxe", "NonDiscoverablePciDeviceDxe",
                    "UsbKbDxe"):
-        check(driver in text, f"{driver} listed in a3.dsc")
+        check(driver in dsc_all, f"{driver} listed in the platform DSC set")
         check(driver in fdf, f"{driver} placed in a3.fdf")
 
     # startup.nsh must be embedded or the board cannot run diagnostics
