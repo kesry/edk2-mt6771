@@ -26,6 +26,11 @@
 
 STATIC UINTN  mMmcTraceCount;
 
+#define MMC_TRACE_LINES  40
+STATIC CHAR16  mMmcTraceBuf[MMC_TRACE_LINES][112];
+STATIC UINTN   mMmcTraceUsed;
+STATIC UINTN   mMmcReplays;
+
 //
 // Print to the UEFI console: the RELEASE build routes DEBUG() to the unwired
 // UART0, so on-screen tracing is the only way to see what the card init does.
@@ -46,7 +51,43 @@ MmcTrace (
   VA_START (Args, Format);
   UnicodeVSPrint (Buffer, sizeof (Buffer), Format, Args);
   VA_END (Args);
+
+  //
+  // Buffer for replay: drivers are dispatched before BDS clears the screen,
+  // so printing now would be wiped before anyone can read it.
+  //
+  if (mMmcTraceUsed < MMC_TRACE_LINES) {
+    StrCpyS (mMmcTraceBuf[mMmcTraceUsed], 112, Buffer);
+    mMmcTraceUsed++;
+  }
   gST->ConOut->OutputString (gST->ConOut, Buffer);
+}
+
+STATIC
+VOID
+EFIAPI
+MmcTraceReplay (
+  IN EFI_EVENT  Event,
+  IN VOID       *Context
+  )
+{
+  UINTN  i;
+
+  if (mMmcReplays >= 4) {
+    gBS->SetTimer (Event, TimerCancel, 0);
+    return;
+  }
+  mMmcReplays++;
+
+  if ((gST == NULL) || (gST->ConOut == NULL)) {
+    return;
+  }
+
+  gST->ConOut->OutputString (gST->ConOut, L"\r\n==== A3 MMC trace ====\r\n");
+  for (i = 0; i < mMmcTraceUsed; i++) {
+    gST->ConOut->OutputString (gST->ConOut, mMmcTraceBuf[i]);
+  }
+  gST->ConOut->OutputString (gST->ConOut, L"==== end MMC trace ====\r\n");
 }
 
 
@@ -981,6 +1022,20 @@ Mt6771MmcHostDxeInitialize (
   Host->WriteBlockData  = Mt6771MmcWriteBlockData;
   Host->SetIos          = Mt6771MmcSetIos;
   Host->IsMultiBlock    = Mt6771MmcIsMultiBlock;
+
+  {
+    EFI_EVENT  TraceEvent = NULL;
+    if (!EFI_ERROR (gBS->CreateEvent (
+                      EVT_TIMER | EVT_NOTIFY_SIGNAL,
+                      TPL_CALLBACK,
+                      MmcTraceReplay,
+                      NULL,
+                      &TraceEvent
+                      )))
+    {
+      gBS->SetTimer (TraceEvent, TimerPeriodic, 30000000u);   // 3 s
+    }
+  }
 
   mHostHandle = NULL;
   Status = gBS->InstallProtocolInterface (
