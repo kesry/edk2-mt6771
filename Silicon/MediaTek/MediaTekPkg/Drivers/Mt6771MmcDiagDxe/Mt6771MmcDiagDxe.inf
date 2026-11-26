@@ -1,0 +1,37 @@
+## @file
+#  OPPO A3 eMMC / GPT diagnostic printer.
+#
+#  Copyright (c) 2026, kesry. All rights reserved.
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Mt6771MmcDiagDxe
+  FILE_GUID                      = 9B7C2E64-41DA-4B08-8E75-63A0F2C51D94
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = Mt6771MmcDiagDxeInitialize
+
+[Sources]
+  Mt6771MmcDiagDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  MemoryAllocationLib
+  PrintLib
+  TimerLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  UefiLib
+
+[Protocols]
+  gEfiBlockIoProtocolGuid
+
+[Depex]
+  gEfiBlockIoProtocolGuid
