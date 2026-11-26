@@ -1,0 +1,33 @@
+## @file
+#  MT6771 USB host (MTU3/xHCI) bring-up + non-discoverable xHCI registration.
+#
+#  Copyright (c) 2026, kesry. All rights reserved.
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Mt6771UsbHostDxe
+  FILE_GUID                      = 8C3B5D74-2A61-4F0B-9E52-6D1C4A8F3B90
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = Mt6771UsbHostDxeInitialize
+
+[Sources]
+  Mt6771UsbHostDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  BaseLib
+  DebugLib
+  IoLib
+  TimerLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  UefiLib
+  NonDiscoverableDeviceRegistrationLib
+
+[Depex]
+  TRUE

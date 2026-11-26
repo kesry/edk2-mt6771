@@ -30,8 +30,12 @@
 
 [LibraryClasses]
   PlatformMemoryMapLib|A3Pkg/Library/PlatformMemoryMapLib/PlatformMemoryMapLib.inf
+  NonDiscoverableDeviceRegistrationLib|MdeModulePkg/Library/NonDiscoverableDeviceRegistrationLib/NonDiscoverableDeviceRegistrationLib.inf
 
 [Components.common]
+  MediaTekPkg/Drivers/Mt6771UsbHostDxe/Mt6771UsbHostDxe.inf
+  MdeModulePkg/Bus/Pci/NonDiscoverablePciDeviceDxe/NonDiscoverablePciDeviceDxe.inf
+  MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
   MediaTekPkg/Drivers/Mt6771MmcHostDxe/Mt6771MmcHostDxe.inf
   EmbeddedPkg/Universal/MmcDxe/MmcDxe.inf
 
