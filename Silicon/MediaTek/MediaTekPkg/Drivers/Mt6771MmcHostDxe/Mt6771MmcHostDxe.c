@@ -982,7 +982,13 @@ Mt6771MmcHostInit (
   MsdcClearBits (MSDC_PATCH_BIT2, MSDC_PB2_CFGRESP);
   MsdcSetBits (MSDC_PATCH_BIT2, MSDC_PB2_CFGCRCSTS);
 
-  mHost.SclkHz = mHost.SourceClockHz;
+  //
+  // Identification must run at a slow card clock. MmcDxe calls
+  // SetIos(0, 1, EMMCBACKWARD) while identifying, which leaves the clock
+  // untouched, so without this the card would be addressed at the full
+  // source rate (~400 MHz) and every response comes back as a CRC error.
+  //
+  MsdcSetClock (400000u);
   MsdcSetTimeout ();
 
   MmcTrace (
