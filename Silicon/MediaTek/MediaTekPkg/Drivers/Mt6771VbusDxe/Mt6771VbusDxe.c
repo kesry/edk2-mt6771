@@ -269,7 +269,7 @@ I2cPrepare (
   VOID
   )
 {
-  I2cWrite (I2C_INTR_MASK, 0x0000);
+  I2cWrite (I2C_INTR_MASK, I2C_INTR_ALL);
   I2cWrite (I2C_INTR_STAT, I2C_INTR_ALL);
   I2cWrite (I2C_FIFO_ADDR_CLR, 0x0001);
   I2cWrite (I2C_INTR_STAT, I2C_INTR_ALL);
@@ -329,7 +329,14 @@ I2cWaitCompletion (
         if ((Status & (I2C_ACKERR | I2C_HS_NACKERR | I2C_ARB_LOST | I2C_TIMEOUT_BIT)) != 0) {
           return EFI_DEVICE_ERROR;
         }
-        return EFI_SUCCESS;
+        //
+        // Only a real completion bit counts. Without this check a NAK looks
+        // like success and every address on the bus appears to respond.
+        //
+        if ((Status & I2C_TRANSAC_COMP) != 0) {
+          return EFI_SUCCESS;
+        }
+        return EFI_DEVICE_ERROR;
       }
     }
 
@@ -355,7 +362,7 @@ I2cWriteBytes (
 
   I2cPrepare ();
   I2cWrite (I2C_SLAVE_ADDR, (UINT16)(Slave << 1));
-  I2cWrite (I2C_INTR_MASK, 0x0000);
+  I2cWrite (I2C_INTR_MASK, I2C_INTR_ALL);
   I2cWrite (I2C_CONTROL, I2C_CONTROL_ACKERR_DET | I2C_CONTROL_CLK_EXT_EN);
   I2cWrite (I2C_TRANSAC_LEN, 0x0001);
   I2cWrite (I2C_TRANSFER_LEN, (UINT16)Length);
@@ -381,7 +388,7 @@ I2cWriteReadBytesEx (
 
   I2cPrepare ();
   I2cWrite (I2C_SLAVE_ADDR, (UINT16)((Slave << 1) | 0x0001));
-  I2cWrite (I2C_INTR_MASK, 0x0000);
+  I2cWrite (I2C_INTR_MASK, I2C_INTR_ALL);
   I2cWrite (I2C_CONTROL, I2C_CONTROL_ACKERR_DET | I2C_CONTROL_CLK_EXT_EN | I2C_CONTROL_DIR_CHANGE);
   I2cWrite (I2C_TRANSAC_LEN, 0x0002);
   I2cWrite (I2C_TRANSFER_LEN, (UINT16)Length);
