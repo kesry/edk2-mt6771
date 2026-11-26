@@ -131,3 +131,32 @@
 - 2026-11-26 的某次 runner 上 `Install build dependencies` 曾持续 >15 分钟，
   属于 GitHub-hosted runner 的 apt 镜像波动，不是仓库配置错误。
 - workflow 设置了 `timeout-minutes: 120`；若长时间无进展，以新的 push 触发的新运行为准。
+
+## Run #11 — 45781982228 (2026-11-26, **SUCCESS**)
+
+- 结果：**success**，所有步骤通过（含 `Fail if build failed` 被跳过）。
+- 产物：
+  - `A3_UEFI.fd` 7,340,032 B（EDK2 RELEASE_CLANG38 AARCH64 固件）
+  - `boot-a3.img` 33,554,432 B（32 MiB）
+  - 全部 `.map` 文件
+- 关键日志：
+  ```
+  INFO - Compilation successful. 0 Errors, 0 Warnings, 0 Remarks, 0 Optimizations
+  INFO - - Done -
+  PROGRESS - Building MT6771 boot.img
+  INFO - =========== SUCCESS! ===========
+  INFO - Output boot.img written to: Build/boot-a3.img
+  ```
+- boot.img 结构核验（ artifact 下载后离线解析）：
+  - magic `ANDROID!`, header v2, page 2048, 32 MiB
+  - kernel_addr `0x40080000`, ramdisk_addr `0x55000000`, tags_addr `0x54000000`
+  - os_version `0x14000154`（与原机一致）
+  - MTK DTB 头 magic `0xD7B7AB1E`（大端），DTB 106,639 B
+  - `AVB0` 与 `AVBf` 均存在
+- 完整日志：[build-run45781982228.log](build-run45781982228.log)
+
+### Run 1–10 失败记录汇总
+
+全部保留在本目录中，根因依次为：apt 包名、PyPI 包名、submodule gitlink、
+Mono/NuGet、DSC PackagesPath、`llvm-ar`、`iasl`、`CLANG38_AARCH64_PREFIX`、
+post-build 工具路径、runner apt 镜像缓慢（run10 被 run11 取代）。
