@@ -91,16 +91,24 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-      - name: Upload firmware artifacts
+      - name: Upload MT6771 UEFI firmware bundle
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: mt6771-uefi-${{ github.run_number }}
           path: |
             Build/**/*.fd
-            Build/boot-*.img
             Build/**/*.map
           if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload flashable boot image
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boot-uefi-${{ github.run_number }}
+          path: Build/boot-uefi.img
+          if-no-files-found: error
           retention-days: 14
 
       - name: Fail if build failed

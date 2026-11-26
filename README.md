@@ -50,7 +50,9 @@ See [docs/build.md](docs/build.md). In short:
 ./build.sh -t RELEASE OPPO/A3Pkg
 ```
 
-Output (when successful): `Build/A3_UEFI.fd` and `Build/boot-a3.img`.
+Output (when successful): `Build/A3/FV/A3_UEFI.fd` and the flashable
+`Build/boot-uefi.img`. In GitHub Actions, `boot-uefi.img` is uploaded as its own
+artifact named `boot-uefi-<run_number>`.
 
 ## Known limitations
 

@@ -26,7 +26,8 @@ git submodule update --init --recursive   # 若网络不通，见 CI 的 tarball
 - `Build/A3/FV/A3_UEFI.fd`（EDK2 固件）
 - `Build/A3/FV/A3_UEFI.fd.shimmed`（加 BootShim）
 - `Build/A3/FV/A3_UEFI.fd.shimmed.gz`（压缩）
-- `Build/boot-a3.img`（可刷入 boot 分区的镜像，32 MiB）
+- `Build/boot-uefi.img`（可刷入 boot 分区的最终镜像，32 MiB；GitHub Actions 中作为
+  `boot-uefi-<run_number>` artifact 单独上传）
 
 ## GitHub Actions
 
@@ -36,7 +37,8 @@ git submodule update --init --recursive   # 若网络不通，见 CI 的 tarball
 2. 按固定 commit 拉取 `edk2` 与 `edk2-platforms`；
 3. 安装 `edk2toolext`；
 4. `./build.sh -s` 初始化环境，`./build.sh` 编译；
-5. 上传 `build.log` 和产物（`*.fd`, `boot-*.img`, `*.map`）。
+5. 上传 `build.log`、固件 bundle（`*.fd`, `*.map`），并把最终可刷镜像
+   `Build/boot-uefi.img` 单独上传为 `boot-uefi-<run_number>` artifact。
 
 构建失败时仍会上传 `build.log` artifact，便于复现；workflow 最后一步会因失败而退出非零。
 不要在 workflow 中打印 token 或读取 `security/` 目录。

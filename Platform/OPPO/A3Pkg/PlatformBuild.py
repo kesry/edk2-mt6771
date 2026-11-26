@@ -253,8 +253,10 @@ class PlatformBuilder (UefiBuilder, BuildSettingsManager):
     def PlatformBuildBootImage (self):
         edk2_logging.log_progress("Building MT6771 boot.img")
 
-        platform = self.env.GetValue("PRODUCT_NAME")
-        bootimg_out = os.path.join("Build", f"boot-{platform}.img")
+        # Stable release name used by GitHub Actions artifacts and docs.
+        # Keep it independent of PRODUCT_NAME so users always know which file
+        # to flash: Build/boot-uefi.img -> boot partition.
+        bootimg_out = os.path.join("Build", "boot-uefi.img")
 
         # BootShim + compressed UEFI FD, with the validated A3 DTB appended to
         # the kernel region. Mainline-linux-mt6771 proved LK needs the DTB in
