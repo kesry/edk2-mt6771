@@ -454,7 +454,11 @@ MmcHostBuildDevicePath (
     return EFI_INVALID_PARAMETER;
   }
 
-  Node = CreateDeviceNode (HARDWARE_DEVICE_PATH, HW_VENDOR_DP, sizeof (VENDOR_DEVICE_PATH));
+  Node = (VENDOR_DEVICE_PATH *)CreateDeviceNode (
+                                  HARDWARE_DEVICE_PATH,
+                                  HW_VENDOR_DP,
+                                  sizeof (VENDOR_DEVICE_PATH)
+                                  );
   if (Node == NULL) {
     return EFI_OUT_OF_RESOURCES;
   }
