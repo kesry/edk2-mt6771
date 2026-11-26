@@ -128,8 +128,8 @@
 #define I2C6_IO_CONFIG_VAL      0x0001u
 
 typedef struct {
-  UINT16  GateStaBefore;
-  UINT16  GateStaAfter;
+  UINT32  GateStaBefore;
+  UINT32  GateStaAfter;
   UINT16  ClkDivBefore;
   UINT16  TimingBefore;
   UINT16  ClkDivAfter;
@@ -147,6 +147,10 @@ typedef struct {
   UINT32  Acr6After;
   UINT8   ScanList[16];
   UINT16  ScanCount;
+  UINT32  Pad000;
+  UINT32  Pad004;
+  UINT32  Pad008;
+  UINT32  Pad00C;
 } VBUS_DIAG;
 
 STATIC VBUS_DIAG  mDiag;
@@ -208,10 +212,10 @@ I2cRead (IN UINTN Offset)
 }
 
 STATIC
-UINT16
+UINT32
 InfraAoRead (IN UINTN Offset)
 {
-  return MmioRead16 (MT6771_INFRA_AO_BASE + Offset);
+  return MmioRead32 (MT6771_INFRA_AO_BASE + Offset);
 }
 
 /**
@@ -223,9 +227,10 @@ I2c6Ungate (
   VOID
   )
 {
-  MmioWrite16 (MT6771_INFRA_AO_BASE + INFRA3_CG_SET, INFRA3_I2C6_BIT);
+  // INFRA_AO clock-gate registers are 32-bit.
+  MmioWrite32 (MT6771_INFRA_AO_BASE + INFRA3_CG_SET, (UINT32)INFRA3_I2C6_BIT);
   MicroSecondDelay (1000);
-  DEBUG ((DEBUG_INFO, "Mt6771Vbus: INFRA3 CG STA=0x%04x\n",
+  DEBUG ((DEBUG_INFO, "Mt6771Vbus: INFRA3 CG STA=0x%08x\n",
           InfraAoRead (INFRA3_CG_STA)));
 }
 
@@ -529,6 +534,11 @@ VbusBringup (
 
   ZeroMem (&mDiag, sizeof (mDiag));
 
+  mDiag.Pad000 = MmioRead32 (0x11000600u);
+  mDiag.Pad004 = MmioRead32 (0x11000604u);
+  mDiag.Pad008 = MmioRead32 (0x11000608u);
+  mDiag.Pad00C = MmioRead32 (0x1100060Cu);
+
   mDiag.GateStaBefore = InfraAoRead (INFRA3_CG_STA);
   mDiag.ClkDivBefore  = I2cRead (I2C_CLOCK_DIV);
   mDiag.TimingBefore  = I2cRead (I2C_TIMING);
@@ -575,7 +585,7 @@ DrawDiagnostics (
   ScreenLog (Buf);
   ScreenLog (L"------------------------------------------\r\n");
 
-  UnicodeSPrint (Buf, sizeof (Buf), L"INFRA3_CG_STA  before=0x%04x after=0x%04x\r\n",
+  UnicodeSPrint (Buf, sizeof (Buf), L"INFRA3_CG_STA  before=0x%08x after=0x%08x\r\n",
                  mDiag.GateStaBefore, mDiag.GateStaAfter);
   ScreenLog (Buf);
   UnicodeSPrint (Buf, sizeof (Buf), L"I2C6 CLOCK_DIV  before=0x%04x after=0x%04x\r\n",
