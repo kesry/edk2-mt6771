@@ -380,3 +380,49 @@ I2C6 scan = 0 device(s)，MT6370 read = Device Error
 
 遇到"寄存器读写正常但传输不完成"的总线问题，先看**自己有没有把别人配好的状态清掉**，
 不要一上来怀疑引脚/上拉/时钟。本例中 LK 已经把 I2C6 配好，我们的复位把它的工作状态毁了。
+
+### 13. eMMC 现状与日志通道计划（2026-11-26 深夜）
+
+#### fastboot 读到的分区事实（`fastboot getvar all`）
+
+| 项 | 值 | 意义 |
+|---|---|---|
+| `boot` | `0x2000000` = 32 MiB | 我们的 `boot-uefi.img` 正好 32 MiB，不会溢出 |
+| `logical-block-size` | `0x200` = 512 | 与 BlockIo/MMC 假设一致 |
+| `unlocked` / `secure` | yes / no | 刷机不受 AVB 阻碍 |
+| 分区类型 | 全部 `ext4` 或 `raw data` | **没有任何 FAT**，所以 Shell 无法挂载 eMMC（`BLK0` 而非 `FS0` 属正常） |
+| `cache` | `0x1b000000` = 432 MiB，ext4 | 用户指定作为 UEFI 日志分区（待 eMMC 可写后启用） |
+
+#### 当前问题
+
+`map -r` 只有一个 `BLK0: VenHw(4BB9B3E8-…)`，且：
+
+```
+blk=512  last=0
+LBA1 is not a GPT header
+```
+
+`last=0` 表示这是**零容量块设备**，`4BB9B3E8` 也不是本仓库 MSDC 设备路径使用的
+`2F7F6A70-5F1D-4B6C-9AD1-321C7E6D4A20`。结论：**eMMC 没有被识别**，
+`MmcDxe` 没有为 eMMC 建立可用的 BlockIo。
+
+#### 已加的诊断（run #44 起）
+
+`Mt6771MmcHostDxe`：
+
+- 初始化前后各打印一次 `MSDC_CFG`/`SDC_CFG`/`MSDC_PS`/`MSDC_INTEN`
+- 前 32 条 MMC 命令打印 `index / arg / raw / status / MSDC_INT`
+- 由于驱动在 BDS 清屏前加载，跟踪行先存入缓冲区，再由 3 s 定时器**重放 4 次**
+
+目的：看清卡初始化停在 CMD0 / CMD1 / CMD2 / CMD3 哪一步，以及 MSDC 是否真的发出命令。
+
+#### 日志通道计划（等 eMMC 可写）
+
+`cache` 分区 432 MiB、ext4、可牺牲。文本日志写到该分区**末尾 4 MiB**，
+避免破坏 ext4 元数据；之后在 Android/Linux 侧 root 后：
+
+```
+dd if=/dev/block/by-name/cache bs=1M skip=428 count=4 of=/tmp/uefi.log
+```
+
+即可取回。风险：写坏 cache 一般只会导致 OTA 失败，系统可自行重格式化。
