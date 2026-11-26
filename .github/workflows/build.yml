@@ -24,6 +24,7 @@ concurrency:
 env:
   TARGET: RELEASE
   PLATFORM: OPPO/A3Pkg
+  CLANG38_AARCH64_PREFIX: aarch64-linux-gnu-
 
 jobs:
   build:

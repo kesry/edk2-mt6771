@@ -97,3 +97,17 @@
 - 根因：EDK2 编译 ASL/ACPI 需要 `iasl`（ACPI Component Architecture ASL Compiler）。
 - 修复：apt 依赖加入 `iasl`（本次提交）。
 - 完整日志：[build-run45775389292.log](build-run45775389292.log)
+
+## Run #8 — 45775922519 (2026-11-26, failure)
+
+- 结果：**failure**，失败步骤：`Build platform`（EDS 编译阶段）
+- 错误原文：
+  ```
+  INFO - "objcopy" -I binary -O elf64-littleaarch64 -B aarch64 ...
+  INFO - objcopy: architecture aarch64 unknown
+  INFO - error F002: Failed to build module ... LogoDxe.inf
+  ```
+- 根因：EDK2 `CLANG38` 工具的 `RC_PATH` 使用 `ENV(CLANG38_AARCH64_PREFIX)objcopy`；
+  CI 未设置 `CLANG38_AARCH64_PREFIX`，于是调用系统 `objcopy`，它不认识 aarch64。
+- 修复：workflow 增加 `CLANG38_AARCH64_PREFIX: aarch64-linux-gnu-`（本次提交）。
+- 完整日志：[build-run45775922519.log](build-run45775922519.log)
