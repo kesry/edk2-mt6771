@@ -28,6 +28,7 @@
 #include <Library/UefiLib.h>
 
 #include <Protocol/BlockIo.h>
+#include <Protocol/DevicePath.h>
 
 #define DIAG_PASSES   4
 #define DIAG_PERIOD   20000000u   // 2 s
@@ -36,7 +37,7 @@ STATIC UINTN  mPass;
 
 STATIC
 VOID
-Print (IN CONST CHAR16 *Text)
+PrintText (IN CONST CHAR16 *Text)
 {
   if ((gST != NULL) && (gST->ConOut != NULL)) {
     gST->ConOut->OutputString (gST->ConOut, (CHAR16 *)Text);
@@ -82,12 +83,12 @@ DumpGpt (
   Status = ReadBlocks (BlkIo, 1, BlockSize, Buf);
   if (EFI_ERROR (Status)) {
     UnicodeSPrint (Line, sizeof (Line), L"eMMC: read LBA1 failed %r\r\n", Status);
-    Print (Line);
+    PrintText (Line);
     return;
   }
 
   if (CompareMem (Buf, "EFI PART", 8) != 0) {
-    Print (L"eMMC: LBA1 is not a GPT header\r\n");
+    PrintText (L"eMMC: LBA1 is not a GPT header\r\n");
     return;
   }
 
@@ -100,10 +101,10 @@ DumpGpt (
     L"eMMC GPT: entries@LBA%Lu count=%u size=%u\r\n",
     EntryLba, NumEntries, EntrySize
     );
-  Print (Line);
+  PrintText (Line);
 
   if ((EntrySize < 128) || (NumEntries == 0) || (NumEntries > 128)) {
-    Print (L"eMMC: unexpected GPT entry geometry\r\n");
+    PrintText (L"eMMC: unexpected GPT entry geometry\r\n");
     return;
   }
 
@@ -121,7 +122,7 @@ DumpGpt (
              );
   if (EFI_ERROR (Status)) {
     UnicodeSPrint (Line, sizeof (Line), L"eMMC: read entries failed %r\r\n", Status);
-    Print (Line);
+    PrintText (Line);
     FreePool (Entries);
     return;
   }
@@ -158,7 +159,7 @@ DumpGpt (
       Last,
       (Last - First + 1) * BlockSize / (1024 * 1024)
       );
-    Print (Line);
+    PrintText (Line);
     Printed++;
   }
 
@@ -179,7 +180,7 @@ Diagnose (
   EFI_BLOCK_IO_PROTOCOL *BlkIo;
   UINT8                *Buf;
 
-  Print (L"\r\n==== A3 eMMC diagnostics ====\r\n");
+  PrintText (L"\r\n==== A3 eMMC diagnostics ====\r\n");
 
   Handles = NULL;
   Count   = 0;
@@ -192,12 +193,12 @@ Diagnose (
                   );
   if (EFI_ERROR (Status)) {
     UnicodeSPrint (Line, sizeof (Line), L"BlockIo lookup failed: %r\r\n", Status);
-    Print (Line);
+    PrintText (Line);
     return;
   }
 
   UnicodeSPrint (Line, sizeof (Line), L"BlockIo handles: %u\r\n", Count);
-  Print (Line);
+  PrintText (Line);
 
   for (i = 0; i < Count; i++) {
     Status = gBS->HandleProtocol (Handles[i], &gEfiBlockIoProtocolGuid, (VOID **)&BlkIo);
@@ -213,7 +214,36 @@ Diagnose (
       BlkIo->Media->LastBlock,
       BlkIo->Media->RemovableMedia
       );
-    Print (Line);
+    PrintText (Line);
+
+    {
+      EFI_DEVICE_PATH_PROTOCOL  *Dp = NULL;
+      if (!EFI_ERROR (gBS->HandleProtocol (Handles[i], &gEfiDevicePathProtocolGuid, (VOID **)&Dp)) && (Dp != NULL)) {
+        EFI_DEVICE_PATH_PROTOCOL  *Node = Dp;
+        UINTN                      Nodes = 0;
+        while (!IsDevicePathEnd (Node) && Nodes < 6) {
+          if ((DevicePathType (Node) == HARDWARE_DEVICE_PATH) &&
+              (DevicePathSubType (Node) == HW_VENDOR_DP)) {
+            VENDOR_DEVICE_PATH  *V = (VENDOR_DEVICE_PATH *)Node;
+            UnicodeSPrint (
+              Line, sizeof (Line),
+              L"      venhw %08x-%04x-%04x\r\n",
+              V->Guid.Data1, V->Guid.Data2, V->Guid.Data3
+              );
+            PrintText (Line);
+          } else {
+            UnicodeSPrint (
+              Line, sizeof (Line),
+              L"      node type=%u sub=%u\r\n",
+              DevicePathType (Node), DevicePathSubType (Node)
+              );
+            PrintText (Line);
+          }
+          Node = NextDevicePathNode (Node);
+          Nodes++;
+        }
+      }
+    }
 
     if ((BlkIo->Media->BlockSize == 0) || (BlkIo->Media->LastBlock < 2)) {
       continue;
@@ -228,7 +258,7 @@ Diagnose (
   }
 
   FreePool (Handles);
-  Print (L"==== end eMMC diagnostics ====\r\n");
+  PrintText (L"==== end eMMC diagnostics ====\r\n");
 }
 
 STATIC
