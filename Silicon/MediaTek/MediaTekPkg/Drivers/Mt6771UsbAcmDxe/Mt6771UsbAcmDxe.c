@@ -236,6 +236,43 @@ typedef struct {
 #define ACM_EP_DATA_OUT 0x02u   /* EP2 OUT bulk */
 #define ACM_EP_DATA_IN  0x82u   /* EP2 IN  bulk */
 
+/* Device-mode IPPC / interrupt registers, vendor ippc header + mu3d HAL */
+#define U3D_SSUSB_REF_CK_CTRL   (MT6771_IPPC_BASE + 0x008Cu)
+#define U3D_SSUSB_DEV_RST_CTRL  (MT6771_IPPC_BASE + 0x0098u)
+#define SSUSB_REF_CK_GATE_EN    BIT2
+#define SSUSB_REF_PHY_CK_GATE_EN BIT1
+#define SSUSB_REF_MAC_CK_GATE_EN BIT0
+#define SSUSB_REF_MAC3_CK_GATE_EN BIT3
+#define SSUSB_DEV_SW_RST        BIT0
+#define SSUSB_DEV_RST_B_STS     BIT3
+#define SSUSB_DEV_BMU_RST_B_STS BIT2
+#define SSUSB_DEV_QMU_RST_B_STS BIT1
+#define SSUSB_U2_PORT_OTG_MAC_AUTO_SEL BIT8
+
+#define U3D_FIFO0               (MT6771_UDC_MAC_BASE + 0x0300u)
+#define LV1_EP0                 BIT0
+#define LV1_EP0_DMA             BIT3
+
+/* USB standard requests */
+#define USB_REQ_GET_STATUS      0x00
+#define USB_REQ_SET_ADDRESS     0x05
+#define USB_REQ_GET_DESCRIPTOR  0x06
+#define USB_REQ_SET_CONFIGURATION 0x09
+#define USB_REQ_GET_CONFIGURATION 0x08
+#define USB_DT_DEVICE           0x01
+#define USB_DT_CONFIG           0x02
+#define USB_DT_STRING           0x03
+
+#pragma pack(1)
+typedef struct {
+  UINT8  RequestType;
+  UINT8  Request;
+  UINT16 Value;
+  UINT16 Index;
+  UINT16 Length;
+} USB_SETUP_PACKET;
+#pragma pack()
+
 STATIC CONST UINT8  mConfigDescriptor[] = {
   /* Configuration */
   0x09, 0x02, 0x43, 0x00, 0x02, 0x01, 0x00, 0x80, 0x32,
@@ -422,11 +459,11 @@ AcmEp0Poll (
   UINT32  Lv1;
   UINT32  Csr;
 
-  Lv1 = MmioRead32 (U3D_LV1ISR);
+  Lv1 = MmioRead32 (MT6771_UDC_MAC_BASE + U3D_LV1ISR);
   if ((Lv1 & LV1_EP0) == 0) {
     return;
   }
-  MmioWrite32 (U3D_LV1ISR, LV1_EP0);
+  MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_LV1ISR, LV1_EP0);
 
   Csr = MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR);
   if ((Csr & EP0_SETUPPKTRDY) != 0) {
@@ -561,7 +598,7 @@ AcmDeviceInit (
   MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR,
                MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR) |
                EP0_MAXPKTSZ0_MASK);
-  MmioWrite32 (U3D_LV1IESR, LV1_EP0);
+  MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_LV1IESR, LV1_EP0);
 
   DEBUG ((DEBUG_INFO,
     "AcmDevice: STS1=%08x STS2=%08x EP0CSR=%08x
