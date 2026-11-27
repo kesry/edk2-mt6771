@@ -77,6 +77,11 @@ if [ "$CLEAN" = true ]; then
     exit 0
 fi
 
+# Apply MT6771-specific patches to the pinned EDK2 submodule. The submodule is
+# a gitlink we cannot commit to, so patches are applied idempotently at build
+# time. Currently: MTK xHCI periodic-endpoint scheduling hint (reserved[0]).
+python3 Patches/apply_edk2_mtk_patches.py
+
 # Build BaseTools
 make -C Common/edk2/BaseTools
 
