@@ -1,0 +1,31 @@
+## @file
+#  MTU3 USB device-mode / CDC-ACM bring-up -- SKELETON, not placed in the FV.
+#
+#  Copyright (c) 2026, kesry. All rights reserved.
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Mt6771UsbAcmDxe
+  FILE_GUID                      = C1D4A7E2-5F83-4B96-8E27-3A9D6F1B4C58
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = Mt6771UsbAcmDxeInitialize
+
+[Sources]
+  Mt6771UsbAcmDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  BaseLib
+  DebugLib
+  IoLib
+  TimerLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  UefiLib
+
+[Depex]
+  TRUE

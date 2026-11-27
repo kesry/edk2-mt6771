@@ -464,3 +464,19 @@ python3 Tools/verify_firmware.py Build/boot-uefi.img <A3_UEFI.fd>
 7. `startup.nsh` 已内嵌
 
 注意：脚本只证明"镜像结构正确"，不证明"能启动"。
+
+### 16. 下一步（记录自 2026-11-27 讨论）
+
+1. **eMMC 验证**：刷 run #54 起看 `INFRA1 CG sta` 是否含 bit2（`MSDC0_CG`）与
+   bit6（`MSDC0_SCK_CG`），以及 `CMD1 resp0` 是否非 0。
+2. **若仍失败**：按主线警告"分频由假定源频推导"，改为**读回 LK 设的 `MSDC_CFG`
+   分频值并沿用**，而不是自己按 400 MHz 计算。
+3. **vmmc**：若怀疑 LDO_VEMC 未供电，通过 `MT6358PmicDxe` 的 wrapper 打开
+   `LDO_VEMC`（需补 LDO 接口，当前 wrapper 只有 BUCK/LDO 部分能力）。
+4. **USB 模拟串口（CDC-ACM）**：设计、事实与分阶段计划见
+   [`docs/usb-acm.md`](usb-acm.md)。当前仓库只有骨架
+   `Silicon/MediaTek/MediaTekPkg/Drivers/Mt6771UsbAcmDxe/`：
+   - 仅参与编译（在 DSC 中），**未放入 FDF**，因此不影响现有屏幕 Shell
+   - 只实现了 IPPC 切设备角色 + 描述符表（VID/PID 沿用主线 `1d6b/0105`，
+     串口 115200 8N1）
+   - EP0 状态机、端点配置、PHY 设备模式初始化、数据通路均未实现，不得声称可用

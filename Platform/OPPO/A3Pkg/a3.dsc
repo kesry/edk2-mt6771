@@ -33,6 +33,7 @@
   NonDiscoverableDeviceRegistrationLib|MdeModulePkg/Library/NonDiscoverableDeviceRegistrationLib/NonDiscoverableDeviceRegistrationLib.inf
 
 [Components.common]
+  MediaTekPkg/Drivers/Mt6771UsbAcmDxe/Mt6771UsbAcmDxe.inf
   MediaTekPkg/Drivers/Mt6771VbusDxe/Mt6771VbusDxe.inf
   MediaTekPkg/Drivers/Mt6771UsbHostDxe/Mt6771UsbHostDxe.inf
   MdeModulePkg/Bus/Pci/NonDiscoverablePciDeviceDxe/NonDiscoverablePciDeviceDxe.inf
