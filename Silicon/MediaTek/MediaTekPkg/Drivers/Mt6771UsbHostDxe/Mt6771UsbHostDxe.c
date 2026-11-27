@@ -242,143 +242,41 @@ UsbLogReplay (
   IN VOID       *Context
   )
 {
-  UINTN  i;
-
-  if (mLogReplays >= 3) {
-    gBS->SetTimer (Event, TimerCancel, 0);
-    return;
-  }
-  mLogReplays++;
-
-  if ((gST == NULL) || (gST->ConOut == NULL)) {
-    return;
-  }
-  gST->ConOut->OutputString (gST->ConOut, L"\r\n==== A3 USB host trace ====\r\n");
-  for (i = 0; i < mLogUsed; i++) {
-    gST->ConOut->OutputString (gST->ConOut, mLogBuf[i]);
-  }
+  UINT32  Cap0;
+  UINT32  Cap4;
+  UINT32  Caplen;
+  UINT32  MaxPorts;
+  CHAR16  Buf[160];
 
   //
-  // Live xHCI state, captured after BDS had a chance to dispatch XhciDxe.
-  // CAPLENGTH/HCSPARAMS/DBOFF/RTSOFF tell us whether the controller is really
-  // alive, and the Usb2Hc handle count tells us whether XhciDxe bound.
+  // One shot. The controller is live by now (XhciDxe bound), so the only thing
+  // left to do is power the ports, because EDK2 never sets PORTSC.PP. After
+  // that this callback cancels itself and stops touching the controller: the
+  // repeated dumps were disturbing a running port and the machine rebooted.
   //
-  {
-    UINT32  Cap0   = MmioRead32 (MT6771_XHCI_BASE + 0x00);
-    UINT32  Cap4   = MmioRead32 (MT6771_XHCI_BASE + 0x04);
-    UINT32  Cap8   = MmioRead32 (MT6771_XHCI_BASE + 0x08);
-    UINT32  Cap10  = MmioRead32 (MT6771_XHCI_BASE + 0x10);
-    UINT32  Cap14  = MmioRead32 (MT6771_XHCI_BASE + 0x14);
-    UINT32  Cap18  = MmioRead32 (MT6771_XHCI_BASE + 0x18);
-    UINT32  Caplen = Cap0 & 0xFFu;
-    UINT32  DbOff  = Cap14 & 0xFFFFFFF0u;
-    UINT32  RtOff  = Cap18 & 0xFFFFFFE0u;
-    CHAR16  Buf[192];
+  gBS->SetTimer (Event, TimerCancel, 0);
 
+  Cap0     = MmioRead32 (MT6771_XHCI_BASE + 0x00);
+  Cap4     = MmioRead32 (MT6771_XHCI_BASE + 0x04);
+  Caplen   = Cap0 & 0xFFu;
+  MaxPorts = (Cap4 >> 24) & 0xFFu;
+
+  if (!mPortsPowered) {
+    XhcPowerPorts (Caplen, MaxPorts);
+    mPortsPowered = TRUE;
+    MicroSecondDelay (20000);
+  }
+
+  if (Caplen != 0) {
+    UINT32  PortSc = MmioRead32 (MT6771_XHCI_BASE + Caplen + 0x400u);
     UnicodeSPrint (Buf, sizeof (Buf),
-      L"XHCI CAPLEN=%u VER=%04x SLOTS=%u PORTS=%u\r\n",
-      Caplen, (UINT16)(Cap0 >> 16),
-      Cap4 & 0xFFu, (Cap4 >> 24) & 0xFFu);
-    gST->ConOut->OutputString (gST->ConOut, Buf);
-    UnicodeSPrint (Buf, sizeof (Buf),
-      L"XHCI DBOFF=%05x RTSOFF=%05x HCCAP=%08x HCSP2=%08x\r\n",
-      DbOff, RtOff, Cap10, Cap8);
-    gST->ConOut->OutputString (gST->ConOut, Buf);
-    UnicodeSPrint (Buf, sizeof (Buf),
-      L"XHCI window=%u doorbell_end=%u fits=%u\r\n",
-      MT6771_XHCI_SIZE, DbOff + 0x100u,
-      (DbOff + 0x100u <= MT6771_XHCI_SIZE) ? 1u : 0u);
-    gST->ConOut->OutputString (gST->ConOut, Buf);
-
-    {
-      UINT32  OpBase   = MT6771_XHCI_BASE + Caplen;
-      UINT32  MaxPorts = (Cap4 >> 24) & 0xFFu;
-      UINT32  Ppc      = (Cap10 >> 4) & 0x1u;   // HCCPARAMS1 bit4: port power control
-
-      //
-      // Power the ports exactly once. Once the controller is running and a
-      // device is attached (CCS=1, PED=1, PLS=0) writing PORTSC again would
-      // disturb the live port state machine, and the machine rebooted while the
-      // timer kept doing it.
-      //
-      if (!mPortsPowered) {
-        XhcPowerPorts (Caplen, MaxPorts);
-        mPortsPowered = TRUE;
-        MicroSecondDelay (20000);
-      }
-      UINTN   P;
-
-      UnicodeSPrint (Buf, sizeof (Buf), L"XHCI PPC=%u (1=software controls port power)\r\n", Ppc);
-      gST->ConOut->OutputString (gST->ConOut, Buf);
-
-      for (P = 1; P <= MaxPorts && P <= 4; P++) {
-        UINT32  PortSc = MmioRead32 (OpBase + 0x400u + 0x10u * (P - 1u));
-        // PORTSC per MdeModulePkg XhciReg.h: CCS bit0, PED bit1,
-        // PLS bits 5-8, PP bit9, CSC bit17.
-        UnicodeSPrint (Buf, sizeof (Buf),
-          L"PORTSC%u=%08x CCS=%u PED=%u PLS=%u PP=%u CSC=%u\r\n",
-          (UINT32)P, PortSc,
-          (PortSc & BIT0) ? 1u : 0u,
-          (PortSc & BIT1) ? 1u : 0u,
-          (PortSc >> 5) & 0xFu,
-          (PortSc & BIT9) ? 1u : 0u,
-          (PortSc & BIT17) ? 1u : 0u);
-        gST->ConOut->OutputString (gST->ConOut, Buf);
-      }
-    }
-    {
-      CHAR16  Obuf[160];
-      //
-      // Only registers proven readable are dumped. U3D_XHCI_PORT_CTRL (0x2400)
-      // and U3D_USB20_OPSTATE (0x2460) both read 0 while neighbouring registers
-      // return real values, which suggests they are not decoded in the mapped
-      // window; reading them is the likely cause of the two reboots.
-      //
-      {
-        UINT32  Op  = MT6771_XHCI_BASE + Caplen;
-        UINT32  Cmd = MmioRead32 (Op + 0x00);
-        UINT32  Sts = MmioRead32 (Op + 0x04);
-        //
-        // USBCMD bit0 RS (run/stop), bit1 HCRST; USBSTS bit0 HCH (halted),
-        // bit3 EINT, bit4 PCD, bit11 CNR (controller not ready).
-        //
-        UnicodeSPrint (Obuf, sizeof (Obuf),
-          L"USBCMD=%08x RS=%u USBSTS=%08x HCH=%u CNR=%u\r\n",
-          Cmd, Cmd & BIT0, Sts, Sts & BIT0, (Sts >> 11) & 1u);
-        gST->ConOut->OutputString (gST->ConOut, Obuf);
-      }
-      UnicodeSPrint (Obuf, sizeof (Obuf),
-        L"MAC PWR=%08x DEVCTL=%08x TIMING=%08x\r\n",
-        MmioRead32 (U3D_POWER_MANAGEMENT),
-        MmioRead32 (U3D_DEVICE_CONTROL),
-        MmioRead32 (U3D_USB20_TIMING_PARAMETER));
-      gST->ConOut->OutputString (gST->ConOut, Obuf);
-    }    {
-      CHAR16  Ibuf[160];
-      UnicodeSPrint (Ibuf, sizeof (Ibuf),
-        L"IPPC U2=%08x U3=%08x PWCTRL1=%08x\r\n",
-        MmioRead32 (U3D_SSUSB_U2_CTRL_0P),
-        MmioRead32 (U3D_SSUSB_U3_CTRL_0P),
-        MmioRead32 (U3D_SSUSB_IP_PW_CTRL1));
-      gST->ConOut->OutputString (gST->ConOut, Ibuf);
-    }
-    {
-      CHAR16  Pbuf[160];
-      UnicodeSPrint (Pbuf, sizeof (Pbuf),
-        L"PHY DTM0=%08x DTM1=%08x ACR6=%08x\r\n",
-        MmioRead32 (MT6771_UPHY_DTM0),
-        MmioRead32 (MT6771_UPHY_DTM1),
-        MmioRead32 (MT6771_UPHY_ACR6));
-      gST->ConOut->OutputString (gST->ConOut, Pbuf);
-    }
-    //
-    // No pool allocation inside the timer callback any more: doing so on every
-    // replay is needless risk. The handle count was already confirmed as 1.
-    //
-    UnicodeSPrint (Buf, sizeof (Buf), L"Usb2Hc handles = 1 (bound)\r\n");
+      L"USB: port power done, PORTSC1=%08x CCS=%u PED=%u PP=%u\r\n",
+      PortSc,
+      (PortSc & XHC_PORTSC_CCS) ? 1u : 0u,
+      (PortSc & XHC_PORTSC_PED) ? 1u : 0u,
+      (PortSc & XHC_PORTSC_PP) ? 1u : 0u);
     gST->ConOut->OutputString (gST->ConOut, Buf);
   }
-  gST->ConOut->OutputString (gST->ConOut, L"==== end USB host trace ====\r\n");
 }
 
 STATIC
@@ -729,7 +627,9 @@ Mt6771UsbHostDxeInitialize (
                       &ReplayEvent
                       )))
     {
-      gBS->SetTimer (ReplayEvent, TimerPeriodic, 20000000u);
+      // fire once, a few seconds in, so XhciDxe has already bound and
+      // initialised the controller before we power the ports
+      gBS->SetTimer (ReplayEvent, TimerRelative, 30000000u);
     }
   }
 
