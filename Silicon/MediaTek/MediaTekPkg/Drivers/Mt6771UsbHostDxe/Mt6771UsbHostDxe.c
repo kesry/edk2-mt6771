@@ -250,18 +250,28 @@ UsbLogReplay (
       UnicodeSPrint (Buf, sizeof (Buf), L"XHCI PPC=%u (1=software controls port power)\r\n", Ppc);
       gST->ConOut->OutputString (gST->ConOut, Buf);
 
-      for (P = 1; P <= MaxPorts && P <= 2; P++) {
+      for (P = 1; P <= MaxPorts && P <= 4; P++) {
         UINT32  PortSc = MmioRead32 (OpBase + 0x400u + 0x10u * (P - 1u));
-        // xHCI PORTSC: bit0 CCS, bit1 PED, bit4-7 PLS, bit8 PP, bit9-10 PIC
+        // xHCI PORTSC: bit0 CCS, bit1 PED, bit4-7 PLS, bit8 PP, bit17 CSC
         UnicodeSPrint (Buf, sizeof (Buf),
-          L"PORTSC%u=%08x CCS=%u PED=%u PLS=%u PP=%u\r\n",
+          L"PORTSC%u=%08x CCS=%u PED=%u PLS=%u PP=%u CSC=%u\r\n",
           (UINT32)P, PortSc,
           (PortSc & BIT0) ? 1u : 0u,
           (PortSc & BIT1) ? 1u : 0u,
           (PortSc >> 4) & 0xFu,
-          (PortSc & BIT8) ? 1u : 0u);
+          (PortSc & BIT8) ? 1u : 0u,
+          (PortSc & BIT17) ? 1u : 0u);
         gST->ConOut->OutputString (gST->ConOut, Buf);
-      }
+      }      }
+    }
+    {
+      CHAR16  Ibuf[160];
+      UnicodeSPrint (Ibuf, sizeof (Ibuf),
+        L"IPPC U2=%08x U3=%08x PWCTRL1=%08x\r\n",
+        MmioRead32 (U3D_SSUSB_U2_CTRL_0P),
+        MmioRead32 (U3D_SSUSB_U3_CTRL_0P),
+        MmioRead32 (U3D_SSUSB_IP_PW_CTRL1));
+      gST->ConOut->OutputString (gST->ConOut, Ibuf);
     }
     {
       CHAR16  Pbuf[160];
