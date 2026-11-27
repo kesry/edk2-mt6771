@@ -236,7 +236,7 @@ def verify_last_commit_helper(root):
     print("[repo] build inputs")
     py = root / "Platform/OPPO/A3Pkg/PlatformBuild.py"
     text = py.read_text(errors="replace")
-    check("boot-uefi.img" in text, "build produces Build/boot-uefi.img")
+    check("boot-uefi-" in text, "build produces Build/boot-uefi-<mode>.img")
     check("mkbootimg-a3.py" in text, "boot image uses Tools/mkbootimg-a3.py")
     check((root / "Tools/mkbootimg-a3.py").is_file(), "Tools/mkbootimg-a3.py exists")
 
