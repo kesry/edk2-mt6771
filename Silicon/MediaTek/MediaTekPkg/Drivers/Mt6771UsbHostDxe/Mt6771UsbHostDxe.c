@@ -114,6 +114,8 @@
 //   MTK_TIME_VALUE_1US         = 63  ("62.5MHz:63, 80MHz:80, 100MHz:100, 125MHz:125")
 // It is the 1 us base the USB2 MAC uses to time SOF/reset signalling.
 //
+#define U3D_XHCI_PORT_CTRL         (MT6771_MAC_BASE + 0x2400u)
+#define U3D_USB20_OPSTATE          (MT6771_MAC_BASE + 0x2460u)
 #define U3D_USB20_TIMING_PARAMETER (MT6771_MAC_BASE + 0x2440u)
 #define TIME_VALUE_1US             0x000000FFu
 #define MTK_TIME_VALUE_1US         63u
@@ -292,13 +294,17 @@ UsbLogReplay (
     {
       CHAR16  Obuf[160];
       UnicodeSPrint (Obuf, sizeof (Obuf),
-        L"MAC DEVCTRL=%08x PWR=%08x TIMING=%08x\r\n",
-        MmioRead32 (U3D_DEVICE_CONTROL),
+        L"MAC PC=%08x PWR=%08x DEVCTL=%08x\r\n",
+        MmioRead32 (U3D_XHCI_PORT_CTRL),
         MmioRead32 (U3D_POWER_MANAGEMENT),
+        MmioRead32 (U3D_DEVICE_CONTROL));
+      gST->ConOut->OutputString (gST->ConOut, Obuf);
+      UnicodeSPrint (Obuf, sizeof (Obuf),
+        L"MAC OPSTATE=%08x TIMING=%08x\r\n",
+        MmioRead32 (U3D_USB20_OPSTATE),
         MmioRead32 (U3D_USB20_TIMING_PARAMETER));
       gST->ConOut->OutputString (gST->ConOut, Obuf);
-    }
-    {
+    }    {
       CHAR16  Ibuf[160];
       UnicodeSPrint (Ibuf, sizeof (Ibuf),
         L"IPPC U2=%08x U3=%08x PWCTRL1=%08x\r\n",
@@ -507,7 +513,14 @@ Mt6771UsbHostInit (
   // MAC never reaches the operational state and the port never leaves reset,
   // which is consistent with CCS staying 0 while PPC/PP are fine.
   //
-  MmioWrite32 (U3D_DEVICE_CONTROL, MmioRead32 (U3D_DEVICE_CONTROL) | (UINT32)DC_SESSION);
+  {
+    CHAR16  Dbuf[128];
+    UINT32  DevBefore = MmioRead32 (U3D_DEVICE_CONTROL);
+    MmioWrite32 (U3D_DEVICE_CONTROL, DevBefore | (UINT32)DC_SESSION);
+    UnicodeSPrint (Dbuf, sizeof (Dbuf), L"USB: DEVCTL %08x -> %08x\r\n",
+                   DevBefore, MmioRead32 (U3D_DEVICE_CONTROL));
+    ScreenLog (Dbuf);
+  }
   MmioWrite32 (U3D_POWER_MANAGEMENT, MmioRead32 (U3D_POWER_MANAGEMENT) | (UINT32)SOFT_CONN);
   MicroSecondDelay (1000);
 
