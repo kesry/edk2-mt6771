@@ -94,6 +94,19 @@
 //   drivers/misc/mediatek/mu3phy/mt6771/mtk-phy-asic.h
 //     U3D_U2PHYDTM1 FORCE_IDDIG bit9, RG_IDDIG bit1
 //
+
+//
+// MAC operational-state registers. SSUSB_USB2_CSR_BASE is 0x2400 relative to
+// the MAC base (mtu3_hw_regs.h), and toggle_opstate() in mtu3_dr.c is called
+// ONLY on the switch to host mode -- the device path does not do it:
+//   mtu3_setbits(mac_base, U3D_DEVICE_CONTROL,   DC_SESSION)  // BIT0
+//   mtu3_setbits(mac_base, U3D_POWER_MANAGEMENT, SOFT_CONN)   // BIT6
+//
+#define MT6771_MAC_BASE          0x11201000u
+#define U3D_POWER_MANAGEMENT     (MT6771_MAC_BASE + 0x2404u)
+#define U3D_DEVICE_CONTROL       (MT6771_MAC_BASE + 0x240Cu)
+#define DC_SESSION               BIT0
+#define SOFT_CONN                BIT6
 #define U3D_SSUSB_IP_PW_CTRL0 (MT6771_IPPC_BASE + 0x0000u)
 #define U3D_SSUSB_IP_PW_CTRL1 (MT6771_IPPC_BASE + 0x0004u)
 #define U3D_SSUSB_IP_PW_CTRL2 (MT6771_IPPC_BASE + 0x0008u)
@@ -114,7 +127,6 @@
 #define SSUSB_U3_PORT_PDN     BIT1
 #define SSUSB_U3_PORT_DIS     BIT0
 
-#define SSUSB_U2_PORT_OTG_MAC_AUTO_SEL BIT8   // let the MAC follow the raw ID pin
 #define SSUSB_U2_PORT_OTG_SEL  BIT7
 #define SSUSB_U2_PORT_HOST_SEL BIT2
 #define SSUSB_U2_PORT_PDN     BIT1
@@ -264,6 +276,14 @@ UsbLogReplay (
           (PortSc & BIT17) ? 1u : 0u);
         gST->ConOut->OutputString (gST->ConOut, Buf);
       }
+    }
+    {
+      CHAR16  Obuf[160];
+      UnicodeSPrint (Obuf, sizeof (Obuf),
+        L"MAC DEVCTRL=%08x PWRNMGMT=%08x\r\n",
+        MmioRead32 (U3D_DEVICE_CONTROL),
+        MmioRead32 (U3D_POWER_MANAGEMENT));
+      gST->ConOut->OutputString (gST->ConOut, Obuf);
     }
     {
       CHAR16  Ibuf[160];
@@ -431,15 +451,6 @@ Mt6771UsbHostInit (
   Value &= ~PHY_RG_IDDIG;
   MmioWrite32 (MT6771_UPHY_DTM1, Value);
 
-  //
-  // LK ran the device path for fastboot, and the vendor device init sets
-  // SSUSB_U2_PORT_OTG_MAC_AUTO_SEL (bit8). While that bit is set the MAC picks
-  // host/device from the raw ID pin and ignores our forced role -- and on this
-  // cable chain the ID pin is not grounded, so the MAC would stay in device
-  // mode and the port would never report a connect. Clear it.
-  //
-  Value  = MmioRead32 (U3D_SSUSB_U2_CTRL_0P);
-  Value &= ~SSUSB_U2_PORT_OTG_MAC_AUTO_SEL;
   Value |= SSUSB_U2_PORT_OTG_SEL;
   MmioWrite32 (U3D_SSUSB_U2_CTRL_0P, Value);
 
@@ -470,6 +481,16 @@ Mt6771UsbHostInit (
       MicroSecondDelay (1000);
     }
   }
+
+  //
+  // toggle_opstate(): the host-only step from mtu3_dr.c. switch_port_to_device()
+  // does not call it, so it is specific to entering host mode. Without it the
+  // MAC never reaches the operational state and the port never leaves reset,
+  // which is consistent with CCS staying 0 while PPC/PP are fine.
+  //
+  MmioWrite32 (U3D_DEVICE_CONTROL, MmioRead32 (U3D_DEVICE_CONTROL) | (UINT32)DC_SESSION);
+  MmioWrite32 (U3D_POWER_MANAGEMENT, MmioRead32 (U3D_POWER_MANAGEMENT) | (UINT32)SOFT_CONN);
+  MicroSecondDelay (1000);
 
   PwSts = MmioRead32 (U3D_SSUSB_IP_PW_STS1);
   {
