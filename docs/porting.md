@@ -741,3 +741,19 @@ USB: PHY DMON1=xxxxxxxx AVALID=? HST_DISCON=? LINE=?
 | 1 | 0 | 0 | - | 周期时钟停 → 查参考时钟 |
 | 1 | 0 | 1 | 不变 | 无 transfer event → MTK 调度/事件环 |
 | 1 | 0 | 1 | 前进 | event 有了 → 查 DMA/URB 匹配 |
+
+### 25. Round 16 — 最终静态结论
+
+本轮核对 UsbKbDxe 的 URB 提交与 HID 请求：
+- `KeyBoard.c:382` 的 `UsbAsyncInterruptTransfer(..., DataLength=PacketSize=8, ...)`
+  参数正确，LS 键盘 boot report 为 8 字节。
+- `UsbSetProtocolRequest(BOOT_PROTOCOL)` 未检查返回值是 EDK2 上游写法；
+  枚举成功说明 EP0 控制传输正常，SET_PROTOCOL 失败可能性低。
+- 在 XhciDxe 回调里用 `gST->ConOut` 输出不安全：虽然 callback 调用点在
+  `RestoreTPL()` 之后，但 UsbBus 层可能仍有 TPL 约束，且之前尝试这类诊断
+  与重启现象时间相关，已撤销。
+- MTK EP_BPKTS patch 只设 `reserved[0]=1`、不设 `reserved[1]`，与厂商
+  `xhci-mtk-sch.c` 的直连 LS/FS 分支完全一致；设置 reserved[1] 反而错误。
+
+**结论：源码层面所有能确认的修复都已完成。** 下一步必须依赖 #114/#115 的
+PHY DMON1 / MFINDEX / ERSTSZ / ERDP 实测数据（判读矩阵见 §24）。
