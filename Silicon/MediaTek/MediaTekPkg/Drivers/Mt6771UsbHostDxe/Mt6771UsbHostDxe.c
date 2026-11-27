@@ -156,6 +156,10 @@
 // block sits at +0x300.
 //
 #define MT6771_UPHY_COM        (MT6771_U3PHY_BASE + 0x0300u)
+#define MT6771_UPHY_DMON1       (MT6771_UPHY_COM + 0x0074u)
+#define UPHY_DMON1_AVALID        BIT24
+#define UPHY_DMON1_HST_DISCON    BIT21
+#define UPHY_DMON1_LINE_STATE    (BIT22 | BIT23)
 #define MT6771_UPHY_DTM0       (MT6771_UPHY_COM + 0x0068u)
 #define MT6771_UPHY_ACR4       (MT6771_UPHY_COM + 0x0020u)
 #define MT6771_UPHY_ACR6       (MT6771_UPHY_COM + 0x0018u)
@@ -309,6 +313,24 @@ UsbLogReplay (
     UnicodeSPrint (Buf, sizeof (Buf),
       L"USB: RTSOFF=%05x MFINDEX %04x->%04x ticking=%u ERSTSZ=%u ERDP %08x->%08x\r\n",
       RtsOff, Mf1, Mf2, (Mf1 != Mf2) ? 1u : 0u, ErstSz, Erdplo, Erdplo2);
+    gST->ConOut->OutputString (gST->ConOut, Buf);
+  }
+
+  //
+  // PHY live status (vendor U3D_U2PHYDMON1): does the analog PHY actually
+  // see a device? These are read-only MMIO reads, safe in the timer callback.
+  //   AVALID    - device-present indicator
+  //   HST_DISCON- 1 means the host sees a disconnect
+  //   LINE_STATE- raw DP/DM level (J-state means a FS device attached)
+  //
+  {
+    UINT32  Dmon = MmioRead32 (MT6771_UPHY_DMON1);
+    UnicodeSPrint (Buf, sizeof (Buf),
+      L"USB: PHY DMON1=%08x AVALID=%u HST_DISCON=%u LINE=%u\r\n",
+      Dmon,
+      (Dmon & UPHY_DMON1_AVALID) ? 1u : 0u,
+      (Dmon & UPHY_DMON1_HST_DISCON) ? 1u : 0u,
+      (Dmon & UPHY_DMON1_LINE_STATE) >> 22);
     gST->ConOut->OutputString (gST->ConOut, Buf);
   }
 }
