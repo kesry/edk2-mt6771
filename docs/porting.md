@@ -566,3 +566,50 @@ charger           | pd_vbus_low_bound = 0x4c4b40 (5.0V)
 按主线警告"分频由假定源频推导，写错会 overclock"，驱动改为**采用 LK 已编程的
 MSDC_CFG 分频**（`clk_div_bits=12`：CKDIV bits 8..19，CKMOD bits 20..21），
 推算出实际 SCLK 并写入跟踪输出；不再按假定 400 MHz 自行重设时钟。
+
+### 20. OTG 主机模式实测状态（2026-11-28，run #97）
+
+经过多轮源码修正，屏幕诊断确认（照片为证）：
+
+```
+USB: DEVCTL 00000000 -> 00000001          SESSION 写入生效
+USB: IPPC1=00000000 U2=00000280 U3=0000020C STS1=01000D0F STS2=00000001
+USB: sys125=1 u3mac=0 u2mac=1
+USB: xHCI after init CAP0=01100020 caplen=32
+USB: U2CTRL 00000280 -> 00000284 host_sel=1
+USB: register xHCI -> Success
+XHCI CAPLEN=32 VER=0110 SLOTS=15 PORTS=1
+XHCI DBOFF=00800 RTSOFF=00600 HCCAP=01400F99 HCSP2=00000004
+XHCI PPC=1
+PORTSC1=00000003 CCS=1 PED=1 PLS=0 PP=1 CSC=0     ← 端口完全正常(U0)
+USBCMD=00000001 RS=1 USBSTS=00000010 HCH=0 CNR=0   ← 控制器运行中
+MAC PWR=000060E1 DEVCTL=0000003D TIMING=0005497D
+IPPC U2=00000284 U3=0000020C PWCTRL1=00000000
+PHY DTM0=02000000 DTM1=00000220 ACR6=001004B2
+Usb2Hc handles = 1 (bound)
+dh -p UsbIo -> 6B: ConsoleIn SimpleTextInEx SimpleTextIn UsbIO DevicePath(USB)
+```
+
+DEVCTL=0x3D 解码：`SESSION=1, HOSTMODE=1, VBUS=11(有效), FS_DEV=1`（全速设备）。
+PHY DTM0 bit25=`RG_SIFSLV_USB20_PLL_STABLE`=1，PLL 已锁定。
+TIMING=0x0005497D：`TIME_VALUE_1US=0x7D(125), SOFTCON_DELAY=0x49, CHOPPER=0x05`。
+
+#### 已解决（全部有源码依据）
+- VBUS 5V：风扇转。BQ24196 @ I2C 0x6B，REG00&=~BIT7, REG01|=BIT5
+  （vendor oppo_bq24196.c:825）；I2C 需逐总线开 clock gate + 补 timing
+- USB 时钟：INFRA0 bit8 / INFRA2 bit1 / APMIXED+0x20 bit4（clk-mt6771.c）
+- 端口电源：**EDK2 XhciDxe 从不设置 PORTSC.PP**（Xhci.c 无 XHC_PORTSC_PP
+  引用），本机 PPC=1 需软件置位，故我们自己在定时器里置 PP（bit9）
+- PORTSC 正确位定义来自 XhciReg.h：PLS=bits5-8, PP=bit9
+  （早期误读为 PLS=bits4-7/PP=bit8，导致漏掉端口未上电的根因）
+
+#### 唯一剩余障碍
+键盘枚举成功（ConsoleIn/UsbIO 句柄存在），但 Shell 敲键无反应，NUM LOCK 不亮。
+注意：EDK2 UsbKbDxe 不发 LED SET_REPORT，所以灯不能作为判据，Shell 无输入才是真失败。
+EP0 控制传输通（否则无法枚举），问题在 HID 中断端点（EP1 IN）数据读取。
+
+待查方向（子智能体分析中）：
+- XHCI_MTK_HOST quirk（Linux xhci-mem.c 保留 ep_ctx->reserved[]）
+- XHCI_SPURIOUS_SUCCESS（xhci-ring.c:2856 忽略 short transfer 后的 spurious 成功）
+- xhci_mtk_set_frame_interval / rxfifo_depth_set（HSCH_CFG1 @0x960）
+- EDK2 XhciDxe 的 PollTimer 事件环轮询是否正常
