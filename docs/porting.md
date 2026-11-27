@@ -640,3 +640,31 @@ USB: RTSOFF=00600 MFINDEX xxxx->xxxx ticking=N ERSTSZ=M ERDP=xxxxxxxx
   与本机无关。
 - `XhcInitializeEndpointContext/64` 是所有非控制端点上下文的唯一汇聚点
   （SetConfigCmd 3234/3325、SetInterface 3701/3907），MTK patch 覆盖全部路径。
+
+### 22. Round 7 静态排除项
+
+本轮通过源码核对排除了以下可能，避免后续重复排查：
+
+1. **DMA coherence 正常**：EDK2 XhciDxe 的 `UsbHcMem.c` 用
+   `PciIo->AllocateBuffer(EfiBootServicesData, ...)` 分配事件环与传输环
+   （第 61/666/701 行），在 NonCoherent 模式下会正确做 cache 维护。
+   NonDiscoverablePciDevice 声明了 `EFI_PCI_IO_ATTRIBUTE_DUAL_ADDRESS_CYCLE`，
+   64 位 DMA 也正常。
+
+2. **patch 不会被 stuart_update 覆盖**：CI 日志确认顺序是
+   setup/update（1849 行）→ apply MTK patch（1891 行）→ build，
+   补丁在正确的时机注入。
+
+3. **UsbKbDxe 数据长度检查对 LS 键盘正确**：`KeyboardHandler`
+   (KeyBoard.c:1039-1052) 要求 `DataLength >= 8`，LS 键盘 HID boot report
+   正好 8 字节。若 `Result != EFI_USB_NOERROR` 会走错误分支并不处理按键 —
+   这仍是最可能的症状描述（见 §21 ERDP 诊断）。
+
+4. **ConIn 硬编码 bug 已修**（run #107）：BeforeConsole 里
+   `handles[1]` 越界读已删除，改用 USB HID class device path 热插拔匹配。
+
+5. **MTK patch 覆盖所有端点初始化路径**：`XhcInitializeEndpointContext/64`
+   是全部非控制端点的唯一汇聚点，patch 用全局 `text.replace` 覆盖两处。
+
+结论：源码层面能静态确认的都已确认/修复。剩余必须靠 #109 的 `ticking` /
+`ERSTSZ` / `ERDP` 三项运行时数据定位（见 §21）。
