@@ -174,6 +174,8 @@ typedef struct {
   UINT32  Acr6After;
   UINT8   ScanList[16];
   UINT16  ScanCount;
+  UINT8   Mt6370Addr;
+  UINT8   Mt6370ChipId;
   BOOLEAN Reprogrammed;
   UINT32  Pad000;
   UINT32  Pad004;
@@ -182,6 +184,15 @@ typedef struct {
 } VBUS_DIAG;
 
 STATIC VBUS_DIAG  mDiag;
+
+// MT6370 7-bit I2C address. The vendor DTS does not carry a reg property for
+// the PMU and no board file was found with a hardcoded address, so the address
+// is discovered at runtime by probing DEVINFO (0x00) and checking the chip ID
+// the way the vendor driver does (mt6370_pmu_chip_id_check(): high nibble
+// 0x80 / 0xE0 / 0xF0).
+STATIC UINT8  mMt6370Addr = MT6370_SLAVE_ADDR;
+STATIC BOOLEAN  mMt6370AddrFound = FALSE;
+#define MT6370_ADDR_FOUND()  mMt6370AddrFound
 
 /* ------------------------------------------------------------------ */
 /* Framebuffer console                                                 */
@@ -427,6 +438,36 @@ I2cWriteReadBytes (
 /* ------------------------------------------------------------------ */
 /* MT6370                                                             */
 /* ------------------------------------------------------------------ */
+#define MT6370_REG_DEVINFO           0x00u
+
+STATIC
+EFI_STATUS
+Mt6370ProbeAddress (
+  OUT UINT8  *ChipId
+  )
+{
+  EFI_STATUS  Status;
+  UINT8       Addr;
+  UINT8       Val;
+
+  for (Addr = 0x08; Addr <= 0x77; Addr++) {
+    Status = I2cWriteReadBytesEx (Addr, MT6370_REG_DEVINFO, &Val, 1, 5000u);
+    if (EFI_ERROR (Status)) {
+      continue;
+    }
+    if (((Val & 0xF0) == 0x80) || ((Val & 0xF0) == 0xE0) ||
+        ((Val & 0xF0) == 0xF0)) {
+      mMt6370Addr = Addr;
+      mMt6370AddrFound = TRUE;
+      if (ChipId != NULL) {
+        *ChipId = Val;
+      }
+      return EFI_SUCCESS;
+    }
+  }
+  return EFI_NOT_FOUND;
+}
+
 STATIC
 EFI_STATUS
 Mt6370Write (IN UINT8 Reg, IN UINT8 Value)
@@ -435,14 +476,14 @@ Mt6370Write (IN UINT8 Reg, IN UINT8 Value)
 
   buf[0] = Reg;
   buf[1] = Value;
-  return I2cWriteBytes (MT6370_SLAVE_ADDR, buf, 2);
+  return I2cWriteBytes (mMt6370Addr, buf, 2);
 }
 
 STATIC
 EFI_STATUS
 Mt6370Read (IN UINT8 Reg, OUT UINT8 *Value)
 {
-  return I2cWriteReadBytes (MT6370_SLAVE_ADDR, Reg, Value, 1);
+  return I2cWriteReadBytes (mMt6370Addr, Reg, Value, 1);
 }
 
 STATIC
@@ -689,6 +730,9 @@ DrawDiagnostics (
   }
 
   ScreenLog (L"------------------------------------------\r\n");
+  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 addr  : 0x%02x chipid=0x%02x\r\n",
+                 mDiag.Mt6370Addr, mDiag.Mt6370ChipId);
+  ScreenLog (Buf);
   UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 read  : %r val=0x%02x\r\n",
                  mDiag.ReadStatus, mDiag.ChgCtrl1Read);
   ScreenLog (Buf);
