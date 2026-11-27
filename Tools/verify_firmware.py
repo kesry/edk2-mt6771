@@ -278,6 +278,7 @@ def main():
     root = Path(args.root) if args.root else Path(__file__).resolve().parent.parent
 
     verify_platform(root)
+    verify_porting_invariants(root)
     verify_last_commit_helper(root)
 
     if args.boot_image:
