@@ -88,7 +88,7 @@ jobs:
         run: |
           mkdir -p out
           cp -v Build/boot-uefi-otg.img out/ 2>/dev/null || true
-          cp -v "$(find Build -name 'A3_UEFI.fd' | head -1)" out/A3_UEFI-otg.fd 2>/dev/null || true
+          cp -v "$(find Build -name '*_UEFI.fd' | head -1)" out/A3_UEFI-otg.fd 2>/dev/null || true
 
       - name: Clean between modes
         if: always()
@@ -109,7 +109,7 @@ jobs:
         run: |
           mkdir -p out
           cp -v Build/boot-uefi-acm.img out/ 2>/dev/null || true
-          cp -v "$(find Build -name 'A3_UEFI.fd' | head -1)" out/A3_UEFI-acm.fd 2>/dev/null || true
+          cp -v "$(find Build -name '*_UEFI.fd' | head -1)" out/A3_UEFI-acm.fd 2>/dev/null || true
 
       - name: Verify firmware images
         run: |
