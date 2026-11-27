@@ -237,6 +237,23 @@ typedef struct {
 #define ACM_EP_DATA_IN  0x82u   /* EP2 IN  bulk */
 
 /* Device-mode IPPC / interrupt registers, vendor ippc header + mu3d HAL */
+/* Absolute IPPC addresses/bits for the device bring-up code (vendor header) */
+#define MT6771_IPPC_BASE           MT6771_UDC_IPPC_BASE
+#define U3D_SSUSB_IP_PW_CTRL0      (MT6771_IPPC_BASE + 0x0000u)
+#define U3D_SSUSB_IP_PW_CTRL1      (MT6771_IPPC_BASE + 0x0004u)
+#define U3D_SSUSB_IP_PW_CTRL2      (MT6771_IPPC_BASE + 0x0008u)
+#define U3D_SSUSB_IP_PW_STS1       (MT6771_IPPC_BASE + 0x0010u)
+#define U3D_SSUSB_IP_PW_STS2       (MT6771_IPPC_BASE + 0x0014u)
+#define U3D_SSUSB_U3_CTRL_0P       (MT6771_IPPC_BASE + 0x0030u)
+#define U3D_SSUSB_U2_CTRL_0P       (MT6771_IPPC_BASE + 0x0050u)
+
+#define SSUSB_U3_PORT_DIS          BIT0
+#define SSUSB_U3_PORT_PDN          BIT1
+#define SSUSB_U3_PORT_HOST_SEL     BIT2
+#define SSUSB_U2_PORT_DIS          BIT0
+#define SSUSB_U2_PORT_HOST_SEL     BIT2
+#define SSUSB_U2_PORT_OTG_SEL      BIT7
+
 #define U3D_SSUSB_REF_CK_CTRL   (MT6771_IPPC_BASE + 0x008Cu)
 #define U3D_SSUSB_DEV_RST_CTRL  (MT6771_IPPC_BASE + 0x0098u)
 #define SSUSB_REF_CK_GATE_EN    BIT2
