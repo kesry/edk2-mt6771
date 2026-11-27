@@ -497,13 +497,6 @@ Mt6370ProbeAddress (
 
 STATIC
 EFI_STATUS
-Mt6370Read (IN UINT8 Reg, OUT UINT8 *Value)
-{
-  return I2cWriteReadBytes (mMt6370Addr, Reg, Value, 1);
-}
-
-STATIC
-EFI_STATUS
 Mt6370EnableOtg (OUT UINT8 *LgCtrl, OUT UINT8 *ChgCtrl1)
 {
   EFI_STATUS  Status;
