@@ -124,6 +124,36 @@
 
 /* PHY U3D_U2PHYDTM1 (usb0phy@11f40000 + 0x300 + 0x6C) */
 #define MT6771_UPHY_DTM1      (MT6771_U3PHY_BASE + 0x036Cu)
+
+//
+// USB2 PHY registers. u3_sif2_base is 0x11F40000 on MT6771 (the vendor header
+// confirms it: "0x11F40B20" == u3_sif2_base + 0xb00 + 0x20), and the U2 PHY COM
+// block sits at +0x300.
+//
+#define MT6771_UPHY_COM        (MT6771_U3PHY_BASE + 0x0300u)
+#define MT6771_UPHY_DTM0       (MT6771_UPHY_COM + 0x0068u)
+#define MT6771_UPHY_ACR4       (MT6771_UPHY_COM + 0x0020u)
+#define MT6771_UPHY_ACR6       (MT6771_UPHY_COM + 0x0018u)
+
+#define UPHY_DTM0_FORCE_UART_EN   BIT26
+#define UPHY_DTM0_FORCE_DATAIN    BIT23
+#define UPHY_DTM0_FORCE_DM_PD     BIT21
+#define UPHY_DTM0_FORCE_DP_PD     BIT20
+#define UPHY_DTM0_FORCE_XCVRSEL   BIT19
+#define UPHY_DTM0_FORCE_SUSPENDM  BIT18
+#define UPHY_DTM0_FORCE_TERMSEL   BIT17
+#define UPHY_DTM0_RG_DATAIN       (0xFu << 10)
+#define UPHY_DTM0_RG_DM_PD        BIT7
+#define UPHY_DTM0_RG_DP_PD        BIT6
+#define UPHY_DTM0_RG_XCVRSEL      (0x3u << 4)
+#define UPHY_DTM0_RG_TERMSEL      BIT2
+#define UPHY_DTM1_RG_UART_EN      BIT16
+#define UPHY_DTM1_RG_VBUSVALID    BIT5
+#define UPHY_ACR4_GPIO_CTL        BIT9
+#define UPHY_ACR4_GPIO_MODE       BIT8
+#define UPHY_ACR6_BC11_SW_EN      BIT23
+#define UPHY_ACR6_OTG_VBUSCMP_EN  BIT20
+
 #define PHY_FORCE_IDDIG       BIT9
 #define PHY_RG_IDDIG          BIT1
 
@@ -233,6 +263,15 @@ UsbLogReplay (
         gST->ConOut->OutputString (gST->ConOut, Buf);
       }
     }
+    {
+      CHAR16  Pbuf[160];
+      UnicodeSPrint (Pbuf, sizeof (Pbuf),
+        L"PHY DTM0=%08x DTM1=%08x ACR6=%08x\r\n",
+        MmioRead32 (MT6771_UPHY_DTM0),
+        MmioRead32 (MT6771_UPHY_DTM1),
+        MmioRead32 (MT6771_UPHY_ACR6));
+      gST->ConOut->OutputString (gST->ConOut, Pbuf);
+    }
     if (!EFI_ERROR (gBS->LocateHandleBuffer (
                       ByProtocol, &gEfiUsb2HcProtocolGuid, NULL,
                       &HandleCount, &HandleBuf)))
@@ -276,6 +315,53 @@ Mtu3ClearBits (
     3. power up the host IP
     4. force the U2 port IDDIG to host and clear the port power-down
 **/
+
+/**
+  Put the USB2 PHY into host/OTG mode. This is the USB-function half of the
+  vendor usb_phy_recover() (mu3phy/mt6771/mtk-phy-asic.c), including every
+  field it clears: leaving UART mode, releasing force suspend and the DP/DM
+  pull-downs, disabling the BC1.1 path, enabling the OTG VBUS comparator and
+  finally asserting VBUSVALID so the port starts detecting devices.
+
+  It must run while VBUS 5V is already present, which is why it lives in the
+  host driver: the VBUS driver runs first and enables the charger boost.
+**/
+STATIC
+VOID
+Mt6771UsbPhyHostMode (
+  VOID
+  )
+{
+  UINT32  Reg;
+
+  // leave UART mode (DTM0 FORCE_UART_EN, DTM1 RG_UART_EN)
+  MmioWrite32 (MT6771_UPHY_DTM0, MmioRead32 (MT6771_UPHY_DTM0) & ~(UINT32)UPHY_DTM0_FORCE_UART_EN);
+  MmioWrite32 (MT6771_UPHY_DTM1, MmioRead32 (MT6771_UPHY_DTM1) & ~(UINT32)UPHY_DTM1_RG_UART_EN);
+
+  // leave GPIO mode on the PHY pins
+  MmioWrite32 (MT6771_UPHY_ACR4, MmioRead32 (MT6771_UPHY_ACR4) & ~(UINT32)(UPHY_ACR4_GPIO_CTL | UPHY_ACR4_GPIO_MODE));
+
+  // release force-suspend and every forced DP/DM/XCVRSEL/TERMSEL/DATAIN value
+  Reg  = MmioRead32 (MT6771_UPHY_DTM0);
+  Reg &= ~(UINT32)(UPHY_DTM0_FORCE_SUSPENDM | UPHY_DTM0_RG_DP_PD | UPHY_DTM0_RG_DM_PD |
+                   UPHY_DTM0_RG_XCVRSEL | UPHY_DTM0_RG_TERMSEL | UPHY_DTM0_RG_DATAIN |
+                   UPHY_DTM0_FORCE_DP_PD | UPHY_DTM0_FORCE_DM_PD | UPHY_DTM0_FORCE_XCVRSEL |
+                   UPHY_DTM0_FORCE_TERMSEL | UPHY_DTM0_FORCE_DATAIN);
+  MmioWrite32 (MT6771_UPHY_DTM0, Reg);
+
+  // disable the DP/DM BC1.1 path, enable the OTG VBUS comparator
+  Reg  = MmioRead32 (MT6771_UPHY_ACR6);
+  Reg &= ~(UINT32)UPHY_ACR6_BC11_SW_EN;
+  Reg |= (UINT32)UPHY_ACR6_OTG_VBUSCMP_EN;
+  MmioWrite32 (MT6771_UPHY_ACR6, Reg);
+
+  // vendor waits 800 us here
+  MicroSecondDelay (800);
+
+  // VBUS is good: let the PHY run host mode
+  MmioWrite32 (MT6771_UPHY_DTM1, MmioRead32 (MT6771_UPHY_DTM1) | (UINT32)UPHY_DTM1_RG_VBUSVALID);
+  MicroSecondDelay (1000);
+}
 STATIC
 VOID
 Mt6771UsbHostInit (
@@ -428,6 +514,9 @@ Mt6771UsbHostDxeInitialize (
       ScreenLog (L"USB: caplen!=0 -> controller alive, registering\r\n");
     }
   }
+
+  Mt6771UsbPhyHostMode ();
+  ScreenLog (L"USB: PHY in host mode\r\n");
 
   //
   // Expose the xHCI MMIO window as a non-discoverable PCI device so that the

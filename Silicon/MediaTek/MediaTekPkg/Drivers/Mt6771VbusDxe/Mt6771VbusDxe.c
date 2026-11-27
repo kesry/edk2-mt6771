@@ -616,53 +616,6 @@ I2cScan (
 /* ------------------------------------------------------------------ */
 STATIC
 VOID
-PhyBringup (
-  VOID
-  )
-{
-  UINT32  Reg;
-
-  mDiag.Dtm0Before = MmioRead32 (PHY_U2PHYDTM0);
-  mDiag.Dtm1Before = MmioRead32 (PHY_U2PHYDTM1);
-  mDiag.Acr6Before = MmioRead32 (PHY_USBPHYACR6);
-
-  //
-  // Mirror the USB-function half of vendor usb_phy_recover(): leave UART mode,
-  // release force suspend, enable OTG VBUS comparator, then assert VBUSVALID.
-  // TODO: the full vendor sequence also clears many DTM0/DTM1 fields and sets
-  // analog tuning; only the role-relevant bits are handled here.
-  //
-  Reg = MmioRead32 (PHY_U2PHYDTM0);
-  Reg &= ~(PHY_DTM0_FORCE_UART_EN | PHY_DTM0_FORCE_SUSPENDM);
-  MmioWrite32 (PHY_U2PHYDTM0, Reg);
-
-  Reg = MmioRead32 (PHY_U2PHYACR4);
-  Reg &= ~(PHY_ACR4_GPIO_CTL | PHY_ACR4_GPIO_MODE);
-  MmioWrite32 (PHY_U2PHYACR4, Reg);
-
-  Reg = MmioRead32 (PHY_USBPHYACR6);
-  Reg &= ~PHY_ACR6_BC11_SW_EN;
-  Reg |= PHY_ACR6_OTG_VBUSCMP_EN;
-  MmioWrite32 (PHY_USBPHYACR6, Reg);
-
-  MicroSecondDelay (800);
-
-  Reg = MmioRead32 (PHY_U2PHYDTM1);
-  Reg |= PHY_DTM1_VBUSVALID;
-  MmioWrite32 (PHY_U2PHYDTM1, Reg);
-
-  MicroSecondDelay (1000);
-
-  mDiag.Dtm0After = MmioRead32 (PHY_U2PHYDTM0);
-  mDiag.Dtm1After = MmioRead32 (PHY_U2PHYDTM1);
-  mDiag.Acr6After = MmioRead32 (PHY_USBPHYACR6);
-}
-
-/* ------------------------------------------------------------------ */
-/* Bring-up sequence (runs once)                                       */
-/* ------------------------------------------------------------------ */
-STATIC
-VOID
 VbusBringup (
   VOID
   )
@@ -731,8 +684,11 @@ VbusBringup (
   // 4. turn on the boost
   mDiag.OtgStatus = Mt6370EnableOtg (&mDiag.LgCtrl, &mDiag.ChgCtrl1);
 
-  // 5. try to put the U2 PHY into host-capable state
-  PhyBringup ();
+  //
+  // The PHY is NOT touched here any more. Mt6771UsbHostDxe programs it after
+  // this driver has enabled VBUS, so the PHY never sees VBUSVALID without 5V.
+  //
+
 }
 
 STATIC
