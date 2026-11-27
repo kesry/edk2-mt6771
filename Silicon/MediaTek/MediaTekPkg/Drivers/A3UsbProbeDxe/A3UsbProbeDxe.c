@@ -15,6 +15,7 @@
 #include <Library/UefiDriverEntryPoint.h>
 #include <Library/UefiLib.h>
 #include <Library/TimerLib.h>
+#include <Library/PrintLib.h>
 #include <Protocol/UsbIo.h>
 #include <IndustryStandard/Usb.h>
 
