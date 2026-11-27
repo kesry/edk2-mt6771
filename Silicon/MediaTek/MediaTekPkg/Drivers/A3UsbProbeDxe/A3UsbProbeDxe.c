@@ -19,8 +19,16 @@
 #include <Protocol/UsbIo.h>
 #include <IndustryStandard/Usb.h>
 
-#define A3_PROBE_ROUNDS    5
-#define A3_PROBE_DELAY_US  400000u
+//
+// Keep probing for 15 seconds so the keyboard has time to appear after the
+// charger-boost VBUS path comes up. A periodic callback is used instead of a
+// blocking loop in the driver entry point.
+//
+#define A3_PROBE_TICKS     60
+#define A3_PROBE_PERIOD_US 250000u   // 250 ms
+
+STATIC EFI_EVENT  mProbeEvent;
+STATIC UINTN      mProbeTicks;
 
 STATIC
 VOID
@@ -63,6 +71,10 @@ ProbeOneUsbIo (
     DevDesc.DeviceClass, DevDesc.DeviceSubClass, DevDesc.DeviceProtocol);
   PrintLine (Buf);
 
+  //
+  // UsbKbDxe already sent SET_PROTOCOL(BOOT) during its Start(), so a plain
+  // GET_REPORT here should return the 8-byte boot report.
+  //
   ZeroMem (&Request, sizeof (Request));
   Request.RequestType = 0xA1;   // class, interface, IN
   Request.Request     = 0x01;   // HID GET_REPORT
@@ -88,20 +100,20 @@ ProbeOneUsbIo (
   PrintLine (Buf);
 }
 
-EFI_STATUS
+STATIC
+VOID
 EFIAPI
-A3UsbProbeDxeInitialize (
-  IN EFI_HANDLE        ImageHandle,
-  IN EFI_SYSTEM_TABLE  *SystemTable
+A3UsbProbeTimer (
+  IN EFI_EVENT  Event,
+  IN VOID       *Context
   )
 {
   EFI_STATUS   Status;
   EFI_HANDLE  *Handles = NULL;
   UINTN        Count = 0;
   UINTN        i;
-  UINTN        Round;
 
-  PrintLine (L"A3Probe: start\r\n");
+  mProbeTicks++;
 
   Status = gBS->LocateHandleBuffer (
                   ByProtocol,
@@ -110,15 +122,7 @@ A3UsbProbeDxeInitialize (
                   &Count,
                   &Handles
                   );
-  if (EFI_ERROR (Status)) {
-    PrintLine (L"A3Probe: no UsbIo handles\r\n");
-    return EFI_SUCCESS;
-  }
-
-  PrintLine (L"A3Probe: found UsbIo handles, probing...\r\n");
-
-  for (Round = 0; Round < A3_PROBE_ROUNDS; Round++) {
-    MicroSecondDelay (A3_PROBE_DELAY_US);
+  if (!EFI_ERROR (Status) && (Count > 0)) {
     for (i = 0; i < Count; i++) {
       EFI_USB_IO_PROTOCOL  *UsbIo = NULL;
       Status = gBS->HandleProtocol (
@@ -135,6 +139,46 @@ A3UsbProbeDxeInitialize (
   if (Handles != NULL) {
     gBS->FreePool (Handles);
   }
-  PrintLine (L"A3Probe: done\r\n");
+
+  if (mProbeTicks >= A3_PROBE_TICKS) {
+    gBS->SetTimer (mProbeEvent, TimerCancel, 0);
+    PrintLine (L"A3Probe: done\r\n");
+  }
+}
+
+EFI_STATUS
+EFIAPI
+A3UsbProbeDxeInitialize (
+  IN EFI_HANDLE        ImageHandle,
+  IN EFI_SYSTEM_TABLE  *SystemTable
+  )
+{
+  EFI_STATUS  Status;
+
+  PrintLine (L"A3Probe: start (15s polling)\r\n");
+
+  Status = gBS->CreateEvent (
+                  EVT_TIMER | EVT_NOTIFY_SIGNAL,
+                  TPL_CALLBACK,
+                  A3UsbProbeTimer,
+                  NULL,
+                  &mProbeEvent
+                  );
+  if (EFI_ERROR (Status)) {
+    PrintLine (L"A3Probe: CreateEvent failed\r\n");
+    return EFI_DEVICE_ERROR;
+  }
+
+  Status = gBS->SetTimer (
+                  mProbeEvent,
+                  TimerPeriodic,
+                  A3_PROBE_PERIOD_US
+                  );
+  if (EFI_ERROR (Status)) {
+    PrintLine (L"A3Probe: SetTimer failed\r\n");
+    gBS->CloseEvent (mProbeEvent);
+    return EFI_DEVICE_ERROR;
+  }
+
   return EFI_SUCCESS;
 }
