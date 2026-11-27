@@ -284,10 +284,11 @@ UsbLogReplay (
              ((UINT64)MmioRead32 (MT6771_XHCI_BASE + 0x34u) << 32);
     if (Dcbaap != 0) {
       for (SlotLoop = 1; SlotLoop <= 4; SlotLoop++) {
-        OutCtx = MmioRead64 ((UINTN)(Dcbaap + SlotLoop * 8u));
+        // DCBAAP points to a normal-memory array, not an MMIO region.
+        OutCtx = *(UINT64 *)(UINTN)(Dcbaap + SlotLoop * 8u);
         if (OutCtx != 0) {
-          UINT32 Rsvd0 = MmioRead32 ((UINTN)(OutCtx + 0x54u));
-          UINT32 EpState = MmioRead32 ((UINTN)(OutCtx + 0x40u)) & 0x7u;
+          UINT32 Rsvd0 = *(UINT32 *)(UINTN)(OutCtx + 0x54u);
+          UINT32 EpState = *(UINT32 *)(UINTN)(OutCtx + 0x40u) & 0x7u;
           CHAR16 Dbuf[160];
           UnicodeSPrint (Dbuf, sizeof (Dbuf),
             L"USB: slot%u EP1IN state=%u mtkRsvd0=%08x\r\n",
