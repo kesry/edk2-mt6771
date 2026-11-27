@@ -515,41 +515,6 @@ Mt6370Read (IN UINT8 Reg, OUT UINT8 *Value)
 
 STATIC
 EFI_STATUS
-Mt6370UpdateBits (IN UINT8 Reg, IN UINT8 Mask, IN UINT8 Value)
-{
-  EFI_STATUS  Status;
-  UINT8       Old;
-
-  Status = Mt6370Read (Reg, &Old);
-  if (EFI_ERROR (Status)) {
-    return Status;
-  }
-  return Mt6370Write (Reg, (UINT8)((Old & ~Mask) | (Value & Mask)));
-}
-
-STATIC
-EFI_STATUS
-Mt6370EnableHiddenMode (VOID)
-{
-  STATIC CONST UINT8  Regs[4] = {
-    MT6370_REG_HIDDENPASCODE1, MT6370_REG_HIDDENPASCODE2,
-    MT6370_REG_HIDDENPASCODE3, MT6370_REG_HIDDENPASCODE4
-  };
-  STATIC CONST UINT8  Vals[4] = { 0x96, 0x69, 0xC3, 0x3C };
-  EFI_STATUS          Status;
-  UINTN               i;
-
-  for (i = 0; i < 4; i++) {
-    Status = Mt6370Write (Regs[i], Vals[i]);
-    if (EFI_ERROR (Status)) {
-      return Status;
-    }
-  }
-  return EFI_SUCCESS;
-}
-
-STATIC
-EFI_STATUS
 Mt6370EnableOtg (OUT UINT8 *LgCtrl, OUT UINT8 *ChgCtrl1)
 {
   EFI_STATUS  Status;
