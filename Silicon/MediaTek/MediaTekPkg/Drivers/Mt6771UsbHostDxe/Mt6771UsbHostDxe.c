@@ -267,37 +267,6 @@ UsbLogReplay (
     MicroSecondDelay (20000);
   }
 
-  //
-  // Read back the MTK periodic-schedule hint from the running controller.
-  // DCBAAP (cap+0x30/0x34) points to the Device Context Base Address Array;
-  // entry[SlotId] -> Output Device Context. EP contexts start at +0x40,
-  // DCI=2 (EP1 IN) is the second one at +0x60, and reserved[0] is +0x14 of
-  // that context. Linux xhci-mtk-sch.c writes EP_BPKTS(1)=1 there; if our
-  // build-time patch worked this must read nonzero.
-  //
-  {
-    UINT64  Dcbaap;
-    UINT64  OutCtx;
-    UINT32  SlotLoop;
-
-    Dcbaap = (UINT64)MmioRead32 (MT6771_XHCI_BASE + 0x30u) |
-             ((UINT64)MmioRead32 (MT6771_XHCI_BASE + 0x34u) << 32);
-    if (Dcbaap != 0) {
-      for (SlotLoop = 1; SlotLoop <= 4; SlotLoop++) {
-        // DCBAAP points to a normal-memory array, not an MMIO region.
-        OutCtx = *(UINT64 *)(UINTN)(Dcbaap + SlotLoop * 8u);
-        if (OutCtx != 0) {
-          UINT32 Rsvd0 = *(UINT32 *)(UINTN)(OutCtx + 0x54u);
-          UINT32 EpState = *(UINT32 *)(UINTN)(OutCtx + 0x40u) & 0x7u;
-          CHAR16 Dbuf[160];
-          UnicodeSPrint (Dbuf, sizeof (Dbuf),
-            L"USB: slot%u EP1IN state=%u mtkRsvd0=%08x\r\n",
-            (UINT32)SlotLoop, EpState, Rsvd0);
-          gST->ConOut->OutputString (gST->ConOut, Dbuf);
-        }
-      }
-    }
-  }
   if (Caplen != 0) {
     UINT32  PortSc = MmioRead32 (MT6771_XHCI_BASE + Caplen + 0x400u);
     UnicodeSPrint (Buf, sizeof (Buf),
