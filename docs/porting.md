@@ -480,3 +480,60 @@ python3 Tools/verify_firmware.py Build/boot-uefi.img <A3_UEFI.fd>
    - 只实现了 IPPC 切设备角色 + 描述符表（VID/PID 沿用主线 `1d6b/0105`，
      串口 115200 8N1）
    - EP0 状态机、端点配置、PHY 设备模式初始化、数据通路均未实现，不得声称可用
+
+### 17. OTG 自检（2026-11-27，刷机前）
+
+用户提醒"很多设备默认 device，不开 host 就不会输出 5V"，逐项核对结论：
+
+#### 17.1 角色设置：正确（host）
+
+反编译原机 DTB（`Android_boot.img` 里的 `stock-dtbo-0.dtb`）：
+
+```
+usb3@11200000 | compatible = "mediatek,mt6771-mtu3"
+usb3@11200000 | dr_mode = "otg"        ← 原厂 OTG 双角色，默认可能是 device
+```
+
+我们的 `Mt6771UsbHostDxe` 按厂商源码切 host：
+```
+IP_PW_CTRL1 &= ~SSUSB_IP_HOST_PDN        host IP 上电
+IP_PW_CTRL2 |=  SSUSB_IP_DEV_PDN         device IP 下电
+U2/U3 CTRL_0P &= ~(DIS|PDN); |= HOST_SEL(bit2)
+U3D_U2PHYDTM1: FORCE_IDDIG=1, RG_IDDIG=0   ← 厂商 ssusb_otg_plug_in() 的语义 = host
+U2_CTRL |= OTG_SEL(bit7)
+```
+厂商依据：`drivers/misc/mediatek/ssusb/mu3d/xhci-mtk.c`
+`ssusb_otg_plug_in()` 清 `RG_IDDIG` 的注释是 "tell mac switch to host mode"。
+
+#### 17.2 地址：全部对得上
+
+| 项目 | 原机 DTB | UEFI |
+|---|---|---|
+| MAC | `0x11201000 + 0x3000` | `0x11201000` ✅ |
+| IPPC | `0x11203e00 + 0x100` | `0x11203E00` ✅ |
+| xHCI | `0x11200000 + 0x1000` | `0x11200000` ✅ |
+| PHY | `0x11f40000 + 0x10000` | `0x11F40000` ✅ |
+
+#### 17.3 真正的阻塞：VBUS 5V 没开
+
+DTB 里的相关节点：
+```
+usb_boost_manager | compatible = "mediatek,usb_boost"   boost_period = 0x1e (30s)
+otg_iddig         | compatible = "mediatek,usb_iddig_bi_eint"
+extcon_usb        | compatible = "mediatek,extcon-usb"
+charger           | pd_vbus_low_bound = 0x4c4b40 (5.0V)
+```
+注意：`usb_boost` 经查证是 **CPU/内存性能 boost**（插 USB 提频），不是 5V 升压，
+名字误导。5V 升压在 MT6370 充电 IC 的 `mt6370_enable_otg()`
+（`drivers/misc/mediatek/pmic/mt6370/mt6370_pmu_charger.c:1903`），通过 I2C 写
+`CHGCTRL1` 的 `OPA_MODE` 位实现。
+
+我们的 `Mt6771VbusDxe` 试图走这条路，但 I2C6 传输未打通（scan 0），
+所以 **5V 从未输出**。这也是"角色是 host 但设备不上电"的完整解释。
+
+#### 17.4 低成本验证办法
+
+刷机前可用万用表量 USB-C 口 VBUS 脚（A4/A9/B4/B9）：
+- 刷 ACM 镜像（device 模式）：电脑供电时应为 5V（从外部进来）
+- 刷 OTG 镜像（host 模式）：如果仍为 0V，证明升压未开，与上述结论一致
+- 或者使用**自带供电的 OTG HUB**：绕过手机升压，只验证 D+/D- 数据通路
