@@ -264,6 +264,24 @@ USB_HOST_INVARIANTS = [
 
 
 
+
+def verify_live_diagnostics(root):
+    print("[invariants] OTG runtime diagnostics")
+    src = root / "Silicon/MediaTek/MediaTekPkg/Drivers/Mt6771UsbHostDxe/Mt6771UsbHostDxe.c"
+    if not src.is_file():
+        check(False, "USB host driver source exists", str(src))
+        return
+    text = src.read_text(errors="replace")
+    check("MFINDEX %04x" in text,
+          "periodic schedule clock probe (MFINDEX) present")
+    check("ERSTSZ=%u" in text,
+          "event ring configuration probe (ERSTSZ) present")
+    check("PHY DMON1=%08x" in text,
+          "analog PHY connect-status probe (DMON1) present")
+    check("TimerCancel" in text,
+          "diagnostic timer cancels itself (no repeated controller writes)")
+
+
 def verify_edk2_patches(root):
     print("[invariants] EDK2 build-time patches")
     patch = root / "Patches/apply_edk2_mtk_patches.py"
@@ -313,6 +331,7 @@ def main():
     verify_platform(root, args.usb_mode)
     verify_porting_invariants(root)
     verify_edk2_patches(root)
+    verify_live_diagnostics(root)
     verify_last_commit_helper(root)
 
     if args.boot_image:
