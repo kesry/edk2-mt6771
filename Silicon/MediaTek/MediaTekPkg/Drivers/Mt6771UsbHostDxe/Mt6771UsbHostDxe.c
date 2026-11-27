@@ -192,6 +192,7 @@
 STATIC CHAR16  mLogBuf[USB_LOG_LINES][144];
 STATIC UINTN   mLogUsed;
 STATIC UINTN   mLogReplays;
+STATIC BOOLEAN mPortsPowered;
 
 STATIC
 VOID
@@ -243,7 +244,7 @@ UsbLogReplay (
 {
   UINTN  i;
 
-  if (mLogReplays >= 8) {
+  if (mLogReplays >= 3) {
     gBS->SetTimer (Event, TimerCancel, 0);
     return;
   }
@@ -294,8 +295,17 @@ UsbLogReplay (
       UINT32  MaxPorts = (Cap4 >> 24) & 0xFFu;
       UINT32  Ppc      = (Cap10 >> 4) & 0x1u;   // HCCPARAMS1 bit4: port power control
 
-      XhcPowerPorts (Caplen, MaxPorts);
-      MicroSecondDelay (20000);
+      //
+      // Power the ports exactly once. Once the controller is running and a
+      // device is attached (CCS=1, PED=1, PLS=0) writing PORTSC again would
+      // disturb the live port state machine, and the machine rebooted while the
+      // timer kept doing it.
+      //
+      if (!mPortsPowered) {
+        XhcPowerPorts (Caplen, MaxPorts);
+        mPortsPowered = TRUE;
+        MicroSecondDelay (20000);
+      }
       UINTN   P;
 
       UnicodeSPrint (Buf, sizeof (Buf), L"XHCI PPC=%u (1=software controls port power)\r\n", Ppc);
