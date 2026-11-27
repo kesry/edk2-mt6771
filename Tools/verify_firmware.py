@@ -278,10 +278,6 @@ def verify_edk2_patches(root):
               "patch checks anchor count before applying")
         check("updated = text.replace(anchor, block + anchor)" in text,
               "patch replaces ALL anchor matches (both 32- and 64-byte paths)")
-        check("A3_INT_DIAG" in text,
-              "patch injects interrupt-transfer completion diagnostic")
-        check("Urb->Result" in text and "Urb->Completed" in text,
-              "diagnostic reports URB completion and result")
     build = root / "build.sh"
     check(build.is_file() and "apply_edk2_mtk_patches.py" in build.read_text(),
           "build.sh runs the EDK2 patch script")

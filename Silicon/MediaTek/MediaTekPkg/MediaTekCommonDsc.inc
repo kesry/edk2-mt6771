@@ -242,15 +242,11 @@
   UefiDevicePathLib|MdePkg/Library/UefiDevicePathLib/UefiDevicePathLib.inf
   UefiScsiLib|MdePkg/Library/UefiScsiLib/UefiScsiLib.inf
 
-#
-# A3 diagnostic: route RELEASE DEBUG() to the framebuffer so xHCI/USB errors
-# become visible. PcdDebugPrintErrorLevel is already 0x80000000 (DEBUG_ERROR)
-# in RELEASE, so only genuine errors are printed -- the volume is small and
-# goes to the same screen as the USB host trace.
-#
-# PrePi still overrides SerialPortLib to UartSerialPortLib in its [Components]
-# entry, so early boot is unchanged.
-SerialPortLib|MediaTekPkg/Library/FrameBufferSerialPortLib/FrameBufferSerialPortLib.inf
+!if $(TARGET) == DEBUG
+  SerialPortLib|MediaTekPkg/Library/FrameBufferSerialPortLib/FrameBufferSerialPortLib.inf
+!else
+  SerialPortLib|MediaTekPkg/Library/UartSerialPortLib/UartSerialPortLib.inf
+!endif
 
 [LibraryClasses.common.SEC]
   ArmGicArchLib|ArmPkg/Library/ArmGicArchSecLib/ArmGicArchSecLib.inf
