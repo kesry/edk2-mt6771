@@ -18,6 +18,7 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 SCHED = ROOT / "Common/edk2/MdeModulePkg/Bus/Pci/XhciDxe/XhciSched.c"
 MARK = "MTK_EP_BPKTS"
+SCHED_DIAG_MARK = "A3_INT_DIAG"
 
 BLOCK = """        //
         // MT6771 (MediaTek SSUSB) xHCI needs periodic-endpoint scheduling
@@ -32,6 +33,33 @@ BLOCK = """        //
 """
 
 
+
+
+def patch_int_diag(text: str, nl: str) -> tuple[str, bool]:
+    """Inject a once-per-report interrupt-transfer diagnostic."""
+    if SCHED_DIAG_MARK in text:
+        return text, False
+    anchor = (
+        "    if (Urb->Callback != NULL) {" + nl +
+        "      //" + nl +
+        "      // Restore the old TPL, USB bus maybe connect device in" + nl
+    )
+    if anchor not in text:
+        print("WARNING: interrupt diagnostic anchor not found", file=sys.stderr)
+        return text, False
+    lines = [
+        "    // A3_INT_DIAG: report any non-trivial HID interrupt IN report",
+        "    if ((Urb->Completed > 4) && (Urb->Data != NULL)) {",
+        "      UINT8 *A3Data = (UINT8 *)Urb->Data;",
+        "      DEBUG ((DEBUG_ERROR,",
+        "        \"A3_INT_DIAG: len=%u res=0x%x d0=%02x d1=%02x d2=%02x\\n\",",
+        "        Urb->Completed, Urb->Result, A3Data[0], A3Data[1], A3Data[2]));",
+        "    }",
+    ]
+    block = nl.join(lines) + nl + anchor
+    return text.replace(anchor, block, 1), True
+
+
 def main() -> int:
     if not SCHED.is_file():
         print("SKIP: XhciSched.c not present (submodule not checked out?)", file=sys.stderr)
@@ -39,9 +67,6 @@ def main() -> int:
 
     raw = SCHED.read_bytes()
     text = raw.decode("utf-8")
-    if MARK in text:
-        print("MTK XhciDxe patch already applied")
-        return 0
 
     nl = "\r\n" if "\r\n" in text else "\n"
     block = BLOCK.replace("\n", nl)
@@ -53,13 +78,22 @@ def main() -> int:
               "      case USB_ENDPOINT_CONTROL:" + nl)
 
     count = text.count(anchor)
-    if count == 0:
+    if count == 0 and MARK not in text:
         print("ERROR: XhciSched.c anchor not found; patch NOT applied", file=sys.stderr)
         return 1
 
-    updated = text.replace(anchor, block + anchor)
-    SCHED.write_bytes(updated.encode("utf-8"))
-    print(f"Applied MTK periodic-schedule patch to {count} endpoint init site(s)")
+    if MARK not in text:
+        updated = text.replace(anchor, block + anchor)
+        SCHED.write_bytes(updated.encode("utf-8"))
+        print(f"Applied MTK periodic-schedule patch to {count} endpoint init site(s)")
+    else:
+        updated = text
+        print("MTK periodic-schedule patch already applied")
+
+    updated, diag_applied = patch_int_diag(updated, nl)
+    if diag_applied:
+        SCHED.write_bytes(updated.encode("utf-8"))
+        print("Applied A3 interrupt-transfer diagnostic patch")
     return 0
 
 
