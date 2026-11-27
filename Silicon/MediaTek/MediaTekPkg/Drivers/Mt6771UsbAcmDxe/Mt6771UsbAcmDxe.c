@@ -260,6 +260,193 @@ STATIC CONST UINT8  mConfigDescriptor[] = {
   0x07, USB_DT_ENDPOINT, ACM_EP_DATA_IN, USB_ENDPOINT_XFER_BULK, 0x00, 0x02, 0x00,
 };
 
+/* ------------------------------------------------------------------ */
+/* EP0 PIO helpers (vendor mu3d_hal_write_fifo/read_fifo)               */
+/* ------------------------------------------------------------------ */
+STATIC
+VOID
+Ep0WriteFifo (
+  IN CONST UINT8  *Buf,
+  IN UINTN        Length
+  )
+{
+  UINTN  i;
+  UINT32 Word;
+
+  for (i = 0; i < Length; i += 4) {
+    Word = (UINT32)Buf[i];
+    if (i + 1 < Length) Word |= (UINT32)Buf[i + 1] << 8;
+    if (i + 2 < Length) Word |= (UINT32)Buf[i + 2] << 16;
+    if (i + 3 < Length) Word |= (UINT32)Buf[i + 3] << 24;
+    MmioWrite32 (U3D_FIFO0, Word);
+  }
+}
+
+STATIC
+UINTN
+Ep0ReadFifo (
+  OUT UINT8  *Buf,
+  IN  UINTN  MaxLength
+  )
+{
+  UINTN  Count;
+  UINTN  i;
+  UINT32 Word;
+
+  Count = MmioRead32 (MT6771_UDC_MAC_BASE + U3D_RXCOUNT0) & 0x3FFu;
+  if (Count > MaxLength) {
+    Count = MaxLength;
+  }
+
+  for (i = 0; i < Count; i += 4) {
+    Word = MmioRead32 (U3D_FIFO0);
+    Buf[i] = (UINT8)(Word & 0xFF);
+    if (i + 1 < Count) Buf[i + 1] = (UINT8)((Word >> 8) & 0xFF);
+    if (i + 2 < Count) Buf[i + 2] = (UINT8)((Word >> 16) & 0xFF);
+    if (i + 3 < Count) Buf[i + 3] = (UINT8)((Word >> 24) & 0xFF);
+  }
+  return Count;
+}
+
+STATIC
+VOID
+Ep0SetTx (
+  IN CONST UINT8  *Data,
+  IN UINTN        Length,
+  IN UINTN        MaxPacket
+  )
+{
+  UINTN  Send;
+
+  Send = Length < MaxPacket ? Length : MaxPacket;
+  Ep0WriteFifo (Data, Send);
+
+  if (Send == 0) {
+    MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR,
+                 MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR) |
+                 EP0_DATAEND | EP0_TXPKTRDY);
+  } else {
+    MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR,
+                 MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR) | EP0_TXPKTRDY);
+  }
+}
+
+/* String descriptors: minimal, index 0/1/2 */
+STATIC CONST UINT8  mString0[] = { 4, 0x03, 0x09, 0x04 };
+STATIC CONST UINT8  mString1[] = { 8, 0x03, 'k', 0, 'e', 0, 's', 0 };
+STATIC CONST UINT8  mString2[] = { 14, 0x03, 'A', 0, '3', 0, ' ', 0, 'A', 0, 'C', 0, 'M', 0 };
+
+/**
+  Handle one EP0 SETUP packet. This implements the standard requests needed to
+  enumerate a CDC-ACM device. Class-specific requests (SET_LINE_CODING etc.)
+  are ACKed with a zero-length status stage; the defaults already match
+  115200 8N1 that the mainline gadget used.
+**/
+STATIC
+VOID
+HandleSetup (
+  IN CONST USB_SETUP_PACKET  *Setup
+  )
+{
+  UINT8  Type = Setup->RequestType & 0x1F;
+
+  DEBUG ((DEBUG_INFO, "AcmEp0: req=%02x type=%02x val=%04x idx=%04x len=%u
+",
+          Setup->Request, Setup->RequestType, Setup->Value,
+          Setup->Index, Setup->Length));
+
+  switch (Setup->Request) {
+  case USB_REQ_GET_STATUS:
+    {
+      UINT8 Status[2] = { 0, 0 };
+      Ep0SetTx (Status, 2, 64);
+    }
+    return;
+
+  case USB_REQ_SET_ADDRESS:
+    /* the controller latches the address when the status stage completes */
+    MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR,
+                 MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR) | EP0_DATAEND);
+    return;
+
+  case USB_REQ_GET_DESCRIPTOR:
+    switch (Setup->Value >> 8) {
+    case USB_DT_DEVICE:
+      Ep0SetTx ((CONST UINT8 *)&mDeviceDescriptor,
+                sizeof (mDeviceDescriptor), 64);
+      return;
+    case USB_DT_CONFIG:
+      Ep0SetTx (mConfigDescriptor, sizeof (mConfigDescriptor), 64);
+      return;
+    case USB_DT_STRING:
+      switch (Setup->Value & 0xFF) {
+      case 0: Ep0SetTx (mString0, sizeof (mString0), 64); return;
+      case 1: Ep0SetTx (mString1, sizeof (mString1), 64); return;
+      case 2: Ep0SetTx (mString2, sizeof (mString2), 64); return;
+      }
+      break;
+    }
+    break;
+
+  case USB_REQ_GET_CONFIGURATION:
+    {
+      UINT8 Config = 1;
+      Ep0SetTx (&Config, 1, 64);
+    }
+    return;
+
+  case USB_REQ_SET_CONFIGURATION:
+    MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR,
+                 MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR) | EP0_DATAEND);
+    return;
+
+  default:
+    break;
+  }
+
+  /* class/vendor requests and unhandled standard ones: ACK with a ZLP */
+  MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR,
+               MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR) | EP0_DATAEND);
+}
+
+/**
+  EP0 interrupt handler (called from the main polling loop in this bring-up
+  version; no EFI_EVENT is used so it works before the shell starts).
+**/
+STATIC
+VOID
+AcmEp0Poll (
+  VOID
+  )
+{
+  UINT32  Lv1;
+  UINT32  Csr;
+
+  Lv1 = MmioRead32 (U3D_LV1ISR);
+  if ((Lv1 & LV1_EP0) == 0) {
+    return;
+  }
+  MmioWrite32 (U3D_LV1ISR, LV1_EP0);
+
+  Csr = MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR);
+  if ((Csr & EP0_SETUPPKTRDY) != 0) {
+    USB_SETUP_PACKET  Setup;
+    UINTN             Got;
+
+    Got = Ep0ReadFifo ((UINT8 *)&Setup, sizeof (Setup));
+    MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR,
+                 MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR) | EP0_SETUPPKTRDY);
+    if (Got == sizeof (Setup)) {
+      HandleSetup (&Setup);
+    }
+  } else if ((Csr & EP0_RXPKTRDY) != 0) {
+    UINT8  Sink[64];
+    Ep0ReadFifo (Sink, sizeof (Sink));
+    MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR,
+                 MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR) | EP0_RXPKTRDY);
+  }
+}
+
 STATIC
 VOID
 IpccWrite (
@@ -313,6 +500,78 @@ Mtu3SwitchToDevice (
   MicroSecondDelay (20000);
 }
 
+/**
+  Device-mode power-on, following the vendor mu3d_hal_ssusb_en() /
+  mu3d_hal_rst_dev() exactly. See docs/usb-acm.md for provenance.
+**/
+STATIC
+EFI_STATUS
+AcmDeviceInit (
+  VOID
+  )
+{
+  UINT32  Value;
+  UINTN   Wait;
+
+  /* whole-IP reset */
+  Mtu3SwitchToDevice ();
+
+  /* device IP power on, U3/U2 port0 out of reset, device role (not host) */
+  MmioWrite32 (U3D_SSUSB_IP_PW_CTRL2,
+               MmioRead32 (U3D_SSUSB_IP_PW_CTRL2) & ~SSUSB_IP_DEV_PDN);
+
+  Value  = MmioRead32 (U3D_SSUSB_U3_CTRL_0P);
+  Value &= ~(SSUSB_U3_PORT_DIS | SSUSB_U3_PORT_PDN | SSUSB_U3_PORT_HOST_SEL);
+  MmioWrite32 (U3D_SSUSB_U3_CTRL_0P, Value);
+
+  /*
+   * OTG: MAC auto-select + OTG_SEL, and bring U2 out of reset (vendor
+   * mu3d_hal_ssusb_en with SUPPORT_OTG).
+   */
+  Value  = MmioRead32 (U3D_SSUSB_U2_CTRL_0P);
+  Value |= (SSUSB_U2_PORT_OTG_MAC_AUTO_SEL | SSUSB_U2_PORT_OTG_SEL);
+  Value &= ~(SSUSB_U2_PORT_DIS | SSUSB_U2_PORT_PDN | SSUSB_U2_PORT_HOST_SEL);
+  MmioWrite32 (U3D_SSUSB_U2_CTRL_0P, Value);
+
+  /* release reference clock gates (vendor sets these four bits) */
+  Value  = MmioRead32 (U3D_SSUSB_REF_CK_CTRL);
+  Value |= (SSUSB_REF_MAC_CK_GATE_EN | SSUSB_REF_PHY_CK_GATE_EN |
+            SSUSB_REF_CK_GATE_EN | SSUSB_REF_MAC3_CK_GATE_EN);
+  MmioWrite32 (U3D_SSUSB_REF_CK_CTRL, Value);
+
+  /* device controller soft reset (vendor mu3d_hal_rst_dev) */
+  MmioWrite32 (U3D_SSUSB_DEV_RST_CTRL, SSUSB_DEV_SW_RST);
+  MmioWrite32 (U3D_SSUSB_DEV_RST_CTRL, 0);
+
+  /* wait for sys125 / U3 MAC / U2 MAC reset-deassert bits */
+  for (Wait = 0; Wait < 100; Wait++) {
+    if ((MmioRead32 (U3D_SSUSB_IP_PW_STS1) & SSUSB_SYS125_RST_B_STS) != 0) {
+      break;
+    }
+    MicroSecondDelay (1000);
+  }
+  for (Wait = 0; Wait < 100; Wait++) {
+    if ((MmioRead32 (U3D_SSUSB_IP_PW_STS2) & SSUSB_U2_MAC_SYS_RST_B_STS) != 0) {
+      break;
+    }
+    MicroSecondDelay (1000);
+  }
+
+  /* configure EP0 max packet and enable the EP0 interrupt */
+  MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR,
+               MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR) |
+               EP0_MAXPKTSZ0_MASK);
+  MmioWrite32 (U3D_LV1IESR, LV1_EP0);
+
+  DEBUG ((DEBUG_INFO,
+    "AcmDevice: STS1=%08x STS2=%08x EP0CSR=%08x
+",
+    MmioRead32 (U3D_SSUSB_IP_PW_STS1),
+    MmioRead32 (U3D_SSUSB_IP_PW_STS2),
+    MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR)));
+  return EFI_SUCCESS;
+}
+
 EFI_STATUS
 EFIAPI
 Mt6771UsbAcmDxeInitialize (
@@ -320,23 +579,24 @@ Mt6771UsbAcmDxeInitialize (
   IN EFI_SYSTEM_TABLE  *SystemTable
   )
 {
-  //
-  // Stage 1 only: switch the controller to device mode and log the register
-  // state. Deliberately no protocol is installed yet, so this driver cannot
-  // interfere with the working on-screen shell.
-  //
-  // TODO: device soft reset, PHY init, endpoint setup, EP0 state machine and
-  // the bulk endpoints that would carry EFI_SERIAL_IO_PROTOCOL.
-  //
-  Mtu3SwitchToDevice ();
+  EFI_STATUS  Status;
+  UINTN       Iterations;
 
-  DEBUG ((DEBUG_INFO,
-    "Mt6771UsbAcm: device mode, IPPC0=%08x IPPC1=%08x IPPC2=%08x U2=%08x "
-    "EP0CSR=%08x VID=%04x PID=%04x baud=%u\n",
-    IpccRead (IP_PW_CTRL0), IpccRead (IP_PW_CTRL1), IpccRead (IP_PW_CTRL2),
-    IpccRead (U2_CTRL_0P),
-    MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR),
-    ACM_ID_VENDOR, ACM_ID_PRODUCT, ACM_LINE_CODING_115200));
+  Status = AcmDeviceInit ();
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
+
+  /*
+   * Poll EP0 for a bounded window. This bring-up version does not install
+   * EFI_SERIAL_IO_PROTOCOL yet; the loop is here so a device attached before
+   * the shell starts can enumerate while the firmware is still loading.
+   * TODO: replace with a TPL_CALLBACK timer once the bulk data path exists.
+   */
+  for (Iterations = 0; Iterations < 20000; Iterations++) {
+    AcmEp0Poll ();
+    MicroSecondDelay (10);
+  }
 
   return EFI_SUCCESS;
 }
