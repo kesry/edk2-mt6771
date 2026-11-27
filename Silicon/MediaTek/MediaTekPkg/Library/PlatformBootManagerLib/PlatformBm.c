@@ -499,21 +499,19 @@ VOID EFIAPI PlatformBootManagerBeforeConsole(VOID)
   EfiBootManagerUpdateConsoleVariable(
       ConIn, (EFI_DEVICE_PATH_PROTOCOL *)&mUsbKeyboard, NULL);
 
-  EFI_HANDLE *              handles;
-  UINTN                     NoHandles;
-  EFI_DEVICE_PATH_PROTOCOL *devicehandle;
-  /*CHAR16 *devicepathtxt;*/
-  // EfiBootManagerUpdateConsoleVariable(ConIn,
-  //  (EFI_DEVICE_PATH_PROTOCOL*)&gQcomKeypadDeviceGuid, NULL);
-  gBS->LocateHandleBuffer(
-      ByProtocol, &gEfiSimpleTextInputExProtocolGuid, NULL, &NoHandles,
-      &handles);
-  devicehandle = DevicePathFromHandle(handles[1]);
-  EfiBootManagerUpdateConsoleVariable(
-      ConIn, devicehandle, NULL); /*
-            devicepathtxt = ConvertDevicePathToText(devicehandle,TRUE,TRUE);
-            DEBUG((DEBUG_ERROR,"There are %s handles\n",devicepathtxt));
-            ASSERT(0);*/
+  //
+  // The USB HID keyboard class device path above is sufficient: BDS connects
+  // all default consoles after BeforeConsole, so any USB keyboard that appears
+  // will be matched by that class path.
+  //
+  // The old code here located all SimpleTextInputEx handles and blindly used
+  // handles[1] without checking NoHandles >= 2 or the LocateHandleBuffer status.
+  // At BeforeConsole time only the virtual keyboard / graphics console produce
+  // SimpleTextInputEx, so handles[1] was either out of bounds or the wrong
+  // device. Adding that wrong device path to ConIn could send console input to
+  // a non-keyboard handle and was a likely source of the random reboots.
+  // Do not do it: rely on the USB class path instead.
+  //
 
   //
   // Add the hardcoded serial console device path to ConIn, ConOut, ErrOut.
