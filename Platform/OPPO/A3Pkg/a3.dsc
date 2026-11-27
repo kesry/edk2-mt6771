@@ -41,6 +41,7 @@
   MediaTekPkg/Drivers/Mt6771MmcHostDxe/Mt6771MmcHostDxe.inf
   MediaTekPkg/Drivers/Mt6771MmcDiagDxe/Mt6771MmcDiagDxe.inf
   MediaTekPkg/Drivers/A3UsbProbeDxe/A3UsbProbeDxe.inf
+  MediaTekPkg/Drivers/A3UsbKbDxe/A3UsbKbDxe.inf
   EmbeddedPkg/Universal/MmcDxe/MmcDxe.inf
 
 !include Silicon/MediaTek/MT8183Pkg/MT8183.dsc
