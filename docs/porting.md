@@ -668,3 +668,39 @@ USB: RTSOFF=00600 MFINDEX xxxx->xxxx ticking=N ERSTSZ=M ERDP=xxxxxxxx
 
 结论：源码层面能静态确认的都已确认/修复。剩余必须靠 #109 的 `ticking` /
 `ERSTSZ` / `ERDP` 三项运行时数据定位（见 §21）。
+
+### 23. Round 10 — 实机照片复核与 MTK patch 精确性确认
+
+重新逐行读取 00:03 实机照片，确认：
+
+```
+6B: ConsoleIn SimpleTextInEx SimpleTextIn UsbIO DevicePath(...)/USB(0x0,0x0)
+PORTSC1=00000003 CCS=1 PED=1 PLS=0 PP=1 CSC=0
+USBCMD=00000001 RS=1 USBSTS=00000010 HCH=0 CNR=0
+MAC PWR=000060E1 DEVCTL=0000003D TIMING=0005497D
+IPPC U2=00000284 U3=0000020C PWCTRL1=00000000
+PHY DTM0=02000000 DTM1=00000220 ACR6=001004B2
+```
+
+- 键盘句柄**确实有 ConsoleIn/SimpleTextInEx/SimpleTextIn**，ConIn 绑定正常。
+  因此 PcdConInConnectOnDemand 不是根因，已恢复 FALSE（避免 BDS 跳过初始
+  ConIn 连接的风险）。
+- DEVCTL=0x3D = LS_DEV(bit5)，低速键盘直连 root hub。
+
+MTK patch 精确性再确认（厂商 drivers/usb/host/xhci-mtk-sch.c）：
+```
+need_bw_sch(): LS/FS 且 !has_tt → return false（root hub 直接调度）
+xhci_mtk_check_bandwidth(): 此时只需 ep_ctx->reserved[0] |= EP_BPKTS(1)
+```
+我们的 patch 写 `InputContext->EP[Dci-1].RsvdZ5 = 1`（RsvdZ5 即
+reserved[0]），与厂商逻辑**完全一致**；reserved[1] 无需设置。
+
+RELEASE DEBUG 现在路由到 FrameBufferSerialPortLib（PcdDebugPrintErrorLevel
+=0x80000000 即 DEBUG_ERROR）。XhciDxe 的
+"Transfer Default Error Occur! Completecode = 0x%x" 是 DEBUG_ERROR，
+若中断传输报错，下一版屏幕会直接显示 completion code。
+
+**当前候选镜像：run #111**。所有源码层面能做的已做完，剩余依赖实测：
+- Shell 敲键有无反应
+- ERDP 双采样是否前进
+- 屏幕是否出现 DEBUG_ERROR completion code
