@@ -263,6 +263,24 @@ USB_HOST_INVARIANTS = [
 ]
 
 
+
+def verify_edk2_patches(root):
+    print("[invariants] EDK2 build-time patches")
+    patch = root / "Patches/apply_edk2_mtk_patches.py"
+    check(patch.is_file(), "MTK EDK2 patch script exists", str(patch))
+    if patch.is_file():
+        text = patch.read_text(errors="replace")
+        check("RsvdZ5 = 1" in text,
+              "patch writes MTK EP_BPKTS(1) to RsvdZ5")
+        check("USB_ENDPOINT_CONTROL" in text,
+              "patch anchor targets the endpoint-context initializers")
+        check(text.count("count(anchor)") >= 1,
+              "patch checks anchor count before applying")
+    build = root / "build.sh"
+    check(build.is_file() and "apply_edk2_mtk_patches.py" in build.read_text(),
+          "build.sh runs the EDK2 patch script")
+
+
 def verify_porting_invariants(root):
     print("[invariants] OTG / USB source values")
     src = (root / "Silicon/MediaTek/MediaTekPkg/Drivers/Mt6771UsbHostDxe"
@@ -292,6 +310,7 @@ def main():
 
     verify_platform(root, args.usb_mode)
     verify_porting_invariants(root)
+    verify_edk2_patches(root)
     verify_last_commit_helper(root)
 
     if args.boot_image:
