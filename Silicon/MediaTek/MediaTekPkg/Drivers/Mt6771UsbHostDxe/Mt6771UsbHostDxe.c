@@ -208,6 +208,31 @@ ScreenLog (
   }
 }
 
+
+//
+// PORTSC bits, from MdeModulePkg/Bus/Pci/XhciDxe/XhciReg.h:
+//   CCS BIT0, PED BIT1, OCA BIT3, PLS (BIT5|BIT6|BIT7|BIT8), PP BIT9,
+//   LWS BIT16, CSC BIT17, PEC BIT18, WRC BIT19, OCC BIT20, PRC BIT21,
+//   PLC BIT22, CEC BIT23
+//
+#define XHC_PORTSC_CCS   BIT0
+#define XHC_PORTSC_PED   BIT1
+#define XHC_PORTSC_PLS   (BIT5 | BIT6 | BIT7 | BIT8)
+#define XHC_PORTSC_PP    BIT9
+#define XHC_PORTSC_CSC   BIT17
+#define XHC_PORTSC_PEC   BIT18
+#define XHC_PORTSC_WRC   BIT19
+#define XHC_PORTSC_OCC   BIT20
+#define XHC_PORTSC_PRC   BIT21
+#define XHC_PORTSC_PLC   BIT22
+#define XHC_PORTSC_CEC   BIT23
+
+STATIC
+VOID
+XhcPowerPorts (
+  IN UINT32  Caplen,
+  IN UINT32  MaxPorts
+  );
 STATIC
 VOID
 EFIAPI
@@ -268,6 +293,9 @@ UsbLogReplay (
       UINT32  OpBase   = MT6771_XHCI_BASE + Caplen;
       UINT32  MaxPorts = (Cap4 >> 24) & 0xFFu;
       UINT32  Ppc      = (Cap10 >> 4) & 0x1u;   // HCCPARAMS1 bit4: port power control
+
+      XhcPowerPorts (Caplen, MaxPorts);
+      MicroSecondDelay (20000);
       UINTN   P;
 
       UnicodeSPrint (Buf, sizeof (Buf), L"XHCI PPC=%u (1=software controls port power)\r\n", Ppc);
@@ -275,14 +303,15 @@ UsbLogReplay (
 
       for (P = 1; P <= MaxPorts && P <= 4; P++) {
         UINT32  PortSc = MmioRead32 (OpBase + 0x400u + 0x10u * (P - 1u));
-        // xHCI PORTSC: bit0 CCS, bit1 PED, bit4-7 PLS, bit8 PP, bit17 CSC
+        // PORTSC per MdeModulePkg XhciReg.h: CCS bit0, PED bit1,
+        // PLS bits 5-8, PP bit9, CSC bit17.
         UnicodeSPrint (Buf, sizeof (Buf),
           L"PORTSC%u=%08x CCS=%u PED=%u PLS=%u PP=%u CSC=%u\r\n",
           (UINT32)P, PortSc,
           (PortSc & BIT0) ? 1u : 0u,
           (PortSc & BIT1) ? 1u : 0u,
-          (PortSc >> 4) & 0xFu,
-          (PortSc & BIT8) ? 1u : 0u,
+          (PortSc >> 5) & 0xFu,
+          (PortSc & BIT9) ? 1u : 0u,
           (PortSc & BIT17) ? 1u : 0u);
         gST->ConOut->OutputString (gST->ConOut, Buf);
       }
@@ -382,6 +411,41 @@ Mtu3ClearBits (
   It must run while VBUS 5V is already present, which is why it lives in the
   host driver: the VBUS driver runs first and enables the charger boost.
 **/
+
+/**
+  Power every xHCI port.
+
+  MdeModulePkg/Bus/Pci/XhciDxe never writes PORTSC at all (no reference to
+  XHC_PORTSC_PP in Xhci.c), so it cannot power a port on a controller whose
+  HCCPARAMS1.PPC is 1, which is the case here (PPC=1). Without PORTSC.PP the
+  port stays unpowered, PLS reads a reserved value and CCS never asserts, so no
+  device is ever detected.
+
+  Change bits (CSC..CAS, bits 17..24) are written as 0 so they are not cleared.
+**/
+STATIC
+VOID
+XhcPowerPorts (
+  IN UINT32  Caplen,
+  IN UINT32  MaxPorts
+  )
+{
+  UINT32  OpBase = MT6771_XHCI_BASE + Caplen;
+  UINTN   P;
+
+  for (P = 1; P <= MaxPorts && P <= 8; P++) {
+    UINT32  Reg   = OpBase + 0x400u + 0x10u * (P - 1u);
+    UINT32  PortSc = MmioRead32 (Reg);
+
+    if ((PortSc & (UINT32)XHC_PORTSC_PP) == 0) {
+      PortSc &= ~(UINT32)(XHC_PORTSC_CSC | XHC_PORTSC_PEC | XHC_PORTSC_WRC |
+                          XHC_PORTSC_OCC | XHC_PORTSC_PRC | XHC_PORTSC_PLC |
+                          XHC_PORTSC_CEC);
+      PortSc |= (UINT32)XHC_PORTSC_PP;
+      MmioWrite32 (Reg, PortSc);
+    }
+  }
+}
 STATIC
 VOID
 Mt6771UsbPhyHostMode (
