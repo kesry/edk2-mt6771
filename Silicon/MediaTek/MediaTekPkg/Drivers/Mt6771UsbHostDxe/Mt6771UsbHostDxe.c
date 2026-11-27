@@ -114,6 +114,7 @@
 #define SSUSB_U3_PORT_PDN     BIT1
 #define SSUSB_U3_PORT_DIS     BIT0
 
+#define SSUSB_U2_PORT_OTG_MAC_AUTO_SEL BIT8   // let the MAC follow the raw ID pin
 #define SSUSB_U2_PORT_OTG_SEL  BIT7
 #define SSUSB_U2_PORT_HOST_SEL BIT2
 #define SSUSB_U2_PORT_PDN     BIT1
@@ -262,7 +263,7 @@ UsbLogReplay (
           (PortSc & BIT8) ? 1u : 0u,
           (PortSc & BIT17) ? 1u : 0u);
         gST->ConOut->OutputString (gST->ConOut, Buf);
-      }      }
+      }
     }
     {
       CHAR16  Ibuf[160];
@@ -430,7 +431,15 @@ Mt6771UsbHostInit (
   Value &= ~PHY_RG_IDDIG;
   MmioWrite32 (MT6771_UPHY_DTM1, Value);
 
+  //
+  // LK ran the device path for fastboot, and the vendor device init sets
+  // SSUSB_U2_PORT_OTG_MAC_AUTO_SEL (bit8). While that bit is set the MAC picks
+  // host/device from the raw ID pin and ignores our forced role -- and on this
+  // cable chain the ID pin is not grounded, so the MAC would stay in device
+  // mode and the port would never report a connect. Clear it.
+  //
   Value  = MmioRead32 (U3D_SSUSB_U2_CTRL_0P);
+  Value &= ~SSUSB_U2_PORT_OTG_MAC_AUTO_SEL;
   Value |= SSUSB_U2_PORT_OTG_SEL;
   MmioWrite32 (U3D_SSUSB_U2_CTRL_0P, Value);
 
