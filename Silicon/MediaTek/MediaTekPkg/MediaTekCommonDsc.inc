@@ -117,7 +117,7 @@
   gArmTokenSpaceGuid.PcdPciBusMax|0xff
 
   # a PCD that controls the enumeration and connection of ConIn's. When true, ConIn is only connected once a console input is requests
-  gEfiMdeModulePkgTokenSpaceGuid.PcdConInConnectOnDemand|TRUE   # A3: USB VBUS is enabled late (charger boost over I2C), so the keyboard enumerates after BDS ConnectAllDefaultConsoles. On-demand ConIn makes ConSplitter re-signal gConnectConInEvent on every ReadKeyStroke, letting the late keyboard join gST->ConIn.
+  gEfiMdeModulePkgTokenSpaceGuid.PcdConInConnectOnDemand|FALSE
 
   # Enable SHELL to build instead of just taking the binary
   gEfiMdePkgTokenSpaceGuid.PcdUefiLibMaxPrintBufferSize|16000
