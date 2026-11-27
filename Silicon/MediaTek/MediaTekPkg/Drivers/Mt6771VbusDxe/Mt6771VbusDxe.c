@@ -672,11 +672,25 @@ VbusBringup (
     I2cWrite (I2C_DELAY_LEN, 0x0002);
   }
 
-  // 3. probe MT6370
+  // 3. discover the MT6370 by chip-id on DEVINFO (0x00) instead of trusting
+  //    the guessed 0x34; vendor DTS has no reg property for this PMU.
+  {
+    UINT8  ChipId = 0;
+    Status = Mt6370ProbeAddress (&ChipId);
+    mDiag.Mt6370ChipId = ChipId;
+    mDiag.Mt6370Addr = mMt6370Addr;
+    DEBUG ((DEBUG_INFO, "Mt6771Vbus: MT6370 probe %r addr=0x%02x id=0x%02x\n",
+            Status, mMt6370Addr, ChipId));
+    if (EFI_ERROR (Status)) {
+      mDiag.OtgStatus = Status;
+      return;
+    }
+  }
+
+  // 3b. read CHGCTRL1 at the discovered address
   mDiag.ReadStatus = Mt6370Read (MT6370_REG_CHGCTRL1, &mDiag.ChgCtrl1Read);
 
   if (A3_USB_DIAG) {
-    // 3b. scan the bus so we can tell whether the slave address is wrong
     I2cScan ();
   }
 
