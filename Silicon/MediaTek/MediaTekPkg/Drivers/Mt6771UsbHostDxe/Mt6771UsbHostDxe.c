@@ -114,8 +114,6 @@
 //   MTK_TIME_VALUE_1US         = 63  ("62.5MHz:63, 80MHz:80, 100MHz:100, 125MHz:125")
 // It is the 1 us base the USB2 MAC uses to time SOF/reset signalling.
 //
-#define U3D_XHCI_PORT_CTRL         (MT6771_MAC_BASE + 0x2400u)
-#define U3D_USB20_OPSTATE          (MT6771_MAC_BASE + 0x2460u)
 #define U3D_USB20_TIMING_PARAMETER (MT6771_MAC_BASE + 0x2440u)
 #define TIME_VALUE_1US             0x000000FFu
 #define MTK_TIME_VALUE_1US         63u
@@ -220,7 +218,7 @@ UsbLogReplay (
 {
   UINTN  i;
 
-  if (mLogReplays >= 20) {
+  if (mLogReplays >= 8) {
     gBS->SetTimer (Event, TimerCancel, 0);
     return;
   }
@@ -293,15 +291,16 @@ UsbLogReplay (
     }
     {
       CHAR16  Obuf[160];
+      //
+      // Only registers proven readable are dumped. U3D_XHCI_PORT_CTRL (0x2400)
+      // and U3D_USB20_OPSTATE (0x2460) both read 0 while neighbouring registers
+      // return real values, which suggests they are not decoded in the mapped
+      // window; reading them is the likely cause of the two reboots.
+      //
       UnicodeSPrint (Obuf, sizeof (Obuf),
-        L"MAC PC=%08x PWR=%08x DEVCTL=%08x\r\n",
-        MmioRead32 (U3D_XHCI_PORT_CTRL),
+        L"MAC PWR=%08x DEVCTL=%08x TIMING=%08x\r\n",
         MmioRead32 (U3D_POWER_MANAGEMENT),
-        MmioRead32 (U3D_DEVICE_CONTROL));
-      gST->ConOut->OutputString (gST->ConOut, Obuf);
-      UnicodeSPrint (Obuf, sizeof (Obuf),
-        L"MAC OPSTATE=%08x TIMING=%08x\r\n",
-        MmioRead32 (U3D_USB20_OPSTATE),
+        MmioRead32 (U3D_DEVICE_CONTROL),
         MmioRead32 (U3D_USB20_TIMING_PARAMETER));
       gST->ConOut->OutputString (gST->ConOut, Obuf);
     }    {
@@ -597,6 +596,28 @@ Mt6771UsbHostDxeInitialize (
 
   Mt6771UsbPhyHostMode ();
   ScreenLog (L"USB: PHY in host mode\r\n");
+
+  //
+  // The dump showed IPPC U2_CTRL ending up as 0x280: OTG_SEL (bit7) and
+  // OTG_HOST_VBUSVALID_SEL (bit9) set but HOST_SEL (bit2) cleared, while the
+  // U3 port kept its HOST_SEL. Something between the port switch and here
+  // clears bit2, so re-assert it as the very last step before xHCI takes over
+  // and log the before/after value.
+  //
+  {
+    CHAR16  Ubuf[128];
+    UINT32  Before = MmioRead32 (U3D_SSUSB_U2_CTRL_0P);
+    UINT32  After;
+
+    MmioWrite32 (U3D_SSUSB_U2_CTRL_0P,
+                 (Before & ~(UINT32)(SSUSB_U2_PORT_PDN | SSUSB_U2_PORT_DIS)) |
+                 (UINT32)(SSUSB_U2_PORT_HOST_SEL | SSUSB_U2_PORT_OTG_SEL));
+    MicroSecondDelay (100);
+    After = MmioRead32 (U3D_SSUSB_U2_CTRL_0P);
+    UnicodeSPrint (Ubuf, sizeof (Ubuf), L"USB: U2CTRL %08x -> %08x host_sel=%u\r\n",
+                   Before, After, (After & SSUSB_U2_PORT_HOST_SEL) ? 1u : 0u);
+    ScreenLog (Ubuf);
+  }
 
   //
   // Expose the xHCI MMIO window as a non-discoverable PCI device so that the
