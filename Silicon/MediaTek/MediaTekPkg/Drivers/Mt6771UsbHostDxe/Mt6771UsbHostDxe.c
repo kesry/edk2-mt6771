@@ -216,6 +216,13 @@ ScreenLog (
 //   LWS BIT16, CSC BIT17, PEC BIT18, WRC BIT19, OCC BIT20, PRC BIT21,
 //   PLC BIT22, CEC BIT23
 //
+
+// Runtime register offsets (EDK2 XhciReg.h), relative to RTSOFF:
+//   MFINDEX 0x00, ERSTSZ 0x28, ERSTBA 0x30/0x34, ERDP 0x38/0x3c
+#define XHC_RTS_MFINDEX   0x00u
+#define XHC_RTS_ERSTSZ    0x28u
+#define XHC_RTS_ERDP      0x38u
+
 #define XHC_PORTSC_CCS   BIT0
 #define XHC_PORTSC_PED   BIT1
 #define XHC_PORTSC_PLS   (BIT5 | BIT6 | BIT7 | BIT8)
@@ -275,6 +282,30 @@ UsbLogReplay (
       (PortSc & XHC_PORTSC_CCS) ? 1u : 0u,
       (PortSc & XHC_PORTSC_PED) ? 1u : 0u,
       (PortSc & XHC_PORTSC_PP) ? 1u : 0u);
+    gST->ConOut->OutputString (gST->ConOut, Buf);
+  }
+
+  //
+  // Safe runtime-state probe: all reads are standard xHCI MMIO registers.
+  // MFINDEX must tick continuously; if it is frozen the periodic schedule
+  // clock is off and no interrupt endpoint can ever be serviced. ERSTSZ and
+  // ERDP tell us whether XhciDxe set up an event ring at all.
+  //
+  {
+    UINT32  Cap18  = MmioRead32 (MT6771_XHCI_BASE + 0x18u);
+    UINT32  RtsOff = Cap18 & 0xFFFFFFE0u;
+    UINTN   Rts    = MT6771_XHCI_BASE + RtsOff;
+    UINT32  Mf1    = MmioRead32 (Rts + XHC_RTS_MFINDEX) & 0x3FFFu;
+    UINT32  ErstSz = MmioRead32 (Rts + XHC_RTS_ERSTSZ) & 0xFFFFu;
+    UINT32  Erdplo = MmioRead32 (Rts + XHC_RTS_ERDP);
+    UINT32  Mf2;
+
+    MicroSecondDelay (1000);
+    Mf2 = MmioRead32 (Rts + XHC_RTS_MFINDEX) & 0x3FFFu;
+
+    UnicodeSPrint (Buf, sizeof (Buf),
+      L"USB: RTSOFF=%05x MFINDEX %04x->%04x ticking=%u ERSTSZ=%u ERDP=%08x\r\n",
+      RtsOff, Mf1, Mf2, (Mf1 != Mf2) ? 1u : 0u, ErstSz, Erdplo);
     gST->ConOut->OutputString (gST->ConOut, Buf);
   }
 }
