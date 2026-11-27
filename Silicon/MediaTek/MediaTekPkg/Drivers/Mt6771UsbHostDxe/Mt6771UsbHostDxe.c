@@ -212,18 +212,24 @@ UsbLogReplay (
     gST->ConOut->OutputString (gST->ConOut, Buf);
 
     {
-      UINT32  OpBase = MT6771_XHCI_BASE + Caplen;
+      UINT32  OpBase   = MT6771_XHCI_BASE + Caplen;
       UINT32  MaxPorts = (Cap4 >> 24) & 0xFFu;
+      UINT32  Ppc      = (Cap10 >> 4) & 0x1u;   // HCCPARAMS1 bit4: port power control
       UINTN   P;
 
-      for (P = 1; P <= MaxPorts && P <= 4; P++) {
+      UnicodeSPrint (Buf, sizeof (Buf), L"XHCI PPC=%u (1=software controls port power)\r\n", Ppc);
+      gST->ConOut->OutputString (gST->ConOut, Buf);
+
+      for (P = 1; P <= MaxPorts && P <= 2; P++) {
         UINT32  PortSc = MmioRead32 (OpBase + 0x400u + 0x10u * (P - 1u));
+        // xHCI PORTSC: bit0 CCS, bit1 PED, bit4-7 PLS, bit8 PP, bit9-10 PIC
         UnicodeSPrint (Buf, sizeof (Buf),
-          L"PORTSC%u=%08x CCS=%u PED=%u PP=%u\r\n",
+          L"PORTSC%u=%08x CCS=%u PED=%u PLS=%u PP=%u\r\n",
           (UINT32)P, PortSc,
           (PortSc & BIT0) ? 1u : 0u,
           (PortSc & BIT1) ? 1u : 0u,
-          (PortSc & BIT9) ? 1u : 0u);
+          (PortSc >> 4) & 0xFu,
+          (PortSc & BIT8) ? 1u : 0u);
         gST->ConOut->OutputString (gST->ConOut, Buf);
       }
     }
