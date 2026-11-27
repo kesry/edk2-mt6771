@@ -590,7 +590,8 @@ Usb2Hc handles = 1 (bound)
 dh -p UsbIo -> 6B: ConsoleIn SimpleTextInEx SimpleTextIn UsbIO DevicePath(USB)
 ```
 
-DEVCTL=0x3D 解码：`SESSION=1, HOSTMODE=1, VBUS=11(有效), FS_DEV=1`（全速设备）。
+DEVCTL=0x3D 解码：`SESSION=1, HOSTMODE=1, VBUS=11(有效), LS_DEV=1, FS_DEV=0`（**低速设备**）。
+低速键盘正是 Linux xhci-mtk-sch.c 使用 `EP_BPKTS(1)` 的典型场景，与 MTK patch 匹配。
 PHY DTM0 bit25=`RG_SIFSLV_USB20_PLL_STABLE`=1，PLL 已锁定。
 TIMING=0x0005497D：`TIME_VALUE_1US=0x7D(125), SOFTCON_DELAY=0x49, CHOPPER=0x05`。
 
