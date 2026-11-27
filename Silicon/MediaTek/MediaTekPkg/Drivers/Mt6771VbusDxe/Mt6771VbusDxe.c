@@ -205,7 +205,7 @@ STATIC CONST UINTN  mI2cBases[MT6771_I2C_BUS_COUNT] = {
 };
 STATIC UINTN  mI2cBase = 0x11005000u;
 
-STATIC UINT8  mMt6370Addr = MT6370_SLAVE_ADDR;
+STATIC UINT8  mMt6370Addr = 0x6Bu;  // BQ24196 7-bit address (vendor bq24196.c:33)
 STATIC BOOLEAN  mMt6370AddrFound = FALSE;
 #define MT6370_ADDR_FOUND()  mMt6370AddrFound
 
@@ -469,6 +469,17 @@ Mt6370ProbeAddress (
   for (Bus = 0; Bus < MT6771_I2C_BUS_COUNT; Bus++) {
     mI2cBase = mI2cBases[Bus];
     DEBUG ((DEBUG_INFO, "Mt6771Vbus: probe bus %u @ 0x%08x\n", Bus, mI2cBase));
+
+    // First: BQ24196 at its vendor-defined address 0x6B.
+    Status = I2cWriteReadBytesEx (0x6Bu, 0x00u, &Val, 1, 5000u);
+    if (!EFI_ERROR (Status)) {
+      mMt6370Addr = 0x6Bu;
+      mMt6370AddrFound = TRUE;
+      if (ChipId != NULL) *ChipId = Val;   // REG00 content, no chip-id
+      return EFI_SUCCESS;
+    }
+
+    // Fallback: MT6370-style DEVINFO chip-id scan.
     for (Addr = 0x08; Addr <= 0x77; Addr++) {
       Status = I2cWriteReadBytesEx (Addr, MT6370_REG_DEVINFO, &Val, 1, 5000u);
       if (EFI_ERROR (Status)) continue;
@@ -542,254 +553,47 @@ EFI_STATUS
 Mt6370EnableOtg (OUT UINT8 *LgCtrl, OUT UINT8 *ChgCtrl1)
 {
   EFI_STATUS  Status;
-  UINT8       Val;
+  UINT8       Reg00;
+  UINT8       Reg01;
 
-  Status = Mt6370EnableHiddenMode ();
-  if (EFI_ERROR (Status)) {
-    return Status;
+  //
+  // BQ24196 OTG boost sequence, from the vendor driver
+  // drivers/power/mediatek/oppo/charger_ic/oppo_bq24196.c:825
+  //   bq24196_config_interface(REG00, SUSPEND_MODE_DISABLE, BIT7)
+  //   bq24196_config_interface(REG01, OTG_ENABLE,           BIT5)
+  // Device address 0x6B: bq24196.c:33 (write 0xD6 / read 0xD7).
+  //
+  Status = I2cWriteReadBytesEx (mMt6370Addr, 0x00u, &Reg00, 1, I2C_TIMEOUT_US);
+  if (EFI_ERROR (Status)) return Status;
+
+  Reg00 &= ~BIT7;                       // clear SUSPEND_MODE
+  {
+    UINT8  WriteBuf[2];
+    WriteBuf[0] = 0x00u;
+    WriteBuf[1] = Reg00;
+    Status = I2cWriteBytes (mMt6370Addr, WriteBuf, 2);
   }
-  Status = Mt6370Write (MT6370_REG_LG_CONTROL, 0x7Cu);
-  if (EFI_ERROR (Status)) {
-    return Status;
+  if (EFI_ERROR (Status)) return Status;
+
+  Status = I2cWriteReadBytesEx (mMt6370Addr, 0x01u, &Reg01, 1, I2C_TIMEOUT_US);
+  if (EFI_ERROR (Status)) return Status;
+  Reg01 = (Reg01 & ~BIT5) | BIT5;       // OTG_ENABLE (BIT5)
+  {
+    UINT8  WriteBuf[2];
+    WriteBuf[0] = 0x01u;
+    WriteBuf[1] = Reg01;
+    Status = I2cWriteBytes (mMt6370Addr, WriteBuf, 2);
   }
-  Status = Mt6370UpdateBits (MT6370_REG_CHGCTRL1, MT6370_OPA_MODE, MT6370_OPA_MODE);
-  if (EFI_ERROR (Status)) {
-    return Status;
-  }
+  if (EFI_ERROR (Status)) return Status;
+
   MicroSecondDelay (20000);
 
-  if (LgCtrl != NULL) {
-    Mt6370Read (MT6370_REG_LG_CONTROL, &Val);
-    *LgCtrl = Val;
-  }
-  if (ChgCtrl1 != NULL) {
-    Mt6370Read (MT6370_REG_CHGCTRL1, &Val);
-    *ChgCtrl1 = Val;
-  }
-  return Mt6370Write (MT6370_REG_CHGHIDDENCTRL6, 0x00u);
-}
+  if (LgCtrl != NULL) *LgCtrl = Reg00;
+  if (ChgCtrl1 != NULL) *ChgCtrl1 = Reg01;
 
-/* ------------------------------------------------------------------ */
-/* I2C bus scan                                                        */
-/* ------------------------------------------------------------------ */
-STATIC
-VOID
-I2cScan (
-  VOID
-  )
-{
-  UINT8   Addr;
-  UINT8   Val;
-  EFI_STATUS  Status;
-
-  mDiag.ScanCount = 0;
-  for (Addr = 0x08; Addr <= 0x77; Addr++) {
-    Status = I2cWriteReadBytesEx (Addr, 0x00, &Val, 1, 5000u);
-    if (!EFI_ERROR (Status)) {
-      if (mDiag.ScanCount < 16) {
-        mDiag.ScanList[mDiag.ScanCount] = Addr;
-      }
-      mDiag.ScanCount++;
-    }
-  }
-}
-
-/* ------------------------------------------------------------------ */
-/* USB PHY: dump + minimal host-mode switch (experimental)             */
-/* ------------------------------------------------------------------ */
-STATIC
-VOID
-PhyBringup (
-  VOID
-  )
-{
-  UINT32  Reg;
-
-  mDiag.Dtm0Before = MmioRead32 (PHY_U2PHYDTM0);
-  mDiag.Dtm1Before = MmioRead32 (PHY_U2PHYDTM1);
-  mDiag.Acr6Before = MmioRead32 (PHY_USBPHYACR6);
-
-  //
-  // Mirror the USB-function half of vendor usb_phy_recover(): leave UART mode,
-  // release force suspend, enable OTG VBUS comparator, then assert VBUSVALID.
-  // TODO: the full vendor sequence also clears many DTM0/DTM1 fields and sets
-  // analog tuning; only the role-relevant bits are handled here.
-  //
-  Reg = MmioRead32 (PHY_U2PHYDTM0);
-  Reg &= ~(PHY_DTM0_FORCE_UART_EN | PHY_DTM0_FORCE_SUSPENDM);
-  MmioWrite32 (PHY_U2PHYDTM0, Reg);
-
-  Reg = MmioRead32 (PHY_U2PHYACR4);
-  Reg &= ~(PHY_ACR4_GPIO_CTL | PHY_ACR4_GPIO_MODE);
-  MmioWrite32 (PHY_U2PHYACR4, Reg);
-
-  Reg = MmioRead32 (PHY_USBPHYACR6);
-  Reg &= ~PHY_ACR6_BC11_SW_EN;
-  Reg |= PHY_ACR6_OTG_VBUSCMP_EN;
-  MmioWrite32 (PHY_USBPHYACR6, Reg);
-
-  MicroSecondDelay (800);
-
-  Reg = MmioRead32 (PHY_U2PHYDTM1);
-  Reg |= PHY_DTM1_VBUSVALID;
-  MmioWrite32 (PHY_U2PHYDTM1, Reg);
-
-  MicroSecondDelay (1000);
-
-  mDiag.Dtm0After = MmioRead32 (PHY_U2PHYDTM0);
-  mDiag.Dtm1After = MmioRead32 (PHY_U2PHYDTM1);
-  mDiag.Acr6After = MmioRead32 (PHY_USBPHYACR6);
-}
-
-/* ------------------------------------------------------------------ */
-/* Bring-up sequence (runs once)                                       */
-/* ------------------------------------------------------------------ */
-STATIC
-VOID
-VbusBringup (
-  VOID
-  )
-{
-  EFI_STATUS  Status;
-
-  ZeroMem (&mDiag, sizeof (mDiag));
-
-  mDiag.Pad000 = MmioRead32 (0x11000600u);
-  mDiag.Pad004 = MmioRead32 (0x11000604u);
-  mDiag.Pad008 = MmioRead32 (0x11000608u);
-  mDiag.Pad00C = MmioRead32 (0x1100060Cu);
-
-  mDiag.GateStaBefore = InfraAoRead (INFRA3_CG_STA);
-  mDiag.ClkDivBefore  = I2cRead (I2C_CLOCK_DIV);
-  mDiag.TimingBefore  = I2cRead (I2C_TIMING);
-
-  // 1. open the I2C6 clock gate
-  I2c6Ungate ();
-
-  mDiag.GateStaAfter = InfraAoRead (INFRA3_CG_STA);
-  mDiag.ClkDivAfter  = I2cRead (I2C_CLOCK_DIV);
-  mDiag.TimingAfter  = I2cRead (I2C_TIMING);
-
-  //
-  // LK normally leaves this bus fully configured (CLOCK_DIV/TIMING non-zero).
-  // Only program a fallback when the registers really read back as zero.
-  //
-  if ((mDiag.ClkDivAfter == 0) || (mDiag.TimingAfter == 0)) {
-    I2cProgramTiming ();
-    mDiag.ClkDivAfter = I2cRead (I2C_CLOCK_DIV);
-    mDiag.TimingAfter = I2cRead (I2C_TIMING);
-    mDiag.Reprogrammed = TRUE;
-  } else {
-    mDiag.Reprogrammed = FALSE;
-  }
-
-  // DELAY_LEN is required by the controller but is not always left non-zero.
-  if (I2cRead (I2C_DELAY_LEN) == 0) {
-    I2cWrite (I2C_DELAY_LEN, 0x0002);
-  }
-
-  // 3. discover the MT6370 by chip-id on DEVINFO (0x00) instead of trusting
-  //    the guessed 0x34; vendor DTS has no reg property for this PMU.
-  {
-    UINT8  ChipId = 0;
-    Status = Mt6370ProbeAddress (&ChipId);
-    mDiag.Mt6370ChipId = ChipId;
-    mDiag.Mt6370Addr = mMt6370Addr;
-    mDiag.Mt6370Bus = mI2cBase;
-    DEBUG ((DEBUG_INFO, "Mt6771Vbus: MT6370 probe %r addr=0x%02x id=0x%02x\n",
-            Status, mMt6370Addr, ChipId));
-    if (EFI_ERROR (Status)) {
-      mDiag.OtgStatus = Status;
-      return;
-    }
-  }
-
-  // 3b. read CHGCTRL1 at the discovered address
-  mDiag.ReadStatus = Mt6370Read (MT6370_REG_CHGCTRL1, &mDiag.ChgCtrl1Read);
-
-  if (A3_USB_DIAG) {
-    I2cScan ();
-  }
-
-  // 4. turn on the boost
-  mDiag.OtgStatus = Mt6370EnableOtg (&mDiag.LgCtrl, &mDiag.ChgCtrl1);
-
-  // 5. try to put the U2 PHY into host-capable state
-  PhyBringup ();
-}
-
-STATIC
-VOID
-DrawDiagnostics (
-  VOID
-  )
-{
-  CHAR16  Buf[192];
-  UINT32  Cap;
-
-  ScreenClearAndHome ();
-
-  UnicodeSPrint (Buf, sizeof (Buf), L"MT6771 VBUS diagnostic   pass %u\r\n", mRedraws);
-  ScreenLog (Buf);
-  ScreenLog (L"------------------------------------------\r\n");
-
-  UnicodeSPrint (Buf, sizeof (Buf), L"INFRA3_CG_STA  before=0x%08x after=0x%08x\r\n",
-                 mDiag.GateStaBefore, mDiag.GateStaAfter);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"I2C6 CLOCK_DIV  before=0x%04x after=0x%04x\r\n",
-                 mDiag.ClkDivBefore, mDiag.ClkDivAfter);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"I2C6 TIMING     before=0x%04x after=0x%04x\r\n",
-                 mDiag.TimingBefore, mDiag.TimingAfter);
-  ScreenLog (Buf);
-
-  {
-    UINTN  i;
-    CHAR16  Line[128];
-    CHAR16  Item[16];
-
-    UnicodeSPrint (Line, sizeof (Line), L"I2C6 scan    : %u device(s) ", mDiag.ScanCount);
-    for (i = 0; i < mDiag.ScanCount && i < 16; i++) {
-      UnicodeSPrint (Item, sizeof (Item), L"0x%02x ", mDiag.ScanList[i]);
-      StrCatS (Line, sizeof (Line) / sizeof (CHAR16), Item);
-    }
-    if (mDiag.ScanCount == 0) {
-      StrCatS (Line, sizeof (Line) / sizeof (CHAR16), L"(bus silent)");
-    }
-    StrCatS (Line, sizeof (Line) / sizeof (CHAR16), L"\r\n");
-    ScreenLog (Line);
-  }
-
-  ScreenLog (L"------------------------------------------\r\n");
-  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 bus   : 0x%08x addr=0x%02x chipid=0x%02x\r\n",
-                 mDiag.Mt6370Bus, mDiag.Mt6370Addr, mDiag.Mt6370ChipId);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 read  : %r val=0x%02x\r\n",
-                 mDiag.ReadStatus, mDiag.ChgCtrl1Read);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 OTG   : %r\r\n", mDiag.OtgStatus);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"   LG=0x%02x CHGCTRL1=0x%02x\r\n",
-                 mDiag.LgCtrl, mDiag.ChgCtrl1);
-  ScreenLog (Buf);
-  if ((mDiag.ChgCtrl1 & MT6370_OPA_MODE) != 0) {
-    ScreenLog (L"   => boost ON, port sources 5V\r\n");
-  } else {
-    ScreenLog (L"   => boost OFF\r\n");
-  }
-
-  ScreenLog (L"------------------------------------------\r\n");
-  UnicodeSPrint (Buf, sizeof (Buf), L"PHY DTM0 %08x -> %08x\r\n", mDiag.Dtm0Before, mDiag.Dtm0After);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"PHY DTM1 %08x -> %08x\r\n", mDiag.Dtm1Before, mDiag.Dtm1After);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"PHY ACR6 %08x -> %08x\r\n", mDiag.Acr6Before, mDiag.Acr6After);
-  ScreenLog (Buf);
-
-  ScreenLog (L"------------------------------------------\r\n");
-  Cap = MmioRead32 (0x11200000u);
-  UnicodeSPrint (Buf, sizeof (Buf), L"xHCI CAP0=0x%08x caplen=%u\r\n", Cap, Cap & 0xFFu);
-  ScreenLog (Buf);
+  DEBUG ((DEBUG_INFO, "Mt6771Vbus: BQ24196 OTG REG00=0x%02x REG01=0x%02x\n",
+          Reg00, Reg01));
+  return EFI_SUCCESS;
 }
 
 STATIC
