@@ -230,6 +230,43 @@ def verify_last_commit_helper(root):
     check((root / "Tools/mkbootimg-a3.py").is_file(), "Tools/mkbootimg-a3.py exists")
 
 
+# --------------------------------------------------------------------------
+# porting invariants: values that must come from the vendor/upstream sources
+# --------------------------------------------------------------------------
+# (name, value, why) -- each must still be defined with that value so a future
+# edit cannot silently replace a sourced value with a guess.
+USB_HOST_INVARIANTS = [
+    ("MT6771_IPPC_BASE", "0x11203E00", "IPPC base from the stock DTB usb3 reg-names"),
+    ("U3D_SSUSB_U3_CTRL_0P", "0x0030", "U3 port0 control offset (vendor ippc header)"),
+    ("U3D_SSUSB_U2_CTRL_0P", "0x0050", "U2 port0 control offset (vendor ippc header)"),
+    ("U3D_SSUSB_IP_PW_STS1", "0x0010", "IP clock status 1 offset (vendor ippc header)"),
+    ("U3D_SSUSB_IP_PW_STS2", "0x0014", "IP clock status 2 offset (vendor ippc header)"),
+    ("SSUSB_U2_PORT_OTG_SEL", "BIT7", "vendor OTG_SEL is bit7 (upstream differs)"),
+    ("SSUSB_U2_PORT_HOST_SEL", "BIT2", "vendor U2 HOST_SEL is bit2 (upstream uses VBUSVALID|HOST)"),
+    ("SSUSB_SYS125_RST_B_STS", "BIT10", "vendor sys125 clock status bit"),
+    ("SSUSB_U3_MAC_RST_B_STS", "BIT16", "vendor U3 MAC clock status bit"),
+    ("SSUSB_U2_MAC_SYS_RST_B_STS", "BIT0", "vendor U2 MAC clock status bit"),
+    ("PHY_FORCE_IDDIG", "BIT9", "vendor forces IDDIG in PHY DTM1 bit9"),
+    ("PHY_RG_IDDIG", "BIT1", "vendor RG_IDDIG in PHY DTM1 bit1"),
+    ("MT6771_UPHY_DTM1", "0x036C", "PHY DTM1 offset (usb0phy + 0x300 + 0x6C)"),
+]
+
+
+def verify_porting_invariants(root):
+    print("[invariants] OTG / USB source values")
+    src = (root / "Silicon/MediaTek/MediaTekPkg/Drivers/Mt6771UsbHostDxe"
+                  "/Mt6771UsbHostDxe.c")
+    if not src.is_file():
+        check(False, "Mt6771UsbHostDxe.c exists", str(src))
+        return
+    text = src.read_text(errors="replace")
+    for name, value, why in USB_HOST_INVARIANTS:
+        pattern = r"#define\s+" + re.escape(name) + r"\s+.*" + re.escape(value)
+        check(re.search(pattern, text) is not None,
+              name + " uses " + value + " (" + why + ")",
+              "definition missing or value changed")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("boot_image", nargs="?")

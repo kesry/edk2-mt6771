@@ -61,29 +61,48 @@
 #define MT6771_IPPC_BASE      0x11203E00u
 
 //
-// IPPC registers.
+// IPPC registers and bits -- taken from the Android 8 vendor source for THIS
+// SoC, not from upstream mtu3 (the two differ, see docs/porting.md):
+//   drivers/misc/mediatek/ssusb/include/mu3d/ssusb_sifslv_ippc_c_header.h
+//     U3D_SSUSB_IP_PW_CTRL0 +0x00  SSUSB_IP_SW_RST    bit0
+//     U3D_SSUSB_IP_PW_CTRL1 +0x04  SSUSB_IP_HOST_PDN  bit0
+//     U3D_SSUSB_IP_PW_CTRL2 +0x08  SSUSB_IP_DEV_PDN   bit0
+//     U3D_SSUSB_IP_PW_STS1  +0x10  SYS125_RST_B_STS bit10, U3_MAC_RST_B_STS bit16
+//     U3D_SSUSB_IP_PW_STS2  +0x14  U2_MAC_SYS_RST_B_STS bit0
+//     U3D_SSUSB_U3_CTRL_0P  +0x30  HOST_SEL bit2, PDN bit1, DIS bit0
+//     U3D_SSUSB_U2_CTRL_0P  +0x50  OTG_SEL bit7, HOST_SEL bit2, PDN bit1, DIS bit0
+//   drivers/misc/mediatek/mu3phy/mt6771/mtk-phy-asic.h
+//     U3D_U2PHYDTM1 FORCE_IDDIG bit9, RG_IDDIG bit1
 //
 #define U3D_SSUSB_IP_PW_CTRL0 (MT6771_IPPC_BASE + 0x0000u)
 #define U3D_SSUSB_IP_PW_CTRL1 (MT6771_IPPC_BASE + 0x0004u)
 #define U3D_SSUSB_IP_PW_CTRL2 (MT6771_IPPC_BASE + 0x0008u)
+#define U3D_SSUSB_IP_PW_STS1  (MT6771_IPPC_BASE + 0x0010u)
+#define U3D_SSUSB_IP_PW_STS2  (MT6771_IPPC_BASE + 0x0014u)
 #define U3D_SSUSB_U3_CTRL_0P  (MT6771_IPPC_BASE + 0x0030u)
 #define U3D_SSUSB_U2_CTRL_0P  (MT6771_IPPC_BASE + 0x0050u)
-#define U3D_SSUSB_IP_PW_STS1  (MT6771_IPPC_BASE + 0x0010u)
 
 #define SSUSB_IP_SW_RST       BIT0
 #define SSUSB_IP_HOST_PDN     BIT0
 #define SSUSB_IP_DEV_PDN      BIT0
-#define SSUSB_U2_PORT_DIS     BIT0
-#define SSUSB_U2_PORT_HOST    BIT2
-#define SSUSB_U2_PORT_PDN     BIT1
-#define SSUSB_U2_PORT_VBUSVALID BIT9
-#define SSUSB_U2_PORT_FORCE_IDDIG BIT11
-#define SSUSB_U2_PORT_RG_IDDIG   BIT12
-#define SSUSB_U2_PORT_HOST_SEL   (SSUSB_U2_PORT_VBUSVALID | SSUSB_U2_PORT_HOST)
-#define SSUSB_U3_PORT_DIS     BIT0
-#define SSUSB_U3_PORT_PDN     BIT1
+
+#define SSUSB_SYS125_RST_B_STS    BIT10
+#define SSUSB_U3_MAC_RST_B_STS    BIT16
+#define SSUSB_U2_MAC_SYS_RST_B_STS BIT0
+
 #define SSUSB_U3_PORT_HOST_SEL BIT2
-#define SSUSB_XHCI_RST_B_STS  BIT11
+#define SSUSB_U3_PORT_PDN     BIT1
+#define SSUSB_U3_PORT_DIS     BIT0
+
+#define SSUSB_U2_PORT_OTG_SEL  BIT7
+#define SSUSB_U2_PORT_HOST_SEL BIT2
+#define SSUSB_U2_PORT_PDN     BIT1
+#define SSUSB_U2_PORT_DIS     BIT0
+
+/* PHY U3D_U2PHYDTM1 (usb0phy@11f40000 + 0x300 + 0x6C) */
+#define MT6771_UPHY_DTM1      (MT6771_U3PHY_BASE + 0x036Cu)
+#define PHY_FORCE_IDDIG       BIT9
+#define PHY_RG_IDDIG          BIT1
 
 //
 // The RELEASE build maps SerialPortLib to UART0, which is not wired on this
@@ -213,40 +232,69 @@ Mt6771UsbHostInit (
   Value |= SSUSB_U3_PORT_HOST_SEL;
   MmioWrite32 (U3D_SSUSB_U3_CTRL_0P, Value);
 
-  // 6. force the ID pin to host (mtu3_dr.c:ssusb_set_force_mode FORCE_HOST)
+  //
+  // 6. Force IDDIG to host the way the vendor driver does
+  //    (xhci-mtk.c:ssusb_otg_iddig_en / ssusb_otg_plug_in):
+  //      PHY U3D_U2PHYDTM1 |= FORCE_IDDIG, &= ~RG_IDDIG
+  //      U2_CTRL(0) |= OTG_SEL
+  //
+  Value  = MmioRead32 (MT6771_UPHY_DTM1);
+  Value |= PHY_FORCE_IDDIG;
+  Value &= ~PHY_RG_IDDIG;
+  MmioWrite32 (MT6771_UPHY_DTM1, Value);
+
   Value  = MmioRead32 (U3D_SSUSB_U2_CTRL_0P);
-  Value |= SSUSB_U2_PORT_FORCE_IDDIG;
-  Value &= ~SSUSB_U2_PORT_RG_IDDIG;
+  Value |= SSUSB_U2_PORT_OTG_SEL;
   MmioWrite32 (U3D_SSUSB_U2_CTRL_0P, Value);
 
-  // 7. wait for the xHCI reset status bit: this is the authoritative
-  //    "the host controller is really clocked" signal
-  //    (mtu3_host.c:ssusb_check_clocks, SSUSB_XHCI_RST_B_STS).
-  PwSts = 0;
-  for (Wait = 0; Wait < 200; Wait++) {
-    PwSts = MmioRead32 (U3D_SSUSB_IP_PW_STS1);
-    if ((PwSts & SSUSB_XHCI_RST_B_STS) != 0) {
+  //
+  // 7. Wait for the IP clock status bits exactly as the vendor does
+  //    (xhci-mtk.c:mtk_chk_usb_ip_ck_sts). A port whose PDN is set stays in
+  //    reset, so its status bit is not meaningful.
+  //
+  for (Wait = 0; Wait < 100; Wait++) {
+    if ((MmioRead32 (U3D_SSUSB_IP_PW_STS1) & SSUSB_SYS125_RST_B_STS) != 0) {
       break;
     }
     MicroSecondDelay (1000);
   }
+  if ((MmioRead32 (U3D_SSUSB_U2_CTRL_0P) & SSUSB_U2_PORT_PDN) == 0) {
+    for (Wait = 0; Wait < 100; Wait++) {
+      if ((MmioRead32 (U3D_SSUSB_IP_PW_STS2) & SSUSB_U2_MAC_SYS_RST_B_STS) != 0) {
+        break;
+      }
+      MicroSecondDelay (1000);
+    }
+  }
+  if ((MmioRead32 (U3D_SSUSB_U3_CTRL_0P) & SSUSB_U3_PORT_PDN) == 0) {
+    for (Wait = 0; Wait < 100; Wait++) {
+      if ((MmioRead32 (U3D_SSUSB_IP_PW_STS1) & SSUSB_U3_MAC_RST_B_STS) != 0) {
+        break;
+      }
+      MicroSecondDelay (1000);
+    }
+  }
 
+  PwSts = MmioRead32 (U3D_SSUSB_IP_PW_STS1);
   {
     CHAR16  Buf[192];
     UnicodeSPrint (
       Buf, sizeof (Buf),
-      L"USB: IPPC1=%08x U2=%08x U3=%08x PWSTS1=%08x xhci_rst=%u\r\n",
+      L"USB: IPPC1=%08x U2=%08x U3=%08x STS1=%08x STS2=%08x sys125=%u u3mac=%u u2mac=%u\r\n",
       MmioRead32 (U3D_SSUSB_IP_PW_CTRL1),
       MmioRead32 (U3D_SSUSB_U2_CTRL_0P),
       MmioRead32 (U3D_SSUSB_U3_CTRL_0P),
       PwSts,
-      (PwSts & SSUSB_XHCI_RST_B_STS) ? 1u : 0u
+      MmioRead32 (U3D_SSUSB_IP_PW_STS2),
+      (PwSts & SSUSB_SYS125_RST_B_STS) ? 1u : 0u,
+      (PwSts & SSUSB_U3_MAC_RST_B_STS) ? 1u : 0u,
+      (MmioRead32 (U3D_SSUSB_IP_PW_STS2) & SSUSB_U2_MAC_SYS_RST_B_STS) ? 1u : 0u
       );
     ScreenLog (Buf);
-    if ((PwSts & SSUSB_XHCI_RST_B_STS) == 0) {
-      ScreenLog (L"USB: xHCI clock NOT ready (U3 MAC or xhci clock off)\r\n");
+    if ((PwSts & SSUSB_SYS125_RST_B_STS) == 0) {
+      ScreenLog (L"USB: sys125 clock NOT ready -> host IP not clocked\r\n");
     } else {
-      ScreenLog (L"USB: xHCI clock ready -> host controller running\r\n");
+      ScreenLog (L"USB: sys125 clock ready\r\n");
     }
   }
 }
