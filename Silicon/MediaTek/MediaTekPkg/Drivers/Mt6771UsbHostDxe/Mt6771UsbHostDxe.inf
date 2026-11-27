@@ -32,6 +32,7 @@
 
 [Protocols]
   gEfiSimpleTextOutProtocolGuid
+  gEfiUsb2HcProtocolGuid        # only used to count bound controllers in diagnostics
 
 [Depex]
   # Run after a text console exists so diagnostics are visible on screen
