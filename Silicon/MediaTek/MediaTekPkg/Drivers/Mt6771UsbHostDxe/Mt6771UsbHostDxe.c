@@ -286,8 +286,8 @@ UsbLogReplay (
       for (SlotLoop = 1; SlotLoop <= 4; SlotLoop++) {
         OutCtx = MmioRead64 ((UINTN)(Dcbaap + SlotLoop * 8u));
         if (OutCtx != 0) {
-          UINT32 Rsvd0 = MmioRead32 ((UINTN)(OutCtx + 0x74u));
-          UINT32 EpState = MmioRead32 ((UINTN)(OutCtx + 0x60u)) & 0x7u;
+          UINT32 Rsvd0 = MmioRead32 ((UINTN)(OutCtx + 0x54u));
+          UINT32 EpState = MmioRead32 ((UINTN)(OutCtx + 0x40u)) & 0x7u;
           CHAR16 Dbuf[160];
           UnicodeSPrint (Dbuf, sizeof (Dbuf),
             L"USB: slot%u EP1IN state=%u mtkRsvd0=%08x\r\n",
