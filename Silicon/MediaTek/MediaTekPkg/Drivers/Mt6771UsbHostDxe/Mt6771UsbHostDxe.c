@@ -99,6 +99,9 @@
 #define SSUSB_U2_PORT_PDN     BIT1
 #define SSUSB_U2_PORT_DIS     BIT0
 
+/* PHY base from the stock DTB usb0phy@11f40000; U2 PHY COM block at +0x300 */
+#define MT6771_U3PHY_BASE     0x11F40000u
+
 /* PHY U3D_U2PHYDTM1 (usb0phy@11f40000 + 0x300 + 0x6C) */
 #define MT6771_UPHY_DTM1      (MT6771_U3PHY_BASE + 0x036Cu)
 #define PHY_FORCE_IDDIG       BIT9
