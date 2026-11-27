@@ -177,6 +177,8 @@ typedef struct {
   UINT8   Mt6370Addr;
   UINT8   Mt6370ChipId;
   UINTN   Mt6370Bus;
+  UINT32  AckMask6B;
+  UINT32  AckMask34;
   BOOLEAN Reprogrammed;
   UINT32  Pad000;
   UINT32  Pad004;
@@ -443,6 +445,75 @@ I2cWriteReadBytesEx (
 /* ------------------------------------------------------------------ */
 #define MT6370_REG_DEVINFO           0x00u
 
+
+//
+// Every MT6771 I2C controller has its own INFRA_AO clock gate. Scanning a bus
+// whose gate is closed reads nothing, which is exactly what happened while we
+// only ungated I2C6 (INFRA3 bit6). Bits from vendor clk-mt6771.c:
+//   I2C0-3 -> INFRA0 (+0x80) bits 11,12,13,14
+//   I2C4   -> INFRA2 (+0xA4) bit 7
+//   I2C5   -> INFRA2 (+0xA4) bit 18
+//   I2C6   -> INFRA3 (+0xC0) bit 6
+//   I2C7-8 -> INFRA3 (+0xC0) bits 22,23
+//
+typedef struct {
+  UINTN   SetReg;
+  UINT32  Bit;
+} I2C_GATE;
+
+STATIC CONST I2C_GATE  mI2cGates[MT6771_I2C_BUS_COUNT] = {
+  { 0x0080u, BIT11 },  // I2C0
+  { 0x0080u, BIT12 },  // I2C1
+  { 0x0080u, BIT13 },  // I2C2
+  { 0x0080u, BIT14 },  // I2C3
+  { 0x00A4u, BIT7  },  // I2C4
+  { 0x00A4u, BIT18 },  // I2C5
+  { 0x00C0u, BIT6  },  // I2C6
+  { 0x00C0u, BIT22 },  // I2C7
+  { 0x00C0u, BIT23 },  // I2C8
+  { 0x00C0u, 0u    },  // I2C9  (no gate found in clk-mt6771.c)
+  { 0x00C0u, 0u    },  // I2C10
+  { 0x00C0u, 0u    },  // I2C11
+};
+
+STATIC
+VOID
+I2cUngateBus (
+  IN UINTN  Bus
+  )
+{
+  if (Bus >= MT6771_I2C_BUS_COUNT) {
+    return;
+  }
+  if (mI2cGates[Bus].Bit == 0u) {
+    return;
+  }
+  MmioWrite32 (MT6771_INFRA_AO_BASE + mI2cGates[Bus].SetReg, mI2cGates[Bus].Bit);
+}
+
+/**
+  Make one I2C controller usable: select it, open its clock gate, and give it
+  a timing configuration when it has none. LK only configures the bus it uses
+  for fastboot, so every other controller still has CLOCK_DIV/TIMING == 0 and
+  silently fails every transfer.
+**/
+STATIC
+VOID
+I2cSelectBus (
+  IN UINTN  Bus
+  )
+{
+  mI2cBase = mI2cBases[Bus];
+  I2cUngateBus (Bus);
+  MicroSecondDelay (500);
+
+  if ((I2cRead (I2C_CLOCK_DIV) == 0) || (I2cRead (I2C_TIMING) == 0)) {
+    I2cProgramTiming ();
+  }
+  if (I2cRead (I2C_DELAY_LEN) == 0) {
+    I2cWrite (I2C_DELAY_LEN, 0x0002);
+  }
+}
 STATIC
 EFI_STATUS
 Mt6370ProbeAddress (
@@ -455,16 +526,21 @@ Mt6370ProbeAddress (
   UINT8       Val;
 
   for (Bus = 0; Bus < MT6771_I2C_BUS_COUNT; Bus++) {
-    mI2cBase = mI2cBases[Bus];
-    DEBUG ((DEBUG_INFO, "Mt6771Vbus: probe bus %u @ 0x%08x\n", Bus, mI2cBase));
+    I2cSelectBus (Bus);
 
     // First: BQ24196 at its vendor-defined address 0x6B.
     Status = I2cWriteReadBytesEx (0x6Bu, 0x00u, &Val, 1, 5000u);
     if (!EFI_ERROR (Status)) {
+      mDiag.AckMask6B |= (UINT32)(1u << Bus);
       mMt6370Addr = 0x6Bu;
       mMt6370AddrFound = TRUE;
       if (ChipId != NULL) *ChipId = Val;   // REG00 content, no chip-id
       return EFI_SUCCESS;
+    }
+
+    // Record whether the common charger address 0x34 answers on this bus.
+    if (!EFI_ERROR (I2cWriteReadBytesEx (0x34u, 0x00u, &Val, 1, 5000u))) {
+      mDiag.AckMask34 |= (UINT32)(1u << Bus);
     }
 
     // Fallback: MT6370-style DEVINFO chip-id scan.
@@ -722,6 +798,9 @@ DrawDiagnostics (
   ScreenLog (L"------------------------------------------\r\n");
   UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 bus   : 0x%08x addr=0x%02x chipid=0x%02x\r\n",
                  mDiag.Mt6370Bus, mDiag.Mt6370Addr, mDiag.Mt6370ChipId);
+  ScreenLog (Buf);
+  UnicodeSPrint (Buf, sizeof (Buf), L"I2C ack 0x6B : 0x%03x   0x34 : 0x%03x\r\n",
+                 mDiag.AckMask6B, mDiag.AckMask34);
   ScreenLog (Buf);
   UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 read  : %r val=0x%02x\r\n",
                  mDiag.ReadStatus, mDiag.ChgCtrl1Read);
