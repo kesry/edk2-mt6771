@@ -32,15 +32,6 @@ BLOCK = """        //
 """
 
 
-def convert(text: str, block: str, nl: str) -> tuple[str, str, str]:
-    b = block.replace("\n", nl)
-    anchor = ("            ));" + nl +
-              "        }" + nl + nl +
-              "        break;" + nl + nl +
-              "      case USB_ENDPOINT_CONTROL:" + nl)
-    return text, anchor, b
-
-
 def main() -> int:
     if not SCHED.is_file():
         print("SKIP: XhciSched.c not present (submodule not checked out?)", file=sys.stderr)
@@ -53,14 +44,19 @@ def main() -> int:
         return 0
 
     nl = "\r\n" if "\r\n" in text else "\n"
-    _, anchor, block = convert(text, BLOCK, nl)
+    block = BLOCK.replace("\n", nl)
+    # Insert immediately BEFORE the `break;` that follows the INT-ring creation
+    # block. Using the `case USB_ENDPOINT_CONTROL:` label makes the anchor unique
+    # to the two endpoint-context initializers and keeps it clear of the DEBUG((
+    # macro above, whose closing `));` has the same indentation.
+    anchor = ("        break;" + nl + nl +
+              "      case USB_ENDPOINT_CONTROL:" + nl)
 
     count = text.count(anchor)
     if count == 0:
         print("ERROR: XhciSched.c anchor not found; patch NOT applied", file=sys.stderr)
         return 1
 
-    # Insert into both 32-byte and 64-byte endpoint-context initializers.
     updated = text.replace(anchor, block + anchor)
     SCHED.write_bytes(updated.encode("utf-8"))
     print(f"Applied MTK periodic-schedule patch to {count} endpoint init site(s)")
