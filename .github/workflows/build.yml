@@ -10,6 +10,7 @@ on:
       - 'Silicon/**'
       - 'Common/**'
       - 'Tools/**'
+      - 'Patches/**'
       - 'build.sh'
       - '.github/workflows/**'
   pull_request:
