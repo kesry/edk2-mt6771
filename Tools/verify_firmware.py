@@ -276,6 +276,8 @@ def verify_edk2_patches(root):
               "patch anchor targets the endpoint-context initializers")
         check(text.count("count(anchor)") >= 1,
               "patch checks anchor count before applying")
+        check("updated = text.replace(anchor, block + anchor)" in text,
+              "patch replaces ALL anchor matches (both 32- and 64-byte paths)")
     build = root / "build.sh"
     check(build.is_file() and "apply_edk2_mtk_patches.py" in build.read_text(),
           "build.sh runs the EDK2 patch script")
