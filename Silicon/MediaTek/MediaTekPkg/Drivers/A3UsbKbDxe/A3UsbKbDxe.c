@@ -138,6 +138,42 @@ ProcessReport (
   CopyMem (Kb->Last, Report, 8);
 }
 
+
+STATIC
+VOID
+A3KbFindKeyboard (
+  IN A3KB_DEV  *Kb
+  )
+{
+  EFI_HANDLE  *Handles = NULL;
+  UINTN        Count = 0;
+  UINTN        i;
+
+  if (Kb->UsbIo != NULL) return;
+  if (EFI_ERROR (gBS->LocateHandleBuffer (
+                    ByProtocol, &gEfiUsbIoProtocolGuid, NULL, &Count, &Handles))) {
+    return;
+  }
+  for (i = 0; i < Count; i++) {
+    EFI_USB_IO_PROTOCOL          *UsbIo = NULL;
+    EFI_USB_INTERFACE_DESCRIPTOR  IfDesc;
+    if (EFI_ERROR (gBS->HandleProtocol (
+                      Handles[i], &gEfiUsbIoProtocolGuid, (VOID **)&UsbIo))) {
+      continue;
+    }
+    if (EFI_ERROR (UsbIo->UsbGetInterfaceDescriptor (UsbIo, &IfDesc))) {
+      continue;
+    }
+    if ((IfDesc.InterfaceClass == 3) &&
+        (IfDesc.InterfaceSubClass == 1) &&
+        (IfDesc.InterfaceProtocol == 1)) {
+      Kb->UsbIo = UsbIo;
+      break;
+    }
+  }
+  if (Handles != NULL) gBS->FreePool (Handles);
+}
+
 STATIC
 VOID
 EFIAPI
@@ -151,7 +187,9 @@ A3KbPoll (
   UINT8                   Report[8];
   UINT32                  UsbStatus;
 
-  if ((Kb == NULL) || (Kb->UsbIo == NULL)) return;
+  if (Kb == NULL) return;
+  if (Kb->UsbIo == NULL) A3KbFindKeyboard (Kb);
+  if (Kb->UsbIo == NULL) return;
 
   ZeroMem (&Request, sizeof (Request));
   Request.RequestType = 0xA1;
@@ -219,48 +257,13 @@ A3UsbKbDxeInitialize (
   )
 {
   EFI_STATUS   Status;
-  EFI_HANDLE  *Handles = NULL;
-  UINTN        Count = 0;
-  UINTN        i;
-  CHAR16       Buf[128];
 
   mKb = AllocateZeroPool (sizeof (A3KB_DEV));
   if (mKb == NULL) return EFI_OUT_OF_RESOURCES;
   mKb->Signature = 0x41334B42u;   // "A3KB"
 
-  Status = gBS->LocateHandleBuffer (
-                  ByProtocol, &gEfiUsbIoProtocolGuid, NULL, &Count, &Handles);
-  if (EFI_ERROR (Status) || Count == 0) {
-    UnicodeSPrint (Buf, sizeof (Buf), L"A3Kb: no UsbIo (%r)\r\n", Status);
-    gST->ConOut->OutputString (gST->ConOut, Buf);
-    return EFI_SUCCESS;
-  }
-
-  /* find the HID keyboard (interface class 3/1/1) */
-  for (i = 0; i < Count; i++) {
-    EFI_USB_IO_PROTOCOL            *UsbIo = NULL;
-    EFI_USB_INTERFACE_DESCRIPTOR    IfDesc;
-    if (EFI_ERROR (gBS->HandleProtocol (
-                          Handles[i], &gEfiUsbIoProtocolGuid, (VOID **)&UsbIo))) {
-      continue;
-    }
-    if (EFI_ERROR (UsbIo->UsbGetInterfaceDescriptor (UsbIo, &IfDesc))) {
-      continue;
-    }
-    if ((IfDesc.InterfaceClass == 3) &&
-        (IfDesc.InterfaceSubClass == 1) &&
-        (IfDesc.InterfaceProtocol == 1)) {
-      mKb->UsbIo = UsbIo;
-      break;
-    }
-  }
-
-  if (mKb->UsbIo == NULL) {
-    gST->ConOut->OutputString (gST->ConOut, L"A3Kb: no HID keyboard found\r\n");
-    if (Handles != NULL) gBS->FreePool (Handles);
-    return EFI_SUCCESS;
-  }
-  if (Handles != NULL) gBS->FreePool (Handles);
+  // Keyboard discovery now happens in the periodic callback, because VBUS
+  // and USB enumeration complete later than this driver entry point.
 
   mKb->SimpleIn.Reset         = A3KbReset;
   mKb->SimpleIn.ReadKeyStroke = A3KbReadKeyStroke;
