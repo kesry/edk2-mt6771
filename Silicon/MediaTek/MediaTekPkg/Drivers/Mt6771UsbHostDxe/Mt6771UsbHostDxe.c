@@ -299,13 +299,16 @@ UsbLogReplay (
     UINT32  ErstSz = MmioRead32 (Rts + XHC_RTS_ERSTSZ) & 0xFFFFu;
     UINT32  Erdplo = MmioRead32 (Rts + XHC_RTS_ERDP);
     UINT32  Mf2;
+    UINT32  Erdplo2;
 
     MicroSecondDelay (1000);
     Mf2 = MmioRead32 (Rts + XHC_RTS_MFINDEX) & 0x3FFFu;
+    MicroSecondDelay (20000);
+    Erdplo2 = MmioRead32 (Rts + XHC_RTS_ERDP);
 
     UnicodeSPrint (Buf, sizeof (Buf),
-      L"USB: RTSOFF=%05x MFINDEX %04x->%04x ticking=%u ERSTSZ=%u ERDP=%08x\r\n",
-      RtsOff, Mf1, Mf2, (Mf1 != Mf2) ? 1u : 0u, ErstSz, Erdplo);
+      L"USB: RTSOFF=%05x MFINDEX %04x->%04x ticking=%u ERSTSZ=%u ERDP %08x->%08x\r\n",
+      RtsOff, Mf1, Mf2, (Mf1 != Mf2) ? 1u : 0u, ErstSz, Erdplo, Erdplo2);
     gST->ConOut->OutputString (gST->ConOut, Buf);
   }
 }
