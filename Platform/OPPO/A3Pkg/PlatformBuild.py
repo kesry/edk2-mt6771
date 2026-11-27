@@ -267,10 +267,15 @@ class PlatformBuilder (UefiBuilder, BuildSettingsManager):
 
         platform = self.env.GetValue("PRODUCT_NAME")
 
-        # Stable release name used by GitHub Actions artifacts and docs.
-        # Keep it independent of PRODUCT_NAME so users always know which file
-        # to flash: Build/boot-uefi.img -> boot partition.
-        bootimg_out = os.path.join("Build", "boot-uefi.img")
+        # USB mode selects which USB driver the FDF places in the firmware and
+        # therefore which image we emit:
+        #   OTG -> Build/boot-uefi-otg.img   (xHCI host stack + VBUS attempt)
+        #   ACM -> Build/boot-uefi-acm.img   (CDC-ACM device / serial console)
+        usb_mode = os.environ.get("USB_MODE", "OTG").upper()
+        if usb_mode not in ("OTG", "ACM"):
+            logging.critical(f"Unsupported USB_MODE '{usb_mode}' (expected OTG or ACM)")
+            return 1
+        bootimg_out = os.path.join("Build", f"boot-uefi-{usb_mode.lower()}.img")
 
         # BootShim + compressed UEFI FD, with the validated A3 DTB appended to
         # the kernel region. Mainline-linux-mt6771 proved LK needs the DTB in

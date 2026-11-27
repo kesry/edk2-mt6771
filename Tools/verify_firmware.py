@@ -171,7 +171,7 @@ PLATFORM_FILES = [
 ]
 
 
-def verify_platform(root):
+def verify_platform(root, usb_mode=None):
     print("[platform] a3.dsc / a3.fdf / MediaTekPkg.dec")
 
     # PCDs may be declared in the DEC (with a default) and only overridden in
@@ -208,9 +208,15 @@ def verify_platform(root):
         for f in PLATFORM_FILES[::2] + PLATFORM_FILES[1::2]
     )
     fdf = (root / "Platform/OPPO/A3Pkg/a3.fdf").read_text(errors="replace")
-    for driver in ("Mt6771MmcHostDxe", "Mt6771VbusDxe", "Mt6771UsbHostDxe",
-                   "Mt6771MmcDiagDxe", "XhciDxe", "NonDiscoverablePciDeviceDxe",
-                   "UsbKbDxe"):
+    common = ["Mt6771MmcHostDxe", "Mt6771VbusDxe", "Mt6771MmcDiagDxe"]
+    if usb_mode == "ACM":
+        # device mode: the host stack must not be present
+        usb_specific = ["Mt6771UsbAcmDxe"]
+    else:
+        usb_specific = ["Mt6771UsbHostDxe", "XhciDxe",
+                        "NonDiscoverablePciDeviceDxe", "UsbKbDxe"]
+
+    for driver in common + usb_specific:
         check(driver in dsc_all, f"{driver} listed in the platform DSC set")
         check(driver in fdf, f"{driver} placed in a3.fdf")
 
@@ -273,11 +279,13 @@ def main():
     ap.add_argument("fd", nargs="?")
     ap.add_argument("--root", default=None,
                     help="repository root (default: parent of Tools/)")
+    ap.add_argument("--usb-mode", default=None, choices=["OTG", "ACM"],
+                    help="which USB driver the image is expected to contain")
     args = ap.parse_args()
 
     root = Path(args.root) if args.root else Path(__file__).resolve().parent.parent
 
-    verify_platform(root)
+    verify_platform(root, args.usb_mode)
     verify_porting_invariants(root)
     verify_last_commit_helper(root)
 

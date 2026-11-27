@@ -75,26 +75,56 @@ jobs:
           echo "--- Conf/target.txt ---"
           sed -n '1,80p' Conf/target.txt || true
 
-      - name: Build platform
-        id: build
+      - name: Build OTG image
+        id: build_otg
         run: |
           set -o pipefail
-          ./build.sh -t "$TARGET" "$PLATFORM" 2>&1 | tee build.log
+          export USB_MODE=OTG
+          ./build.sh -t "$TARGET" "$PLATFORM" 2>&1 | tee build-otg.log
         continue-on-error: true
 
-      - name: Verify firmware image
+      - name: Stash OTG artifacts
+        if: always()
+        run: |
+          mkdir -p out
+          cp -v Build/boot-uefi-otg.img out/ 2>/dev/null || true
+          cp -v "$(find Build -name 'A3_UEFI.fd' | head -1)" out/A3_UEFI-otg.fd 2>/dev/null || true
+
+      - name: Clean between modes
+        if: always()
+        run: |
+          ./build.sh -c "$PLATFORM" || true
+          rm -rf Build
+
+      - name: Build ACM image
+        id: build_acm
+        run: |
+          set -o pipefail
+          export USB_MODE=ACM
+          ./build.sh -t "$TARGET" "$PLATFORM" 2>&1 | tee build-acm.log
+        continue-on-error: true
+
+      - name: Stash ACM artifacts
+        if: always()
+        run: |
+          mkdir -p out
+          cp -v Build/boot-uefi-acm.img out/ 2>/dev/null || true
+          cp -v "$(find Build -name 'A3_UEFI.fd' | head -1)" out/A3_UEFI-acm.fd 2>/dev/null || true
+
+      - name: Verify firmware images
         run: |
           set -euo pipefail
-          python3 Tools/verify_firmware.py \
-            Build/boot-uefi.img \
-            "$(find Build -name 'A3_UEFI.fd' | head -1)"
+          python3 Tools/verify_firmware.py --usb-mode OTG out/boot-uefi-otg.img out/A3_UEFI-otg.fd
+          python3 Tools/verify_firmware.py --usb-mode ACM out/boot-uefi-acm.img out/A3_UEFI-acm.fd
 
-      - name: Upload build log
+      - name: Upload build logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: build-log-${{ github.run_number }}
-          path: build.log
+          path: |
+            build-otg.log
+            build-acm.log
           if-no-files-found: warn
           retention-days: 30
 
@@ -104,22 +134,22 @@ jobs:
         with:
           name: mt6771-uefi-${{ github.run_number }}
           path: |
-            Build/**/*.fd
+            out/*.fd
             Build/**/*.map
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Upload flashable boot image
-        if: success()
+      - name: Upload flashable boot images
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: boot-uefi-${{ github.run_number }}
-          path: Build/boot-uefi.img
+          path: out/boot-uefi-*.img
           if-no-files-found: error
           retention-days: 14
 
-      - name: Fail if build failed
-        if: steps.build.outcome == 'failure'
+      - name: Fail if either build failed
+        if: steps.build_otg.outcome == 'failure' || steps.build_acm.outcome == 'failure'
         run: |
-          echo "Build failed; see build.log artifact."
+          echo "A build failed; see build-otg.log / build-acm.log artifacts."
           exit 1

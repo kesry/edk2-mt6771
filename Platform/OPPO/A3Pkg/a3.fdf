@@ -24,6 +24,14 @@
 #
 ################################################################################
 
+#
+# USB mode selector: OTG = host stack (xHCI + VBUS), ACM = CDC-ACM device mode.
+# Override at build time with the USB_MODE environment variable.
+#
+!ifndef USB_MODE
+DEFINE USB_MODE = OTG
+!endif
+
 [FD.A3_UEFI]
 BaseAddress   = $(FD_BASE)|gArmTokenSpaceGuid.PcdFdBaseAddress  # The base address of the Firmware
 Size          = $(FD_SIZE)|gArmTokenSpaceGuid.PcdFdSize
@@ -137,7 +145,11 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Bus/Pci/NonDiscoverablePciDeviceDxe/NonDiscoverablePciDeviceDxe.inf
   INF MediaTekPkg/Drivers/Mt6771MmcDiagDxe/Mt6771MmcDiagDxe.inf
   INF MediaTekPkg/Drivers/Mt6771VbusDxe/Mt6771VbusDxe.inf
+!if $(USB_MODE) == "ACM"
+  INF MediaTekPkg/Drivers/Mt6771UsbAcmDxe/Mt6771UsbAcmDxe.inf
+!else
   INF MediaTekPkg/Drivers/Mt6771UsbHostDxe/Mt6771UsbHostDxe.inf
+!endif
   INF MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
   INF MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf
   INF MdeModulePkg/Bus/Usb/UsbKbDxe/UsbKbDxe.inf

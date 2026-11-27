@@ -128,6 +128,138 @@ STATIC CONST USB_DEVICE_DESCRIPTOR_ACM  mDeviceDescriptor = {
   1
 };
 
+/* ---- USB PHY, vendor mu3phy/mt6771/mtk-phy-asic.h ---- */
+#define MT6771_U3PHY_BASE        0x11F40000u
+#define PHY_U2PHY_COM_BASE       (MT6771_U3PHY_BASE + 0x0300u)
+#define PHY_U2PHYDTM0            (PHY_U2PHY_COM_BASE + 0x0068u)
+#define PHY_U2PHYDTM1            (PHY_U2PHY_COM_BASE + 0x006Cu)
+#define PHY_FORCE_IDDIG          BIT9
+#define PHY_RG_IDDIG             BIT1
+
+/* CDC-ACM class codes (USB CDC 1.2) */
+#define CDC_CLASS_COMM           0x02
+#define CDC_CLASS_DATA           0x0A
+#define CDC_SUBCLASS_ACM         0x02
+#define CDC_PROTOCOL_AT          0x01
+#define USB_CLASS_CDC_DATA       0x0A
+#define USB_DT_INTERFACE         0x04
+#define USB_DT_ENDPOINT          0x05
+#define USB_DT_CS_INTERFACE      0x24
+#define USB_ENDPOINT_XFER_INT    0x03
+#define USB_ENDPOINT_XFER_BULK   0x02
+
+#pragma pack(1)
+typedef struct {
+  UINT8   Length;
+  UINT8   DescriptorType;
+  UINT16  BcdUSB;
+  UINT8   DeviceClass;
+  UINT8   DeviceSubClass;
+  UINT8   DeviceProtocol;
+  UINT8   MaxPacketSize0;
+  UINT16  IdVendor;
+  UINT16  IdProduct;
+  UINT16  BcdDevice;
+  UINT8   IManufacturer;
+  UINT8   IProduct;
+  UINT8   ISerialNumber;
+  UINT8   NumConfigurations;
+} ACM_DEVICE_DESC;
+
+typedef struct {
+  UINT8   Length;
+  UINT8   DescriptorType;
+  UINT16  TotalLength;
+  UINT8   NumInterfaces;
+  UINT8   ConfigurationValue;
+  UINT8   IConfiguration;
+  UINT8   Attributes;
+  UINT8   MaxPower;
+} ACM_CONFIG_DESC;
+
+typedef struct {
+  UINT8   Length;
+  UINT8   DescriptorType;
+  UINT8   InterfaceNumber;
+  UINT8   AlternateSetting;
+  UINT8   NumEndpoints;
+  UINT8   InterfaceClass;
+  UINT8   InterfaceSubClass;
+  UINT8   InterfaceProtocol;
+  UINT8   IInterface;
+} ACM_INTERFACE_DESC;
+
+typedef struct {
+  UINT8   Length;
+  UINT8   DescriptorType;
+  UINT8   Subtype;
+  UINT8   Data[5];              /* header functional descriptor payload */
+} ACM_HEADER_FUNC_DESC;
+
+typedef struct {
+  UINT8   Length;
+  UINT8   DescriptorType;
+  UINT8   Subtype;
+  UINT8   Capabilities;
+  UINT8   Data[3];
+} ACM_CALL_MGMT_DESC;
+
+typedef struct {
+  UINT8   Length;
+  UINT8   DescriptorType;
+  UINT8   Subtype;
+  UINT8   Data[4];              /* ACM functional descriptor payload */
+} ACM_ACM_FUNC_DESC;
+
+typedef struct {
+  UINT8   Length;
+  UINT8   DescriptorType;
+  UINT8   Subtype;
+  UINT8   Data[2];
+} ACM_UNION_DESC;
+
+typedef struct {
+  UINT8   Length;
+  UINT8   DescriptorType;
+  UINT8   EndpointAddress;
+  UINT8   Attributes;
+  UINT16  MaxPacketSize;
+  UINT8   Interval;
+} ACM_ENDPOINT_DESC;
+#pragma pack()
+
+/*
+ * Endpoint numbers and packet sizes are the standard CDC-ACM layout; they are
+ * NOT yet validated against MTU3 FIFO sizing (TODO in docs/usb-acm.md).
+ */
+#define ACM_EP_NOTIFY   0x83u   /* EP1 IN  interrupt */
+#define ACM_EP_DATA_OUT 0x02u   /* EP2 OUT bulk */
+#define ACM_EP_DATA_IN  0x82u   /* EP2 IN  bulk */
+
+STATIC CONST UINT8  mConfigDescriptor[] = {
+  /* Configuration */
+  0x09, 0x02, 0x43, 0x00, 0x02, 0x01, 0x00, 0x80, 0x32,
+  /* Interface 0: CDC Communication */
+  0x09, USB_DT_INTERFACE, 0x00, 0x00, 0x01, CDC_CLASS_COMM,
+  CDC_SUBCLASS_ACM, CDC_PROTOCOL_AT, 0x00,
+  /* Header functional */
+  0x05, USB_DT_CS_INTERFACE, 0x00, 0x10, 0x01,
+  /* Call management */
+  0x05, USB_DT_CS_INTERFACE, 0x01, 0x00, 0x01,
+  /* ACM functional */
+  0x04, USB_DT_CS_INTERFACE, 0x02, 0x02,
+  /* Union */
+  0x05, USB_DT_CS_INTERFACE, 0x06, 0x00, 0x01,
+  /* EP1 IN interrupt */
+  0x07, USB_DT_ENDPOINT, ACM_EP_NOTIFY, USB_ENDPOINT_XFER_INT, 0x08, 0x00, 0x10,
+  /* Interface 1: CDC Data */
+  0x09, USB_DT_INTERFACE, 0x01, 0x00, 0x02, CDC_CLASS_DATA, 0x00, 0x00, 0x00,
+  /* EP2 OUT bulk */
+  0x07, USB_DT_ENDPOINT, ACM_EP_DATA_OUT, USB_ENDPOINT_XFER_BULK, 0x00, 0x02, 0x00,
+  /* EP2 IN bulk */
+  0x07, USB_DT_ENDPOINT, ACM_EP_DATA_IN, USB_ENDPOINT_XFER_BULK, 0x00, 0x02, 0x00,
+};
+
 STATIC
 VOID
 IpccWrite (
