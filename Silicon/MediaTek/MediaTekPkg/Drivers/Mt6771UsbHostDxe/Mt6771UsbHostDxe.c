@@ -105,6 +105,18 @@
 #define MT6771_MAC_BASE          0x11201000u
 #define U3D_POWER_MANAGEMENT     (MT6771_MAC_BASE + 0x2404u)
 #define U3D_DEVICE_CONTROL       (MT6771_MAC_BASE + 0x240Cu)
+
+//
+// USB2 MAC timing parameter -- vendor ssusb_usb2_csr_c_header.h and
+// xhci-mtk.c:mtk_xhci_ip_init(), which programs it unconditionally:
+//   U3D_USB20_TIMING_PARAMETER = SSUSB_USB2_CSR_BASE + 0x0040
+//   TIME_VALUE_1US             = bits 7:0
+//   MTK_TIME_VALUE_1US         = 63  ("62.5MHz:63, 80MHz:80, 100MHz:100, 125MHz:125")
+// It is the 1 us base the USB2 MAC uses to time SOF/reset signalling.
+//
+#define U3D_USB20_TIMING_PARAMETER (MT6771_MAC_BASE + 0x2440u)
+#define TIME_VALUE_1US             0x000000FFu
+#define MTK_TIME_VALUE_1US         63u
 #define DC_SESSION               BIT0
 #define SOFT_CONN                BIT6
 #define U3D_SSUSB_IP_PW_CTRL0 (MT6771_IPPC_BASE + 0x0000u)
