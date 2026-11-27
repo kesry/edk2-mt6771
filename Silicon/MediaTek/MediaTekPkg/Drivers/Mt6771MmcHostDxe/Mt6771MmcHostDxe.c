@@ -351,6 +351,47 @@ MsdcSetTimeout (
   MsdcWrite (SDC_CFG, Cfg | (Timeout << 24));
 }
 
+/**
+  Adopt the card clock that LK already programmed instead of guessing a source
+  frequency. The MediaTek MMC compatible flags say clk_div_bits=12 for MT8183/
+  MT6779, so the divider occupies MSDC_CFG bits 8..19 and the mode bits 20..21.
+  We only read the register: this is required because Linux mainline warns that
+  claiming the wrong source clock overclocks the card and causes I/O errors.
+**/
+STATIC
+EFI_STATUS
+MsdcAdoptLkClock (
+  OUT UINT32  *SclkHz
+  )
+{
+  UINT32  Cfg;
+  UINT32  Mode;
+  UINT32  Div;
+  UINT32  Source;
+
+  Cfg = MsdcRead (MSDC_CFG);
+  Mode = (Cfg >> MSDC_CFG_CKMD_SHIFT) & 0x3u;
+  Div  = (Cfg >> MSDC_CFG_CKDIV_SHIFT) & 0xfffu;
+  Source = FixedPcdGet32 (PcdMsdcSourceClockHz);
+
+  switch (Mode) {
+  case 0: /* divide mode: source / (4 * (div+1)) */
+    if (Div == 0xFFFu) return EFI_INVALID_PARAMETER;
+    *SclkHz = Source / (4u * (Div + 1u));
+    break;
+  case 1: /* no divide */
+    *SclkHz = Source;
+    break;
+  case 2: /* DDR, divide by 4/(div+1) */
+    if (Div == 0xFFFu) return EFI_INVALID_PARAMETER;
+    *SclkHz = Source / (4u * (Div + 1u));
+    break;
+  default:
+    return EFI_UNSUPPORTED;
+  }
+  return EFI_SUCCESS;
+}
+
 STATIC
 EFI_STATUS
 MsdcSetClock (
@@ -1031,12 +1072,17 @@ Mt6771MmcHostInit (
 #endif /* MMC_USE_MT6789_QUIRKS */
 
   //
-  // Identification must run at a slow card clock. MmcDxe calls
-  // SetIos(0, 1, EMMCBACKWARD) while identifying, which leaves the clock
-  // untouched, so without this the card would be addressed at the full
-  // source rate (~400 MHz) and every response comes back as a CRC error.
+  // Adopt the card clock LK already programmed. Do not recompute a divider
+  // from an assumed source frequency: mainline explicitly warns that a wrong
+  // assumed source rate overclocks the card and produces I/O errors.
   //
-  MsdcSetClock (400000u);
+  Status = MsdcAdoptLkClock (&mHost.SclkHz);
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MSDC: cannot adopt LK clock %r, keeping PCD value\r\n", Status);
+    mHost.SclkHz = mHost.SourceClockHz;
+  } else {
+    MmcTrace (L"MSDC: adopted LK clock %uHz\r\n", mHost.SclkHz);
+  }
   MsdcSetTimeout ();
 
   MmcTrace (

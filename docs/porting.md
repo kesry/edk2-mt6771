@@ -537,3 +537,32 @@ charger           | pd_vbus_low_bound = 0x4c4b40 (5.0V)
 - 刷 ACM 镜像（device 模式）：电脑供电时应为 5V（从外部进来）
 - 刷 OTG 镜像（host 模式）：如果仍为 0V，证明升压未开，与上述结论一致
 - 或者使用**自带供电的 OTG HUB**：绕过手机升压，只验证 D+/D- 数据通路
+
+### 18. 设备与分区事实（2026-11-27）
+
+设备：**OPPO A3 2018 / PADT00 / 4GB RAM + 128GB eMMC / Micro-USB**（不是 Type-C）。
+
+`parted_info.txt`（实机 `parted -s /dev/mmcblk0 print` + `blkid`）给出的权威事实：
+
+| 项 | 值 |
+|---|---|
+| eMMC 型号 | `MMC DV6DMB` |
+| 容量 | 125 GB，GPT，512B logical/physical |
+| boot 分区 | 分区 35，`mmcblk0p35`，33.6 MB，PARTUUID `c2635e15-61aa-454e-9c40-ebe1bdf19b9b` |
+| cache 分区 | 分区 43，`mmcblk0p43`，453 MB，ext4，PARTUUID `85a5b02f-3773-18b3-1049-718cde95107e` |
+| userdata 分区 | 分区 44，`mmcblk0p44`，8590 MB，ext4，PARTUUID `6fce83a6-5273-4748-1145-c205ebb4b8ad` |
+| data 分区 | 分区 45，`mmcblk0p45`，110 GB，Btrfs/RAID 成员，PARTLABEL=data |
+| lk | 分区 33，`mmcblk0p33` |
+| odmdtbo | 分区 37，`mmcblk0p37` |
+
+这些 PARTUUID 与 `Tools/mkbootimg-a3.py` 的 `BOOT_PARTUUID` 一致
+（`c2635e15-...`），说明 boot 镜像 cmdline 是按这台机器的实测分区生成的。
+
+日志分区计划（用户指定）：写 **cache 分区**（分区 43，453 MB，ext4）。
+为了不破坏 ext4 元数据，建议只写分区尾部 4 MiB，之后在系统里取回。
+
+### 19. eMMC 时钟修正
+
+按主线警告"分频由假定源频推导，写错会 overclock"，驱动改为**采用 LK 已编程的
+MSDC_CFG 分频**（`clk_div_bits=12`：CKDIV bits 8..19，CKMOD bits 20..21），
+推算出实际 SCLK 并写入跟踪输出；不再按假定 400 MHz 自行重设时钟。
