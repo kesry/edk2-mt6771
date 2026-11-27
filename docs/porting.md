@@ -704,3 +704,40 @@ RELEASE DEBUG 现在路由到 FrameBufferSerialPortLib（PcdDebugPrintErrorLevel
 - Shell 敲键有无反应
 - ERDP 双采样是否前进
 - 屏幕是否出现 DEBUG_ERROR completion code
+
+### 24. Round 14 — 实测清单与 SET_PROTOCOL 排除
+
+检查了 UsbKbDxe 的初始化路径（KeyBoard.c:825-871）：
+- `UsbGetConfiguration` → `UsbSetConfiguration` → `UsbSetProtocolRequest(BOOT_PROTOCOL)`
+- `UsbSetProtocolRequest` 的返回值未被检查（EDK2 上游写法，广泛使用，暂不改）
+- 枚举成功已证明 EP0 控制传输可用，因此 SET_PROTOCOL 失败的可能性低
+
+**当前 build（run #114）屏幕上应能看到的完整诊断集：**
+```
+USB: host init (upstream mtu3_host sequence)
+USB: DEVCTL xxxxxxxx -> xxxxxxxx
+USB: IPPC1=... U2=... U3=... STS1=... STS2=... sys125=... u2mac=...
+USB: U2CTRL xxxxxxxx -> xxxxxxxx host_sel=1
+USB: register xHCI -> Success
+XHCI CAPLEN=32 VER=0110 SLOTS=15 PORTS=1 / PPC=1
+PORTSC1=... CCS=? PED=? PLS=? PP=1 CSC=?
+USBCMD=... RS=1 USBSTS=... HCH=0 CNR=0
+MAC PWR=... DEVCTL=... TIMING=...
+Usb2Hc handles = 1 (bound)
+USB: port power done, PORTSC1=... CCS=1 PED=1 PP=1
+USB: RTSOFF=00600 MFINDEX xxxx->xxxx ticking=? ERSTSZ=? ERDP xxx->xxx
+USB: PHY DMON1=xxxxxxxx AVALID=? HST_DISCON=? LINE=?
+```
+
+**下次刷机必须采集的三行（一次性、安全 MMIO 读）：**
+1. `USB: RTSOFF=... MFINDEX ... ticking=? ERSTSZ=? ERDP xxx->xxx`
+2. `USB: PHY DMON1=... AVALID=? HST_DISCON=? LINE=?`
+3. `PORTSC1=... CCS=? PED=? PLS=? PP=?`
+
+判读矩阵：
+| AVALID | HST_DISCON | ticking | ERDP | 结论 |
+|---|---|---|---|---|
+| 0 或 DISCON=1 | - | - | - | 模拟层没看到键盘 → 接线/VBUS/PHY |
+| 1 | 0 | 0 | - | 周期时钟停 → 查参考时钟 |
+| 1 | 0 | 1 | 不变 | 无 transfer event → MTK 调度/事件环 |
+| 1 | 0 | 1 | 前进 | event 有了 → 查 DMA/URB 匹配 |
