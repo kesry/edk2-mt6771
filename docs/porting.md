@@ -614,3 +614,29 @@ EP0 控制传输通（否则无法枚举），问题在 HID 中断端点（EP1 I
 - XHCI_SPURIOUS_SUCCESS（xhci-ring.c:2856 忽略 short transfer 后的 spurious 成功）
 - xhci_mtk_set_frame_interval / rxfifo_depth_set（HSCH_CFG1 @0x960）
 - EDK2 XhciDxe 的 PollTimer 事件环轮询是否正常
+
+### 21. HID 中断传输诊断判读指南（round 4）
+
+run #105+ 的一次性回调在 3 秒时打印（全部是标准 xHCI MMIO 读，安全）：
+
+```
+USB: RTSOFF=00600 MFINDEX xxxx->xxxx ticking=N ERSTSZ=M ERDP=xxxxxxxx
+```
+
+判读：
+
+| 观察 | 结论 | 下一步 |
+|---|---|---|
+| `ticking=0` | MFINDEX 微帧计数器不走 → 周期调度时钟关闭 → 中断端点永远不会被服务，这是根因 | 查 USB 125MHz/48MHz 参考时钟与 `USBCMD`/`CONFIG` 寄存器 |
+| `ticking=1, ERSTSZ=0` | 帧计数器在走但 XhciDxe 没建事件环 | 查 NonDiscoverablePciDevice 的 `AllocateBuffer`/`Map` 是否失败 |
+| `ticking=1, ERSTSZ>=1`，键盘仍无输入 | 事件环起来了、MTK 调度 patch 已注入；问题在 transfer event 或 DMA 数据可见性 | 读 ERDP 前后对比；验证 NonCoherent DMA flush；确认 `UsbKbDxe` callback 是否收到非零 DataLength |
+
+补充事实（源码确认）：
+- EDK2 控制传输走同步路径，不依赖 PollTimer；中断传输靠 1ms PollTimer
+  (`XHC_ASYNC_TIMER_INTERVAL = EFI_TIMER_PERIOD_MILLISECONDS(1)`) 轮询事件环。
+  因此"枚举成功"不能证明 PollTimer 在跑——这是本次诊断的核心目的。
+- LS 键盘 `DEVCTL=0x3D`（LS_DEV=1），`bInterval` 通常 10ms，走
+  `HighBitSet32(10)+3 = 6`，合法。2025 年的 bInterval clamp 修复只针对 HS/SS，
+  与本机无关。
+- `XhcInitializeEndpointContext/64` 是所有非控制端点上下文的唯一汇聚点
+  （SetConfigCmd 3234/3325、SetInterface 3701/3907），MTK patch 覆盖全部路径。
