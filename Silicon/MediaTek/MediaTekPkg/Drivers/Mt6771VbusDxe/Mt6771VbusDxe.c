@@ -176,6 +176,7 @@ typedef struct {
   UINT16  ScanCount;
   UINT8   Mt6370Addr;
   UINT8   Mt6370ChipId;
+  UINTN   Mt6370Bus;
   BOOLEAN Reprogrammed;
   UINT32  Pad000;
   UINT32  Pad004;
@@ -190,6 +191,20 @@ STATIC VBUS_DIAG  mDiag;
 // is discovered at runtime by probing DEVINFO (0x00) and checking the chip ID
 // the way the vendor driver does (mt6370_pmu_chip_id_check(): high nibble
 // 0x80 / 0xE0 / 0xF0).
+//
+// MT6771 I2C controller bases -- decoded from the Android 10 stock DTB:
+// i2c@11007000 id=0, 11011000 id=1, ..., 11016000 id=11 (all clock-div=5).
+// The DTB does not say which bus carries MT6370, so probe all of them rather
+// than guessing one bus.
+//
+#define MT6771_I2C_BUS_COUNT      12
+STATIC CONST UINTN  mI2cBases[MT6771_I2C_BUS_COUNT] = {
+  0x11007000u, 0x11011000u, 0x11009000u, 0x1100F000u,
+  0x11008000u, 0x11017000u, 0x11005000u, 0x1101A000u,
+  0x1101B000u, 0x11014000u, 0x11015000u, 0x11016000u
+};
+STATIC UINTN  mI2cBase = 0x11005000u;
+
 STATIC UINT8  mMt6370Addr = MT6370_SLAVE_ADDR;
 STATIC BOOLEAN  mMt6370AddrFound = FALSE;
 #define MT6370_ADDR_FOUND()  mMt6370AddrFound
@@ -240,14 +255,14 @@ STATIC
 VOID
 I2cWrite (IN UINTN Offset, IN UINT16 Value)
 {
-  MmioWrite16 (MT6771_I2C6_BASE + Offset, Value);
+  MmioWrite16 (mI2cBase + Offset, Value);
 }
 
 STATIC
 UINT16
 I2cRead (IN UINTN Offset)
 {
-  return MmioRead16 (MT6771_I2C6_BASE + Offset);
+  return MmioRead16 (mI2cBase + Offset);
 }
 
 STATIC
@@ -447,22 +462,23 @@ Mt6370ProbeAddress (
   )
 {
   EFI_STATUS  Status;
+  UINTN       Bus;
   UINT8       Addr;
   UINT8       Val;
 
-  for (Addr = 0x08; Addr <= 0x77; Addr++) {
-    Status = I2cWriteReadBytesEx (Addr, MT6370_REG_DEVINFO, &Val, 1, 5000u);
-    if (EFI_ERROR (Status)) {
-      continue;
-    }
-    if (((Val & 0xF0) == 0x80) || ((Val & 0xF0) == 0xE0) ||
-        ((Val & 0xF0) == 0xF0)) {
-      mMt6370Addr = Addr;
-      mMt6370AddrFound = TRUE;
-      if (ChipId != NULL) {
-        *ChipId = Val;
+  for (Bus = 0; Bus < MT6771_I2C_BUS_COUNT; Bus++) {
+    mI2cBase = mI2cBases[Bus];
+    DEBUG ((DEBUG_INFO, "Mt6771Vbus: probe bus %u @ 0x%08x\n", Bus, mI2cBase));
+    for (Addr = 0x08; Addr <= 0x77; Addr++) {
+      Status = I2cWriteReadBytesEx (Addr, MT6370_REG_DEVINFO, &Val, 1, 5000u);
+      if (EFI_ERROR (Status)) continue;
+      if (((Val & 0xF0) == 0x80) || ((Val & 0xF0) == 0xE0) ||
+          ((Val & 0xF0) == 0xF0)) {
+        mMt6370Addr = Addr;
+        mMt6370AddrFound = TRUE;
+        if (ChipId != NULL) *ChipId = Val;
+        return EFI_SUCCESS;
       }
-      return EFI_SUCCESS;
     }
   }
   return EFI_NOT_FOUND;
@@ -679,6 +695,7 @@ VbusBringup (
     Status = Mt6370ProbeAddress (&ChipId);
     mDiag.Mt6370ChipId = ChipId;
     mDiag.Mt6370Addr = mMt6370Addr;
+    mDiag.Mt6370Bus = mI2cBase;
     DEBUG ((DEBUG_INFO, "Mt6771Vbus: MT6370 probe %r addr=0x%02x id=0x%02x\n",
             Status, mMt6370Addr, ChipId));
     if (EFI_ERROR (Status)) {
@@ -744,8 +761,8 @@ DrawDiagnostics (
   }
 
   ScreenLog (L"------------------------------------------\r\n");
-  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 addr  : 0x%02x chipid=0x%02x\r\n",
-                 mDiag.Mt6370Addr, mDiag.Mt6370ChipId);
+  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 bus   : 0x%08x addr=0x%02x chipid=0x%02x\r\n",
+                 mDiag.Mt6370Bus, mDiag.Mt6370Addr, mDiag.Mt6370ChipId);
   ScreenLog (Buf);
   UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 read  : %r val=0x%02x\r\n",
                  mDiag.ReadStatus, mDiag.ChgCtrl1Read);
