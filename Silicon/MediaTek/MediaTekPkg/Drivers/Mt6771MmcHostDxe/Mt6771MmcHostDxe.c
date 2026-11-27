@@ -29,6 +29,7 @@
 // PATCH_BIT quirks that edk2-mtk next-msdc used; only for experiments.
 //
 #define MMC_USE_MT6789_QUIRKS   0
+#define MMC_SCREEN_TRACE        FALSE
 
 //
 // eMMC clock gates. Vendor DT: clocks = <&infracfg_ao INFRACFG_AO_MSDC0_SCK_CG>,
@@ -72,6 +73,13 @@ MmcTrace (
   VA_LIST  Args;
   CHAR16   Buffer[160];
 
+  //
+  // Screen output is disabled on purpose: the USB diagnostics need the whole
+  // screen, and the MMC trace was pushing them off. Set to TRUE to debug eMMC.
+  //
+  if (!MMC_SCREEN_TRACE) {
+    return;
+  }
   if ((gST == NULL) || (gST->ConOut == NULL)) {
     return;
   }

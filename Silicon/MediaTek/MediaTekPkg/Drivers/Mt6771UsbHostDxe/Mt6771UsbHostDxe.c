@@ -163,7 +163,7 @@ UsbLogReplay (
 {
   UINTN  i;
 
-  if (mLogReplays >= 3) {
+  if (mLogReplays >= 20) {
     gBS->SetTimer (Event, TimerCancel, 0);
     return;
   }
@@ -458,7 +458,7 @@ Mt6771UsbHostDxeInitialize (
                       &ReplayEvent
                       )))
     {
-      gBS->SetTimer (ReplayEvent, TimerPeriodic, 30000000u);
+      gBS->SetTimer (ReplayEvent, TimerPeriodic, 20000000u);
     }
   }
 

@@ -36,10 +36,20 @@
 
 STATIC UINTN  mPass;
 
+//
+// Screen output is disabled on purpose: only USB diagnostics should occupy the
+// screen while the USB/OTG bring-up is being debugged. Set to TRUE to re-enable
+// the eMMC/GPT report.
+//
+#define MMC_DIAG_SCREEN_TRACE  FALSE
+
 STATIC
 VOID
 PrintText (IN CONST CHAR16 *Text)
 {
+  if (!MMC_DIAG_SCREEN_TRACE) {
+    return;
+  }
   if ((gST != NULL) && (gST->ConOut != NULL)) {
     gST->ConOut->OutputString (gST->ConOut, (CHAR16 *)Text);
   }

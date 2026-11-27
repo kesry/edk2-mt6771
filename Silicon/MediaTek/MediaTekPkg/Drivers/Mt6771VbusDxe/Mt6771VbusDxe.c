@@ -232,24 +232,6 @@ ScreenLog (
   }
 }
 
-STATIC
-VOID
-ScreenClearAndHome (
-  VOID
-  )
-{
-  UINTN  y;
-
-  if (mFb != NULL) {
-    for (y = 0; y < FB_HEIGHT; y++) {
-      SetMem (mFb + (UINTN)y * FB_STRIDE, FB_STRIDE, 0x00);
-    }
-  }
-  if ((gST != NULL) && (gST->ConOut != NULL)) {
-    gST->ConOut->SetCursorPosition (gST->ConOut, 0, FB_START_ROW);
-  }
-}
-
 /* ------------------------------------------------------------------ */
 /* I2C                                                                 */
 /* ------------------------------------------------------------------ */
@@ -760,73 +742,25 @@ DrawDiagnostics (
   )
 {
   CHAR16  Buf[192];
-  UINT32  Cap;
 
-  ScreenClearAndHome ();
-
-  UnicodeSPrint (Buf, sizeof (Buf), L"MT6771 VBUS diagnostic   pass %u\r\n", mRedraws);
-  ScreenLog (Buf);
-  ScreenLog (L"------------------------------------------\r\n");
-
-  UnicodeSPrint (Buf, sizeof (Buf), L"INFRA3_CG_STA  before=0x%08x after=0x%08x\r\n",
-                 mDiag.GateStaBefore, mDiag.GateStaAfter);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"I2C6 CLOCK_DIV  before=0x%04x after=0x%04x\r\n",
-                 mDiag.ClkDivBefore, mDiag.ClkDivAfter);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"I2C6 TIMING     before=0x%04x after=0x%04x\r\n",
-                 mDiag.TimingBefore, mDiag.TimingAfter);
+  //
+  // Deliberately does NOT clear the screen and prints only three lines: the
+  // USB host driver owns the rest of the screen, and clearing here used to
+  // wipe its output.
+  //
+  UnicodeSPrint (Buf, sizeof (Buf),
+    L"VBUS: charger bus=0x%08x addr=0x%02x id=0x%02x otg=%r\r\n",
+    mDiag.Mt6370Bus, mDiag.Mt6370Addr, mDiag.Mt6370ChipId, mDiag.OtgStatus);
   ScreenLog (Buf);
 
-  {
-    UINTN  i;
-    CHAR16  Line[128];
-    CHAR16  Item[16];
-
-    UnicodeSPrint (Line, sizeof (Line), L"I2C6 scan    : %u device(s) ", mDiag.ScanCount);
-    for (i = 0; i < mDiag.ScanCount && i < 16; i++) {
-      UnicodeSPrint (Item, sizeof (Item), L"0x%02x ", mDiag.ScanList[i]);
-      StrCatS (Line, sizeof (Line) / sizeof (CHAR16), Item);
-    }
-    if (mDiag.ScanCount == 0) {
-      StrCatS (Line, sizeof (Line) / sizeof (CHAR16), L"(bus silent)");
-    }
-    StrCatS (Line, sizeof (Line) / sizeof (CHAR16), L"\r\n");
-    ScreenLog (Line);
-  }
-
-  ScreenLog (L"------------------------------------------\r\n");
-  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 bus   : 0x%08x addr=0x%02x chipid=0x%02x\r\n",
-                 mDiag.Mt6370Bus, mDiag.Mt6370Addr, mDiag.Mt6370ChipId);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"I2C ack 0x6B : 0x%03x   0x34 : 0x%03x\r\n",
-                 mDiag.AckMask6B, mDiag.AckMask34);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 read  : %r val=0x%02x\r\n",
-                 mDiag.ReadStatus, mDiag.ChgCtrl1Read);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"MT6370 OTG   : %r\r\n", mDiag.OtgStatus);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"   LG=0x%02x CHGCTRL1=0x%02x\r\n",
-                 mDiag.LgCtrl, mDiag.ChgCtrl1);
-  ScreenLog (Buf);
-  if ((mDiag.ChgCtrl1 & MT6370_OPA_MODE) != 0) {
-    ScreenLog (L"   => boost ON, port sources 5V\r\n");
-  } else {
-    ScreenLog (L"   => boost OFF\r\n");
-  }
-
-  ScreenLog (L"------------------------------------------\r\n");
-  UnicodeSPrint (Buf, sizeof (Buf), L"PHY DTM0 %08x -> %08x\r\n", mDiag.Dtm0Before, mDiag.Dtm0After);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"PHY DTM1 %08x -> %08x\r\n", mDiag.Dtm1Before, mDiag.Dtm1After);
-  ScreenLog (Buf);
-  UnicodeSPrint (Buf, sizeof (Buf), L"PHY ACR6 %08x -> %08x\r\n", mDiag.Acr6Before, mDiag.Acr6After);
+  UnicodeSPrint (Buf, sizeof (Buf),
+    L"VBUS: i2c ack 0x6B=0x%03x 0x34=0x%03x\r\n",
+    mDiag.AckMask6B, mDiag.AckMask34);
   ScreenLog (Buf);
 
-  ScreenLog (L"------------------------------------------\r\n");
-  Cap = MmioRead32 (0x11200000u);
-  UnicodeSPrint (Buf, sizeof (Buf), L"xHCI CAP0=0x%08x caplen=%u\r\n", Cap, Cap & 0xFFu);
+  UnicodeSPrint (Buf, sizeof (Buf),
+    L"VBUS: reg00=0x%02x reg01=0x%02x\r\n",
+    mDiag.LgCtrl, mDiag.ChgCtrl1);
   ScreenLog (Buf);
 }
 
