@@ -280,9 +280,10 @@ UsbLogReplay (
     {
       CHAR16  Obuf[160];
       UnicodeSPrint (Obuf, sizeof (Obuf),
-        L"MAC DEVCTRL=%08x PWRNMGMT=%08x\r\n",
+        L"MAC DEVCTRL=%08x PWR=%08x TIMING=%08x\r\n",
         MmioRead32 (U3D_DEVICE_CONTROL),
-        MmioRead32 (U3D_POWER_MANAGEMENT));
+        MmioRead32 (U3D_POWER_MANAGEMENT),
+        MmioRead32 (U3D_USB20_TIMING_PARAMETER));
       gST->ConOut->OutputString (gST->ConOut, Obuf);
     }
     {
@@ -411,9 +412,15 @@ Mt6771UsbHostInit (
   Mtu3ClearBits (U3D_SSUSB_IP_PW_CTRL0, SSUSB_IP_SW_RST);
   MicroSecondDelay (1000);
 
-  // 2. the device IP is up because LK used fastboot: power it down so the
-  //    host-only configuration can reach ip-sleep (mtu3_plat.c comment).
-  Mtu3SetBits (U3D_SSUSB_IP_PW_CTRL2, SSUSB_IP_DEV_PDN);
+  //
+  // 2. Keep the device IP POWERED. Upstream mtu3 powers it down
+  //    (mtu3_plat.c:ssusb_ip_sw_reset) purely so ip-sleep works in host-only
+  //    mode, but the MT6771 vendor host driver (ssusb/mu3d/xhci-mtk.c) never
+  //    touches SSUSB_IP_DEV_PDN. The whole USB2 CSR block lives in the device
+  //    IP, so powering it down makes U3D_USB20_TIMING_PARAMETER and
+  //    U3D_DEVICE_CONTROL read back as 0 and any write there is lost.
+  //
+  Mtu3ClearBits (U3D_SSUSB_IP_PW_CTRL2, SSUSB_IP_DEV_PDN);
 
   // 3. power on host IP (mtu3_host.c:ssusb_host_setup)
   Mtu3ClearBits (U3D_SSUSB_IP_PW_CTRL1, SSUSB_IP_HOST_PDN);
@@ -491,6 +498,14 @@ Mt6771UsbHostInit (
   MmioWrite32 (U3D_DEVICE_CONTROL, MmioRead32 (U3D_DEVICE_CONTROL) | (UINT32)DC_SESSION);
   MmioWrite32 (U3D_POWER_MANAGEMENT, MmioRead32 (U3D_POWER_MANAGEMENT) | (UINT32)SOFT_CONN);
   MicroSecondDelay (1000);
+
+  //
+  // USB2 MAC 1 us timing base (vendor mtk_xhci_ip_init). Required for the
+  // USB2 MAC to operate at all; it was never programmed before.
+  //
+  MmioWrite32 (U3D_USB20_TIMING_PARAMETER,
+               (MmioRead32 (U3D_USB20_TIMING_PARAMETER) & ~(UINT32)TIME_VALUE_1US) |
+               (UINT32)MTK_TIME_VALUE_1US);
 
   PwSts = MmioRead32 (U3D_SSUSB_IP_PW_STS1);
   {
