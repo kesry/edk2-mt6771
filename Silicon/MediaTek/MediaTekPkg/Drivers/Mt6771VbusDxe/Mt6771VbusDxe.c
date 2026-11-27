@@ -438,18 +438,6 @@ I2cWriteReadBytesEx (
   return EFI_SUCCESS;
 }
 
-STATIC
-EFI_STATUS
-I2cWriteReadBytes (
-  IN  UINT8  Slave,
-  IN  UINT8  RegAddr,
-  OUT UINT8  *Data,
-  IN  UINTN  Length
-  )
-{
-  return I2cWriteReadBytesEx (Slave, RegAddr, Data, Length, I2C_TIMEOUT_US);
-}
-
 /* ------------------------------------------------------------------ */
 /* MT6370                                                             */
 /* ------------------------------------------------------------------ */
