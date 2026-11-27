@@ -260,6 +260,8 @@ typedef struct {
 #define SSUSB_REF_PHY_CK_GATE_EN BIT1
 #define SSUSB_REF_MAC_CK_GATE_EN BIT0
 #define SSUSB_REF_MAC3_CK_GATE_EN BIT3
+#define SSUSB_SYS125_RST_B_STS    BIT10
+#define SSUSB_U2_MAC_SYS_RST_B_STS BIT0
 #define SSUSB_DEV_SW_RST        BIT0
 #define SSUSB_DEV_RST_B_STS     BIT3
 #define SSUSB_DEV_BMU_RST_B_STS BIT2
@@ -404,8 +406,7 @@ HandleSetup (
 {
   UINT8  Type = Setup->RequestType & 0x1F;
 
-  DEBUG ((DEBUG_INFO, "AcmEp0: req=%02x type=%02x val=%04x idx=%04x len=%u
-",
+  DEBUG ((DEBUG_INFO, "AcmEp0: req=%02x type=%02x val=%04x idx=%04x len=%u\n",
           Setup->Request, Setup->RequestType, Setup->Value,
           Setup->Index, Setup->Length));
 
@@ -618,8 +619,7 @@ AcmDeviceInit (
   MmioWrite32 (MT6771_UDC_MAC_BASE + U3D_LV1IESR, LV1_EP0);
 
   DEBUG ((DEBUG_INFO,
-    "AcmDevice: STS1=%08x STS2=%08x EP0CSR=%08x
-",
+    "AcmDevice: STS1=%08x STS2=%08x EP0CSR=%08x\n",
     MmioRead32 (U3D_SSUSB_IP_PW_STS1),
     MmioRead32 (U3D_SSUSB_IP_PW_STS2),
     MmioRead32 (MT6771_UDC_MAC_BASE + U3D_EP0CSR)));
