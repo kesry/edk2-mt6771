@@ -497,17 +497,6 @@ Mt6370ProbeAddress (
 
 STATIC
 EFI_STATUS
-Mt6370Write (IN UINT8 Reg, IN UINT8 Value)
-{
-  UINT8  buf[2];
-
-  buf[0] = Reg;
-  buf[1] = Value;
-  return I2cWriteBytes (mMt6370Addr, buf, 2);
-}
-
-STATIC
-EFI_STATUS
 Mt6370Read (IN UINT8 Reg, OUT UINT8 *Value)
 {
   return I2cWriteReadBytes (mMt6370Addr, Reg, Value, 1);
@@ -693,8 +682,8 @@ VbusBringup (
     }
   }
 
-  // 3b. read CHGCTRL1 at the discovered address
-  mDiag.ReadStatus = Mt6370Read (MT6370_REG_CHGCTRL1, &mDiag.ChgCtrl1Read);
+  // 3b. read BQ24196 REG01 at the discovered address
+  mDiag.ReadStatus = I2cWriteReadBytesEx (mMt6370Addr, 0x01u, &mDiag.ChgCtrl1Read, 1, I2C_TIMEOUT_US);
 
   if (A3_USB_DIAG) {
     I2cScan ();
