@@ -24,6 +24,7 @@
 #define A3KB_QUEUE_SIZE      32
 
 typedef struct {
+  UINTN                           Signature;   // for CR()
   EFI_SIMPLE_TEXT_INPUT_PROTOCOL  SimpleIn;
   EFI_EVENT                       Timer;
   EFI_EVENT                       WaitKeyEvent;
@@ -225,6 +226,7 @@ A3UsbKbDxeInitialize (
 
   mKb = AllocateZeroPool (sizeof (A3KB_DEV));
   if (mKb == NULL) return EFI_OUT_OF_RESOURCES;
+  mKb->Signature = 0x41334B42u;   // "A3KB"
 
   Status = gBS->LocateHandleBuffer (
                   ByProtocol, &gEfiUsbIoProtocolGuid, NULL, &Count, &Handles);
