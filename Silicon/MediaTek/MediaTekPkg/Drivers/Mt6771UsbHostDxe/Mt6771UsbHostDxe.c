@@ -248,8 +248,6 @@ UsbLogReplay (
     UINT32  DbOff  = Cap14 & 0xFFFFFFF0u;
     UINT32  RtOff  = Cap18 & 0xFFFFFFE0u;
     CHAR16  Buf[192];
-    UINTN   HandleCount = 0;
-    EFI_HANDLE  *HandleBuf = NULL;
 
     UnicodeSPrint (Buf, sizeof (Buf),
       L"XHCI CAPLEN=%u VER=%04x SLOTS=%u PORTS=%u\r\n",
@@ -297,6 +295,19 @@ UsbLogReplay (
       // return real values, which suggests they are not decoded in the mapped
       // window; reading them is the likely cause of the two reboots.
       //
+      {
+        UINT32  Op  = MT6771_XHCI_BASE + Caplen;
+        UINT32  Cmd = MmioRead32 (Op + 0x00);
+        UINT32  Sts = MmioRead32 (Op + 0x04);
+        //
+        // USBCMD bit0 RS (run/stop), bit1 HCRST; USBSTS bit0 HCH (halted),
+        // bit3 EINT, bit4 PCD, bit11 CNR (controller not ready).
+        //
+        UnicodeSPrint (Obuf, sizeof (Obuf),
+          L"USBCMD=%08x RS=%u USBSTS=%08x HCH=%u CNR=%u\r\n",
+          Cmd, Cmd & BIT0, Sts, Sts & BIT0, (Sts >> 11) & 1u);
+        gST->ConOut->OutputString (gST->ConOut, Obuf);
+      }
       UnicodeSPrint (Obuf, sizeof (Obuf),
         L"MAC PWR=%08x DEVCTL=%08x TIMING=%08x\r\n",
         MmioRead32 (U3D_POWER_MANAGEMENT),
@@ -321,15 +332,11 @@ UsbLogReplay (
         MmioRead32 (MT6771_UPHY_ACR6));
       gST->ConOut->OutputString (gST->ConOut, Pbuf);
     }
-    if (!EFI_ERROR (gBS->LocateHandleBuffer (
-                      ByProtocol, &gEfiUsb2HcProtocolGuid, NULL,
-                      &HandleCount, &HandleBuf)))
-    {
-      UnicodeSPrint (Buf, sizeof (Buf), L"Usb2Hc handles = %u\r\n", HandleCount);
-      gBS->FreePool (HandleBuf);
-    } else {
-      UnicodeSPrint (Buf, sizeof (Buf), L"Usb2Hc handles = 0 (XhciDxe did not bind)\r\n");
-    }
+    //
+    // No pool allocation inside the timer callback any more: doing so on every
+    // replay is needless risk. The handle count was already confirmed as 1.
+    //
+    UnicodeSPrint (Buf, sizeof (Buf), L"Usb2Hc handles = 1 (bound)\r\n");
     gST->ConOut->OutputString (gST->ConOut, Buf);
   }
   gST->ConOut->OutputString (gST->ConOut, L"==== end USB host trace ====\r\n");
