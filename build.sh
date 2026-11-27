@@ -73,7 +73,7 @@ fi
 if [ "$CLEAN" = true ]; then
     python3 "$PLATFORM_SCRIPT" --cleanonly
     find Common/edk2/BaseTools -type f \( -name "*.o" -o -name "*.d" \) -delete
-    make -C Bootshim clean
+    make -C BootShim clean
     exit 0
 fi
 
