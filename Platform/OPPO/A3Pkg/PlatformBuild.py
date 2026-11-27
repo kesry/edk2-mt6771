@@ -91,6 +91,10 @@ class SettingsManager (UpdateSettingsManager, SetupSettingsManager, PrEvalSettin
         return build_these_packages
 
     def GetPlatformDscAndConfig (self) -> tuple:
+        # USB_MODE selects which USB driver the FDF carries, so it also selects
+        # the platform description.
+        if os.environ.get("USB_MODE", "OTG").upper() == "ACM":
+            return ("A3Pkg/a3-acm.dsc", {})
         return ("A3Pkg/a3.dsc", {})
 
     def GetName (self):
@@ -152,8 +156,12 @@ class PlatformBuilder (UefiBuilder, BuildSettingsManager):
 
         git_commit = self.GetLatestCommit ()
 
-        self.env.SetValue ("PRODUCT_NAME", "a3", "Platform Hardcoded")
-        self.env.SetValue ("ACTIVE_PLATFORM", "A3Pkg/a3.dsc", "Platform Hardcoded")
+        if os.environ.get("USB_MODE", "OTG").upper() == "ACM":
+            self.env.SetValue ("PRODUCT_NAME", "a3acm", "Platform Hardcoded")
+            self.env.SetValue ("ACTIVE_PLATFORM", "A3Pkg/a3-acm.dsc", "Platform Hardcoded")
+        else:
+            self.env.SetValue ("PRODUCT_NAME", "a3", "Platform Hardcoded")
+            self.env.SetValue ("ACTIVE_PLATFORM", "A3Pkg/a3.dsc", "Platform Hardcoded")
         self.env.SetValue ("TARGET_ARCH", "AARCH64", "Platform Hardcoded")
         self.env.SetValue ("TOOL_CHAIN_TAG", "CLANG38", "set default to clang38")
         self.env.SetValue ("EMPTY_DRIVE", "FALSE", "Default to false")

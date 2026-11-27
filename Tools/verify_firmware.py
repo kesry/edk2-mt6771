@@ -164,7 +164,9 @@ EXPECTED_PCDS = {
 
 PLATFORM_FILES = [
     "Platform/OPPO/A3Pkg/a3.dsc",
+    "Platform/OPPO/A3Pkg/a3-acm.dsc",
     "Platform/OPPO/A3Pkg/a3.fdf",
+    "Platform/OPPO/A3Pkg/a3-acm.fdf",
     "Silicon/MediaTek/MediaTekPkg/MediaTekPkg.dec",
     "Silicon/MediaTek/MediaTekPkg/MediaTekCommonDsc.inc",
     "Silicon/MediaTek/MT8183Pkg/MT8183.dsc",
@@ -177,10 +179,12 @@ def verify_platform(root, usb_mode=None):
     # PCDs may be declared in the DEC (with a default) and only overridden in
     # the DSC, so search the DSC first and fall back to the DEC.
     dsc_text = (root / "Platform/OPPO/A3Pkg/a3.dsc").read_text(errors="replace")
+    acm_dsc = (root / "Platform/OPPO/A3Pkg/a3-acm.dsc")
+    dsc_all_text = dsc_text + (acm_dsc.read_text(errors="replace") if acm_dsc.is_file() else "")
     dec_text = (root / "Silicon/MediaTek/MediaTekPkg/MediaTekPkg.dec").read_text(errors="replace")
 
     def lookup_pcd(name):
-        for text in (dsc_text, dec_text):
+        for text in (dsc_all_text, dec_text):
             m = re.search(rf"{re.escape(name)}\|([^\s|]+)", text)
             if m:
                 return m.group(1)
@@ -207,7 +211,8 @@ def verify_platform(root, usb_mode=None):
         (root / f).read_text(errors="replace")
         for f in PLATFORM_FILES[::2] + PLATFORM_FILES[1::2]
     )
-    fdf = (root / "Platform/OPPO/A3Pkg/a3.fdf").read_text(errors="replace")
+    fdf_name = "a3-acm.fdf" if usb_mode == "ACM" else "a3.fdf"
+    fdf = (root / "Platform/OPPO/A3Pkg" / fdf_name).read_text(errors="replace")
     common = ["Mt6771MmcHostDxe", "Mt6771VbusDxe", "Mt6771MmcDiagDxe"]
     if usb_mode == "ACM":
         # device mode: the host stack must not be present
@@ -221,7 +226,7 @@ def verify_platform(root, usb_mode=None):
         check(driver in fdf, f"{driver} placed in a3.fdf")
 
     # startup.nsh must be embedded or the board cannot run diagnostics
-    check("startup.nsh" in fdf, "startup.nsh embedded in the firmware volume")
+    check("startup.nsh" in fdf, "startup.nsh embedded in the firmware volume (" + fdf_name + ")")
     check((root / "Platform/OPPO/A3Pkg/startup.nsh").is_file(),
           "Platform/OPPO/A3Pkg/startup.nsh exists")
 
