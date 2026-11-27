@@ -66,20 +66,36 @@
 #define U3D_SSUSB_IP_PW_CTRL0 (MT6771_IPPC_BASE + 0x0000u)
 #define U3D_SSUSB_IP_PW_CTRL1 (MT6771_IPPC_BASE + 0x0004u)
 #define U3D_SSUSB_IP_PW_CTRL2 (MT6771_IPPC_BASE + 0x0008u)
+#define U3D_SSUSB_U3_CTRL_0P  (MT6771_IPPC_BASE + 0x0030u)
 #define U3D_SSUSB_U2_CTRL_0P  (MT6771_IPPC_BASE + 0x0050u)
+#define U3D_SSUSB_IP_PW_STS1  (MT6771_IPPC_BASE + 0x0010u)
 
 #define SSUSB_IP_SW_RST       BIT0
 #define SSUSB_IP_HOST_PDN     BIT0
 #define SSUSB_IP_DEV_PDN      BIT0
+#define SSUSB_U2_PORT_DIS     BIT0
+#define SSUSB_U2_PORT_HOST    BIT2
 #define SSUSB_U2_PORT_PDN     BIT1
+#define SSUSB_U2_PORT_VBUSVALID BIT9
 #define SSUSB_U2_PORT_FORCE_IDDIG BIT11
 #define SSUSB_U2_PORT_RG_IDDIG   BIT12
+#define SSUSB_U2_PORT_HOST_SEL   (SSUSB_U2_PORT_VBUSVALID | SSUSB_U2_PORT_HOST)
+#define SSUSB_U3_PORT_DIS     BIT0
+#define SSUSB_U3_PORT_PDN     BIT1
+#define SSUSB_U3_PORT_HOST_SEL BIT2
+#define SSUSB_XHCI_RST_B_STS  BIT11
 
 //
 // The RELEASE build maps SerialPortLib to UART0, which is not wired on this
 // board, so DEBUG() output is invisible. Print to the UEFI console instead:
 // this driver depends on SimpleTextOut, so ConOut exists when it runs.
 //
+#define USB_LOG_LINES 16
+
+STATIC CHAR16  mLogBuf[USB_LOG_LINES][144];
+STATIC UINTN   mLogUsed;
+STATIC UINTN   mLogReplays;
+
 STATIC
 VOID
 ScreenLog (
@@ -89,6 +105,36 @@ ScreenLog (
   if ((gST != NULL) && (gST->ConOut != NULL)) {
     gST->ConOut->OutputString (gST->ConOut, (CHAR16 *)Text);
   }
+  if (mLogUsed < USB_LOG_LINES) {
+    StrCpyS (mLogBuf[mLogUsed], 144, (CHAR16 *)Text);
+    mLogUsed++;
+  }
+}
+
+STATIC
+VOID
+EFIAPI
+UsbLogReplay (
+  IN EFI_EVENT  Event,
+  IN VOID       *Context
+  )
+{
+  UINTN  i;
+
+  if (mLogReplays >= 3) {
+    gBS->SetTimer (Event, TimerCancel, 0);
+    return;
+  }
+  mLogReplays++;
+
+  if ((gST == NULL) || (gST->ConOut == NULL)) {
+    return;
+  }
+  gST->ConOut->OutputString (gST->ConOut, L"\r\n==== A3 USB host trace ====\r\n");
+  for (i = 0; i < mLogUsed; i++) {
+    gST->ConOut->OutputString (gST->ConOut, mLogBuf[i]);
+  }
+  gST->ConOut->OutputString (gST->ConOut, L"==== end USB host trace ====\r\n");
 }
 
 STATIC
@@ -126,49 +172,82 @@ Mt6771UsbHostInit (
   VOID
   )
 {
-  UINT32 Ctrl0;
-  UINT32 Ctrl1;
-  UINT32 Ctrl2;
-  UINT32 U2Ctrl;
+  UINT32  Value;
+  UINT32  PwSts;
+  UINTN   Wait;
 
-  Ctrl0 = MmioRead32 (U3D_SSUSB_IP_PW_CTRL0);
-  {
-    CHAR16 Buf[128];
-    UnicodeSPrint (Buf, sizeof (Buf), L"USB: IPPC before  CTRL0=%08x CTRL1=%08x CTRL2=%08x U2=%08x\r\n",
-                   MmioRead32 (U3D_SSUSB_IP_PW_CTRL0), MmioRead32 (U3D_SSUSB_IP_PW_CTRL1),
-                   MmioRead32 (U3D_SSUSB_IP_PW_CTRL2), MmioRead32 (U3D_SSUSB_U2_CTRL_0P));
-    ScreenLog (Buf);
-  }
+  ScreenLog (L"USB: host init (upstream mtu3_host sequence)\r\n");
 
-  // 1. reset whole IP (xHCI + U3D)
+  // 1. whole-IP software reset (mtu3_plat.c:ssusb_ip_sw_reset)
   Mtu3SetBits (U3D_SSUSB_IP_PW_CTRL0, SSUSB_IP_SW_RST);
   MicroSecondDelay (10);
   Mtu3ClearBits (U3D_SSUSB_IP_PW_CTRL0, SSUSB_IP_SW_RST);
   MicroSecondDelay (1000);
 
-  // 2. power down gadget IP (it is up because LK used fastboot)
+  // 2. the device IP is up because LK used fastboot: power it down so the
+  //    host-only configuration can reach ip-sleep (mtu3_plat.c comment).
   Mtu3SetBits (U3D_SSUSB_IP_PW_CTRL2, SSUSB_IP_DEV_PDN);
 
-  // 3. power up host IP
+  // 3. power on host IP (mtu3_host.c:ssusb_host_setup)
   Mtu3ClearBits (U3D_SSUSB_IP_PW_CTRL1, SSUSB_IP_HOST_PDN);
 
-  // 4. force host role on U2 port 0 and power the port
-  U2Ctrl = MmioRead32 (U3D_SSUSB_U2_CTRL_0P);
-  U2Ctrl |= SSUSB_U2_PORT_FORCE_IDDIG;
-  U2Ctrl &= ~SSUSB_U2_PORT_RG_IDDIG;
-  U2Ctrl &= ~SSUSB_U2_PORT_PDN;
-  MmioWrite32 (U3D_SSUSB_U2_CTRL_0P, U2Ctrl);
+  // 4. U2 port0: power off+disable, then power on+enable and select host mode.
+  //    HOST_SEL = VBUSVALID | HOST is what actually puts the port in host mode;
+  //    last night's version cleared PDN only and never set HOST_SEL.
+  Value  = MmioRead32 (U3D_SSUSB_U2_CTRL_0P);
+  Value |= (SSUSB_U2_PORT_PDN | SSUSB_U2_PORT_DIS);
+  MmioWrite32 (U3D_SSUSB_U2_CTRL_0P, Value);
 
-  MicroSecondDelay (20000);
+  Value  = MmioRead32 (U3D_SSUSB_U2_CTRL_0P);
+  Value &= ~(SSUSB_U2_PORT_PDN | SSUSB_U2_PORT_DIS);
+  Value |= SSUSB_U2_PORT_HOST_SEL;
+  MmioWrite32 (U3D_SSUSB_U2_CTRL_0P, Value);
 
-  Ctrl0 = MmioRead32 (U3D_SSUSB_IP_PW_CTRL0);
-  Ctrl1 = MmioRead32 (U3D_SSUSB_IP_PW_CTRL1);
-  Ctrl2 = MmioRead32 (U3D_SSUSB_IP_PW_CTRL2);
+  // 5. U3 port0, same treatment (mtu3_dr.c:ssusb_port0_switch USB3 branch)
+  Value  = MmioRead32 (U3D_SSUSB_U3_CTRL_0P);
+  Value |= (SSUSB_U3_PORT_PDN | SSUSB_U3_PORT_DIS);
+  MmioWrite32 (U3D_SSUSB_U3_CTRL_0P, Value);
+
+  Value  = MmioRead32 (U3D_SSUSB_U3_CTRL_0P);
+  Value &= ~(SSUSB_U3_PORT_PDN | SSUSB_U3_PORT_DIS);
+  Value |= SSUSB_U3_PORT_HOST_SEL;
+  MmioWrite32 (U3D_SSUSB_U3_CTRL_0P, Value);
+
+  // 6. force the ID pin to host (mtu3_dr.c:ssusb_set_force_mode FORCE_HOST)
+  Value  = MmioRead32 (U3D_SSUSB_U2_CTRL_0P);
+  Value |= SSUSB_U2_PORT_FORCE_IDDIG;
+  Value &= ~SSUSB_U2_PORT_RG_IDDIG;
+  MmioWrite32 (U3D_SSUSB_U2_CTRL_0P, Value);
+
+  // 7. wait for the xHCI reset status bit: this is the authoritative
+  //    "the host controller is really clocked" signal
+  //    (mtu3_host.c:ssusb_check_clocks, SSUSB_XHCI_RST_B_STS).
+  PwSts = 0;
+  for (Wait = 0; Wait < 200; Wait++) {
+    PwSts = MmioRead32 (U3D_SSUSB_IP_PW_STS1);
+    if ((PwSts & SSUSB_XHCI_RST_B_STS) != 0) {
+      break;
+    }
+    MicroSecondDelay (1000);
+  }
+
   {
-    CHAR16 Buf[128];
-    UnicodeSPrint (Buf, sizeof (Buf), L"USB: IPPC after   CTRL0=%08x CTRL1=%08x CTRL2=%08x U2=%08x\r\n",
-                   Ctrl0, Ctrl1, Ctrl2, MmioRead32 (U3D_SSUSB_U2_CTRL_0P));
+    CHAR16  Buf[192];
+    UnicodeSPrint (
+      Buf, sizeof (Buf),
+      L"USB: IPPC1=%08x U2=%08x U3=%08x PWSTS1=%08x xhci_rst=%u\r\n",
+      MmioRead32 (U3D_SSUSB_IP_PW_CTRL1),
+      MmioRead32 (U3D_SSUSB_U2_CTRL_0P),
+      MmioRead32 (U3D_SSUSB_U3_CTRL_0P),
+      PwSts,
+      (PwSts & SSUSB_XHCI_RST_B_STS) ? 1u : 0u
+      );
     ScreenLog (Buf);
+    if ((PwSts & SSUSB_XHCI_RST_B_STS) == 0) {
+      ScreenLog (L"USB: xHCI clock NOT ready (U3 MAC or xhci clock off)\r\n");
+    } else {
+      ScreenLog (L"USB: xHCI clock ready -> host controller running\r\n");
+    }
   }
 }
 
@@ -228,6 +307,20 @@ Mt6771UsbHostDxeInitialize (
     CHAR16 Buf[128];
     UnicodeSPrint (Buf, sizeof (Buf), L"USB: register xHCI -> %r\r\n", Status);
     ScreenLog (Buf);
+  }
+
+  {
+    EFI_EVENT  ReplayEvent = NULL;
+    if (!EFI_ERROR (gBS->CreateEvent (
+                      EVT_TIMER | EVT_NOTIFY_SIGNAL,
+                      TPL_CALLBACK,
+                      UsbLogReplay,
+                      NULL,
+                      &ReplayEvent
+                      )))
+    {
+      gBS->SetTimer (ReplayEvent, TimerPeriodic, 30000000u);
+    }
   }
 
   return Status;
