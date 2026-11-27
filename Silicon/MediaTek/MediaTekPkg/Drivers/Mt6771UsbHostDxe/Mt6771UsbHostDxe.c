@@ -56,6 +56,25 @@
 //
 // MMIO bases (see file header for provenance).
 //
+
+/*
+ * SoC-side USB clock gates -- vendor clk-mt6771.c:
+ *   GATE_INFRA0(INFRACFG_AO_ICUSB_CG, ..., 8)   set/reg +0x80 in INFRA_AO
+ *   GATE_INFRA2(INFRACFG_AO_USB_CG,   ..., 1)   set/reg +0xA4 in INFRA_AO
+ *   GATE_APMIXED(APMIXED_SSUSB26M,   ..., 4)   inverted gate at 0x1000C000+0x20
+ * Without these the xHCI MMIO reads as live but the controller cannot drive
+ * any bus activity, which matches the 'register xhci success but no device'
+ * symptom on both powered hubs and ACM.
+ */
+#define MT6771_INFRA_AO_BASE     0x10001000u
+#define INFRA0_CG_SET            0x0080u
+#define INFRA2_CG_SET            0x00A4u
+#define INFRA0_ICUSB_BIT         BIT8
+#define INFRA2_USB_BIT           BIT1
+#define MT6771_APMIXED_BASE      0x1000C000u
+#define APMIXED_CG_REG           0x0020u
+#define APMIXED_SSUSB26M_BIT     BIT4
+
 #define MT6771_XHCI_BASE      0x11200000u
 #define MT6771_XHCI_SIZE      0x00001000u
 #define MT6771_IPPC_BASE      0x11203E00u
