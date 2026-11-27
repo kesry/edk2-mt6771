@@ -52,6 +52,7 @@
 #include <Library/UefiLib.h>
 #include <Library/NonDiscoverableDeviceRegistrationLib.h>
 #include <Library/PrintLib.h>
+#include <Protocol/Usb2HostController.h>
 
 //
 // MMIO bases (see file header for provenance).
@@ -174,6 +175,68 @@ UsbLogReplay (
   gST->ConOut->OutputString (gST->ConOut, L"\r\n==== A3 USB host trace ====\r\n");
   for (i = 0; i < mLogUsed; i++) {
     gST->ConOut->OutputString (gST->ConOut, mLogBuf[i]);
+  }
+
+  //
+  // Live xHCI state, captured after BDS had a chance to dispatch XhciDxe.
+  // CAPLENGTH/HCSPARAMS/DBOFF/RTSOFF tell us whether the controller is really
+  // alive, and the Usb2Hc handle count tells us whether XhciDxe bound.
+  //
+  {
+    UINT32  Cap0   = MmioRead32 (MT6771_XHCI_BASE + 0x00);
+    UINT32  Cap4   = MmioRead32 (MT6771_XHCI_BASE + 0x04);
+    UINT32  Cap8   = MmioRead32 (MT6771_XHCI_BASE + 0x08);
+    UINT32  Cap10  = MmioRead32 (MT6771_XHCI_BASE + 0x10);
+    UINT32  Cap14  = MmioRead32 (MT6771_XHCI_BASE + 0x14);
+    UINT32  Cap18  = MmioRead32 (MT6771_XHCI_BASE + 0x18);
+    UINT32  Caplen = Cap0 & 0xFFu;
+    UINT32  DbOff  = Cap14 & 0xFFFFFFF0u;
+    UINT32  RtOff  = Cap18 & 0xFFFFFFE0u;
+    CHAR16  Buf[192];
+    UINTN   HandleCount = 0;
+    EFI_HANDLE  *HandleBuf = NULL;
+
+    UnicodeSPrint (Buf, sizeof (Buf),
+      L"XHCI CAPLEN=%u VER=%04x SLOTS=%u PORTS=%u\r\n",
+      Caplen, (UINT16)(Cap0 >> 16),
+      Cap4 & 0xFFu, (Cap4 >> 24) & 0xFFu);
+    gST->ConOut->OutputString (gST->ConOut, Buf);
+    UnicodeSPrint (Buf, sizeof (Buf),
+      L"XHCI DBOFF=%05x RTSOFF=%05x HCCAP=%08x HCSP2=%08x\r\n",
+      DbOff, RtOff, Cap10, Cap8);
+    gST->ConOut->OutputString (gST->ConOut, Buf);
+    UnicodeSPrint (Buf, sizeof (Buf),
+      L"XHCI window=%u doorbell_end=%u fits=%u\r\n",
+      MT6771_XHCI_SIZE, DbOff + 0x100u,
+      (DbOff + 0x100u <= MT6771_XHCI_SIZE) ? 1u : 0u);
+    gST->ConOut->OutputString (gST->ConOut, Buf);
+
+    {
+      UINT32  OpBase = MT6771_XHCI_BASE + Caplen;
+      UINT32  MaxPorts = (Cap4 >> 24) & 0xFFu;
+      UINTN   P;
+
+      for (P = 1; P <= MaxPorts && P <= 4; P++) {
+        UINT32  PortSc = MmioRead32 (OpBase + 0x400u + 0x10u * (P - 1u));
+        UnicodeSPrint (Buf, sizeof (Buf),
+          L"PORTSC%u=%08x CCS=%u PED=%u PP=%u\r\n",
+          (UINT32)P, PortSc,
+          (PortSc & BIT0) ? 1u : 0u,
+          (PortSc & BIT1) ? 1u : 0u,
+          (PortSc & BIT9) ? 1u : 0u);
+        gST->ConOut->OutputString (gST->ConOut, Buf);
+      }
+    }
+    if (!EFI_ERROR (gBS->LocateHandleBuffer (
+                      ByProtocol, &gEfiUsb2HcProtocolGuid, NULL,
+                      &HandleCount, &HandleBuf)))
+    {
+      UnicodeSPrint (Buf, sizeof (Buf), L"Usb2Hc handles = %u\r\n", HandleCount);
+      gBS->FreePool (HandleBuf);
+    } else {
+      UnicodeSPrint (Buf, sizeof (Buf), L"Usb2Hc handles = 0 (XhciDxe did not bind)\r\n");
+    }
+    gST->ConOut->OutputString (gST->ConOut, Buf);
   }
   gST->ConOut->OutputString (gST->ConOut, L"==== end USB host trace ====\r\n");
 }
