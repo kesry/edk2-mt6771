@@ -598,6 +598,78 @@ Mt6370EnableOtg (OUT UINT8 *LgCtrl, OUT UINT8 *ChgCtrl1)
 
 STATIC
 VOID
+I2cScan (
+  VOID
+  )
+{
+  UINT8   Addr;
+  UINT8   Val;
+  EFI_STATUS  Status;
+
+  mDiag.ScanCount = 0;
+  for (Addr = 0x08; Addr <= 0x77; Addr++) {
+    Status = I2cWriteReadBytesEx (Addr, 0x00, &Val, 1, 5000u);
+    if (!EFI_ERROR (Status)) {
+      if (mDiag.ScanCount < 16) {
+        mDiag.ScanList[mDiag.ScanCount] = Addr;
+      }
+      mDiag.ScanCount++;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* USB PHY: dump + minimal host-mode switch (experimental)             */
+/* ------------------------------------------------------------------ */
+STATIC
+VOID
+PhyBringup (
+  VOID
+  )
+{
+  UINT32  Reg;
+
+  mDiag.Dtm0Before = MmioRead32 (PHY_U2PHYDTM0);
+  mDiag.Dtm1Before = MmioRead32 (PHY_U2PHYDTM1);
+  mDiag.Acr6Before = MmioRead32 (PHY_USBPHYACR6);
+
+  //
+  // Mirror the USB-function half of vendor usb_phy_recover(): leave UART mode,
+  // release force suspend, enable OTG VBUS comparator, then assert VBUSVALID.
+  // TODO: the full vendor sequence also clears many DTM0/DTM1 fields and sets
+  // analog tuning; only the role-relevant bits are handled here.
+  //
+  Reg = MmioRead32 (PHY_U2PHYDTM0);
+  Reg &= ~(PHY_DTM0_FORCE_UART_EN | PHY_DTM0_FORCE_SUSPENDM);
+  MmioWrite32 (PHY_U2PHYDTM0, Reg);
+
+  Reg = MmioRead32 (PHY_U2PHYACR4);
+  Reg &= ~(PHY_ACR4_GPIO_CTL | PHY_ACR4_GPIO_MODE);
+  MmioWrite32 (PHY_U2PHYACR4, Reg);
+
+  Reg = MmioRead32 (PHY_USBPHYACR6);
+  Reg &= ~PHY_ACR6_BC11_SW_EN;
+  Reg |= PHY_ACR6_OTG_VBUSCMP_EN;
+  MmioWrite32 (PHY_USBPHYACR6, Reg);
+
+  MicroSecondDelay (800);
+
+  Reg = MmioRead32 (PHY_U2PHYDTM1);
+  Reg |= PHY_DTM1_VBUSVALID;
+  MmioWrite32 (PHY_U2PHYDTM1, Reg);
+
+  MicroSecondDelay (1000);
+
+  mDiag.Dtm0After = MmioRead32 (PHY_U2PHYDTM0);
+  mDiag.Dtm1After = MmioRead32 (PHY_U2PHYDTM1);
+  mDiag.Acr6After = MmioRead32 (PHY_USBPHYACR6);
+}
+
+/* ------------------------------------------------------------------ */
+/* Bring-up sequence (runs once)                                       */
+/* ------------------------------------------------------------------ */
+STATIC
+VOID
 VbusBringup (
   VOID
   )
