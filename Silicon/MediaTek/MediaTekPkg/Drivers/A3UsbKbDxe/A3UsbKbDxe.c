@@ -30,6 +30,7 @@ typedef struct {
   EFI_EVENT                       WaitKeyEvent;
   EFI_HANDLE                      Handle;
   EFI_USB_IO_PROTOCOL            *UsbIo;
+  UINT8                           InterfaceNumber;
   EFI_INPUT_KEY                   Queue[A3KB_QUEUE_SIZE];
   UINTN                           Head;
   UINTN                           Tail;
@@ -168,6 +169,7 @@ A3KbFindKeyboard (
         (IfDesc.InterfaceSubClass == 1) &&
         (IfDesc.InterfaceProtocol == 1)) {
       Kb->UsbIo = UsbIo;
+      Kb->InterfaceNumber = IfDesc.InterfaceNumber;
       break;
     }
   }
@@ -195,7 +197,7 @@ A3KbPoll (
   Request.RequestType = 0xA1;
   Request.Request     = 0x01;
   Request.Value       = 0x0100;
-  Request.Index       = 0;
+  Request.Index       = Kb->InterfaceNumber;
   Request.Length      = 8;
 
   ZeroMem (Report, sizeof (Report));
