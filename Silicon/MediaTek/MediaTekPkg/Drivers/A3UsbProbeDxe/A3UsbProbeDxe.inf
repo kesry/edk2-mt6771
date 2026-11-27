@@ -1,0 +1,37 @@
+## @file
+#  OPPO A3 USB keyboard EP0 GET_REPORT probe.
+#
+#  Copyright (c) 2026, kesry. All rights reserved.
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = A3UsbProbeDxe
+  FILE_GUID                      = 7E4A1C8D-3B62-4F05-9A71-6D2E4C8B0A33
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = A3UsbProbeDxeInitialize
+
+[Sources]
+  A3UsbProbeDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  MemoryAllocationLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  UefiLib
+  TimerLib
+  PrintLib
+
+[Protocols]
+  gEfiUsbIoProtocolGuid
+
+[Depex]
+  gEfiUsbIoProtocolGuid
