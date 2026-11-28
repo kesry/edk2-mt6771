@@ -959,10 +959,17 @@ Mt6771MmcSendCommand (
   //
   if (ResponseType != 0) {
     if (ResponseType == 2) {
-      mHost.Response[3] = MsdcRead (SDC_RESP3);
-      mHost.Response[2] = MsdcRead (SDC_RESP2);
-      mHost.Response[1] = MsdcRead (SDC_RESP1);
-      mHost.Response[0] = MsdcRead (SDC_RESP0);
+      //
+      // R2 (CSD/CID) is 128 bits. The vendor driver stores the most
+      // significant word first: rsp[0] = SDC_RESP3 ... rsp[3] = SDC_RESP0
+      // (sd.c, case RESP_R2). EDK2 parses Response[0] as CSD[127:96], so the
+      // order must match; storing RESP0 first swaps every field and makes
+      // the computed capacity zero (observed: BlockIo media last=0).
+      //
+      mHost.Response[0] = MsdcRead (SDC_RESP3);
+      mHost.Response[1] = MsdcRead (SDC_RESP2);
+      mHost.Response[2] = MsdcRead (SDC_RESP1);
+      mHost.Response[3] = MsdcRead (SDC_RESP0);
     } else {
       mHost.Response[0] = MsdcRead (SDC_RESP0);
     }
