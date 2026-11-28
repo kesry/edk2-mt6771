@@ -32,7 +32,7 @@
 #include <Protocol/DevicePath.h>
 
 #define DIAG_PASSES   4
-#define DIAG_PERIOD   20000000u   // 2 s
+#define DIAG_PERIOD   50000000u   // 5 s, after Shell clears the screen
 
 STATIC UINTN  mPass;
 

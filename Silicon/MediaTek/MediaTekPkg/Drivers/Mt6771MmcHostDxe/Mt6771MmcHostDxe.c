@@ -1192,9 +1192,9 @@ Mt6771MmcHostDxeInitialize (
                       &TraceEvent
                       )))
     {
-      // One-shot only. A periodic ConOut replay from TPL_CALLBACK caused a
-      // fixed 2-reboot loop; print once after BDS has cleared the screen.
-      gBS->SetTimer (TraceEvent, TimerRelative, 30000000u);
+      // One-shot at 5 s: late enough for the Shell to finish its clear, so the log
+      // survives. A periodic replay from TPL_CALLBACK caused a 2-reboot loop.
+      gBS->SetTimer (TraceEvent, TimerRelative, 50000000u);
     }
   }
 
