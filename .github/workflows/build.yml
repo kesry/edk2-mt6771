@@ -47,6 +47,8 @@ jobs:
 
       - name: Install build dependencies
         run: |
+          # GRUB arm64 (Architecture: any) + mtools/dosfstools for the ESP image
+          sudo apt-get install -y --no-install-recommends grub-common grub-efi-arm64-bin mtools dosfstools
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             build-essential gcc gcc-aarch64-linux-gnu libc6-dev-arm64-cross \
@@ -112,6 +114,10 @@ jobs:
           cp -v Build/boot-uefi-acm.img out/ 2>/dev/null || true
           cp -v "$(find Build -name '*_UEFI.fd' | head -1)" out/A3_UEFI-acm.fd 2>/dev/null || true
 
+      - name: Build ESP image (GRUB arm64 + device tree)
+        run: |
+          sh Tools/mkesp.sh -o "$GITHUB_WORKSPACE/esp.img" -s 512
+          ls -l "$GITHUB_WORKSPACE/esp.img"
       - name: Verify firmware images
         run: |
           set -euo pipefail
@@ -140,6 +146,11 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Upload ESP image
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp-${{ github.run_number }}
+          path: esp.img
       - name: Upload flashable boot images
         if: always()
         uses: actions/upload-artifact@v4
