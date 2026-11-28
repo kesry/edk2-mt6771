@@ -54,7 +54,7 @@
 
 STATIC UINTN  mMmcTraceCount;
 
-#define MMC_TRACE_LINES  40
+#define MMC_TRACE_LINES  64
 STATIC CHAR16  mMmcTraceBuf[MMC_TRACE_LINES][112];
 STATIC UINTN   mMmcTraceUsed;
 STATIC UINTN   mMmcReplays;
@@ -127,6 +127,7 @@ MmcTraceReplay (
 
 
 STATIC UINTN  mPioReadFails;
+STATIC UINTN  mReadTraceCount;
 STATIC MT6771_MMC_HOST_DATA  mHost;
 STATIC EFI_HANDLE             mHostHandle;
 
@@ -915,6 +916,28 @@ Mt6771MmcSendCommand (
       (Index == 24) || (Index == 25)) {
     MsdcSetBits (MSDC_INTEN, MSDC_INT_DATSTS);
   }
+  //
+  // Wait until the controller can accept a new command, exactly like
+  // mtk-sd.c:msdc_cmd_is_ready(): CMDBUSY must be clear for every command,
+  // and for R1b or data commands SDCBUSY must be clear as well. Without this
+  // a command written while the previous one is still being processed is
+  // dropped by the controller and later shows up as a spurious timeout
+  // (that is what we saw for CMD16 and CMD12).
+  //
+  Status = WaitRegisterBitsClear (mHost.MsdcBase, SDC_STS, SDC_STS_CMDBUSY, 20000u);
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MMC: CMD%u CMDBUSY stuck %r\r\n", Index, Status);
+    return Status;
+  }
+  if ((ResponseType == 7) || (Index == 8) || (Index == 17) || (Index == 18) ||
+      (Index == 24) || (Index == 25)) {
+    Status = WaitRegisterBitsClear (mHost.MsdcBase, SDC_STS, SDC_STS_BUSY, 20000u);
+    if (EFI_ERROR (Status)) {
+      MmcTrace (L"MMC: CMD%u SDCBUSY stuck %r\r\n", Index, Status);
+      return Status;
+    }
+  }
+
   MsdcWrite (SDC_ARG, Argument);
   MsdcWrite (SDC_CMD, RawCmd);
 
@@ -983,11 +1006,24 @@ Mt6771MmcReadBlockData (
   OUT UINT32                *Buffer
   )
 {
+  EFI_STATUS  Status;
+
   if (Buffer == NULL) {
     return EFI_INVALID_PARAMETER;
   }
 
-  return MsdcPioRead (Buffer, Length);
+  if (mReadTraceCount < 8) {
+    mReadTraceCount++;
+    MmcTrace (L"MMC: ReadBlockData lba=%u len=%u\r\n", (UINT32)Lba, Length);
+  }
+
+  Status = MsdcPioRead (Buffer, Length);
+
+  if (mReadTraceCount < 8) {
+    MmcTrace (L"MMC: ReadBlockData -> %r INT=%08x FIFOCS=%08x\r\n",
+              Status, MsdcRead (MSDC_INT), MsdcRead (MSDC_FIFOCS));
+  }
+  return Status;
 }
 
 STATIC
