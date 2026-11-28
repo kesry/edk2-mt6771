@@ -257,3 +257,50 @@ USB: PHY DMON1=xxxxxxxx AVALID=? HST_DISCON=? LINE=?
 5. **TPL 安全**：不要在 TPL_NOTIFY 回调里调 ConOut / 分配内存
 6. **晚到设备**：VBUS 后期上电，驱动入口只查一次会导致漏设备
 7. **LCD 与 DEBUG 争抢 framebuffer**：FrameBufferSerialPortLib 与 ConOut 会互相覆盖
+
+---
+
+## 8. 从 eMMC 引导 Linux（下一步，2026-11-28）
+
+用户没有 USB-A 扩展坞（只有 Type-C），所以 U 盘启动不可行。改走 eMMC。
+
+### 8.1 关键事实（来自实机 parted_info.txt）
+
+```
+分区 41 vendor  : 981MB  ~ 2374MB  TYPE="swap"  (无文件系统)
+分区 42 system  : 2374MB ~ 5931MB  TYPE="swap"  (无文件系统)
+```
+
+这两个分区被标记为 **swap（原始分区，无 ext4 文件系统）**。而我们的 UEFI
+固件只包含 FAT 文件系统驱动（`FatPkg/EnhancedFatDxe`），**没有 EXT4 驱动**。
+
+因此正确的加载方式是：**不依赖文件系统，按 LBA 直接读取原始字节**：
+
+```
+内核 Image  → dd 到 system 分区起始扇区（LBA 0，即分区偏移 0）
+dtb         → dd 到 vendor 分区起始扇区
+ramdisk     → dd 到 vendor 分区后续扇区（可选）
+UEFI       → 用 BlockIo 按 LBA 读入内存 → 校验 ARM64 Image 头 → 跳转
+```
+
+### 8.2 当前阻塞点
+
+eMMC 驱动本身尚未在实机确认为可用。早期日志显示 "CMD1 CRC error / resp0=0"，
+但那是在 R3 响应修复（`7c5af9e`）和 LK 分频方案（`b693837`）之前。
+
+本轮（run #123）已重新打开 eMMC 屏幕 trace（`MMC_SCREEN_TRACE=TRUE`），
+下次刷机屏幕上会显示 CMD0/CMD1/CMD2/CMD3 的真实响应，据此判断：
+- 若 CMD1 返回有效 OCR 且后续识别成功 → 可以直接做 BlockIo 读取
+- 若仍失败 → 先修 MSDC，再谈引导
+
+### 8.3 引导驱动设计（待 eMMC 可用后实施）
+
+新增 `A3EmmcBootDxe`：
+1. 等待 BlockIo 句柄（eMMC GPT 出现）
+2. 按分区 PARTUUID 找到 system / vendor
+3. 从分区起始 LBA 读取 Linux Image 到固定内存地址
+4. 校验 ARM64 Image header（code0 分支 + `text_offset`）
+5. 加载 dtb/ramdisk，构造 boot params，跳转内核
+
+注意：BootShim 的头（`text_offset=0x80000`, `image_size=0x257f000`）是给 LK 用的；
+UEFI 直接跳转时需要使用内核真实头，不能照搬 BootShim 的伪装值。
