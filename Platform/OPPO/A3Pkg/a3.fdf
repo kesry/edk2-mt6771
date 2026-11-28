@@ -180,6 +180,7 @@ READ_LOCK_STATUS   = TRUE
   # UEFI applications
   #
   INF ShellPkg/Application/Shell/Shell.inf
+  INF MediaTekPkg/Applications/A3EmmcInfo/A3EmmcInfo.inf
 !ifdef $(INCLUDE_TFTP_COMMAND)
   INF ShellPkg/DynamicCommand/TftpDynamicCommand/TftpDynamicCommand.inf
 !endif #$(INCLUDE_TFTP_COMMAND)

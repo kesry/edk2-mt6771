@@ -125,7 +125,6 @@ MmcTraceReplay (
   gST->ConOut->OutputString (gST->ConOut, L"==== end MMC trace ====\r\n");
 }
 
-#endif
 
 STATIC MT6771_MMC_HOST_DATA  mHost;
 STATIC EFI_HANDLE             mHostHandle;
