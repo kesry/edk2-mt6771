@@ -31,10 +31,8 @@
 #include <Protocol/BlockIo.h>
 #include <Protocol/DevicePath.h>
 
-#define DIAG_PASSES   4
 #define DIAG_PERIOD   50000000u   // 5 s, after Shell clears the screen
 
-STATIC UINTN  mPass;
 
 //
 // Screen output is disabled on purpose: only USB diagnostics should occupy the
@@ -272,21 +270,6 @@ Diagnose (
   PrintText (L"==== end eMMC diagnostics ====\r\n");
 }
 
-STATIC
-VOID
-EFIAPI
-OnTimer (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  if (mPass >= DIAG_PASSES) {
-    gBS->SetTimer (Event, TimerCancel, 0);
-    return;
-  }
-  mPass++;
-  Diagnose ();
-}
 
 EFI_STATUS
 EFIAPI
@@ -295,21 +278,11 @@ Mt6771MmcDiagDxeInitialize (
   IN EFI_SYSTEM_TABLE  *SystemTable
   )
 {
-  EFI_STATUS  Status;
-  EFI_EVENT   Event;
-
-  mPass = 0;
-  Event = NULL;
-  Status = gBS->CreateEvent (
-                  EVT_TIMER | EVT_NOTIFY_SIGNAL,
-                  TPL_CALLBACK,
-                  OnTimer,
-                  NULL,
-                  &Event
-                  );
-  if (EFI_ERROR (Status)) {
-    return EFI_SUCCESS;
-  }
-  gBS->SetTimer (Event, TimerRelative, DIAG_PERIOD);
+  //
+  // No timer: print synchronously. The Depex waits for BlockIo, so MmcDxe has
+  // already finished identification by the time this runs. Timer-driven ConOut
+  // from TPL_CALLBACK is what rebooted the board earlier.
+  //
+  Diagnose ();
   return EFI_SUCCESS;
 }

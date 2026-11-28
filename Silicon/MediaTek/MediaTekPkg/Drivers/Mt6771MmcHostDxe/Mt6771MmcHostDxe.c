@@ -100,16 +100,13 @@ MmcTrace (
 
 STATIC
 VOID
-EFIAPI
-MmcTraceReplay (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
+MmcTraceDump (
+  VOID
   )
 {
   UINTN  i;
 
   if (mMmcReplays >= 1) {
-    gBS->SetTimer (Event, TimerCancel, 0);
     return;
   }
   mMmcReplays++;
@@ -779,6 +776,15 @@ Mt6771MmcNotifyState (
   IN MMC_STATE             State
   )
 {
+  //
+  // Print the buffered trace synchronously once the card reaches the transfer
+  // state. No timer is used: periodic ConOut from TPL_CALLBACK previously
+  // rebooted the board, and a one-shot timer is still unnecessary because
+  // MmcDxe calls this hook right after identification finishes.
+  //
+  if (State == MmcTransferState) {
+    MmcTraceDump ();
+  }
   return EFI_SUCCESS;
 }
 
@@ -1291,22 +1297,6 @@ Mt6771MmcHostDxeInitialize (
   Host->WriteBlockData  = Mt6771MmcWriteBlockData;
   Host->SetIos          = Mt6771MmcSetIos;
   Host->IsMultiBlock    = Mt6771MmcIsMultiBlock;
-
-  {
-    EFI_EVENT  TraceEvent = NULL;
-    if (!EFI_ERROR (gBS->CreateEvent (
-                      EVT_TIMER | EVT_NOTIFY_SIGNAL,
-                      TPL_CALLBACK,
-                      MmcTraceReplay,
-                      NULL,
-                      &TraceEvent
-                      )))
-    {
-      // One-shot at 5 s: late enough for the Shell to finish its clear, so the log
-      // survives. A periodic replay from TPL_CALLBACK caused a 2-reboot loop.
-      gBS->SetTimer (TraceEvent, TimerRelative, 50000000u);
-    }
-  }
 
   mHostHandle = NULL;
   Status = gBS->InstallProtocolInterface (
