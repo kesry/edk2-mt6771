@@ -757,3 +757,34 @@ USB: PHY DMON1=xxxxxxxx AVALID=? HST_DISCON=? LINE=?
 
 **结论：源码层面所有能确认的修复都已完成。** 下一步必须依赖 #114/#115 的
 PHY DMON1 / MFINDEX / ERSTSZ / ERDP 实测数据（判读矩阵见 §24）。
+
+## 26. eMMC 打通（2026-11-28，build #152）
+
+`map -r` 已能列出全部 47 个 GPT 分区。完整根因链，全部有源码或实机数据依据：
+
+| # | 问题 | 依据 | 修复 |
+|---|---|---|---|
+| 1 | CMD1 报 CRC、OCR 无效 | EDK2 `MmcIdentification.c` 在 CMD0/CMD1 **之前**不调 `SetIos`，卡跑在 LK 留下的 50MHz | init 里主动编程 260kHz（厂商 `sd.c:4373`）|
+| 2 | 时钟被门控 | 厂商 `sd.c:4373-4375` 结束时 CKPDN **清零** | `MsdcSetClock` 末尾改为清 CKPDN |
+| 3 | 每条命令前软复位 | `mtk-sd.c:1308` 只在 FIFO 非空时复位 | 改为按需复位 |
+| 4 | CMD16/CMD12 超时且 INT=0 | `mtk-sd.c:1262 msdc_cmd_is_ready()` 要求先等 CMDBUSY/SDCBUSY | 加同样等待 |
+| 5 | 数据读 CRC 错 | EDK2 写 `BUS_WIDTH=6`（8-bit **DDR**），控制器只有 SDR | 强制 EXT_CSD `DEVICE_TYPE=0`（`MmcIdentification.c:271` 提前返回）|
+| 6 | 数据读短 | 单次排空 FIFO 模式不可靠 | 按 `mtk-sd.c:1306` 只用 RXCNT 当"非空"标志，逐字读到齐 |
+| 7 | trace 里 resp0 恒为 0 | trace 在读取响应寄存器**之前**打印 | 先读响应再打印 |
+| 8 | trace 里 CFG/SDC_CFG 被截断 | 用 `MmioRead16` 读 32 位寄存器 | 改 `MmioRead32` |
+| 9 | 响应缓冲区越界写 12 字节 | `ReceiveResponse` 无条件拷 16 字节，OCR 调用方只有 4 字节 | 只有 R2（CID/CSD）拷 16 字节 |
+| 10 | BlockIo 容量为 0 | EDK2 MmcDxe 媒体字段不可靠 | 驱动自己识别 + 用 EXT_CSD `SEC_COUNT` 发布自己的 BlockIo |
+| 11 | 分区扫描卡住 | BlockIo 句柄缺少 DevicePath | 一并安装 VenHw 设备路径节点 |
+| 12 | 日志刷屏/重启 | TPL_CALLBACK 大量 ConOut | `MMC_VERBOSE_TRACE=0` / `MMC_DIAG_VERBOSE=0` 默认静音 |
+
+关键实测数据：
+
+```
+CMD1  resp0=40FF8080            OCR 有效
+CMD13 resp0=00000900            Tran 状态、READY_FOR_DATA
+EXT_CSD SEC_COUNT=0x0EBF6000    247,431,168 扇区 ≈ 126 GB
+MBR   sig=55AA，mbr 项 EE FF FF FF 01 00 00 00 FF 5F 8F 0E
+```
+
+驱动现在自己发布 `EFI_BLOCK_IO_PROTOCOL`（容量 244,277,248 扇区），
+`MmcDxe` 已从 FV 移除，避免同一控制器出现两个 BlockIo。
