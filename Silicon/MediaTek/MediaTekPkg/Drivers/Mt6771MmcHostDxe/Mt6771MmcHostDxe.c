@@ -23,6 +23,8 @@
 #include "Mt6771MmcHostDxe.h"
 
 #include <Library/PrintLib.h>
+#include <Library/MemoryAllocationLib.h>
+#include <Protocol/BlockIo.h>
 
 //
 // 0 = leave LK's MSDC tuning alone (default). 1 = apply the MT6789-derived
@@ -1019,7 +1021,16 @@ Mt6771MmcReceiveResponse (
     return EFI_INVALID_PARAMETER;
   }
 
-  CopyMem (Buffer, mHost.Response, sizeof (mHost.Response));
+  //
+  // Only R2 (CID/CSD) is 128 bits. Callers of the other types pass a single
+  // UINT32 (EDK2 MmcDxe hands in a 4-byte OCR union), so copying all four
+  // words overruns their buffer by 12 bytes and corrupts the caller stack.
+  //
+  if ((Type == MMC_RESPONSE_TYPE_CID) || (Type == MMC_RESPONSE_TYPE_CSD)) {
+    CopyMem (Buffer, mHost.Response, sizeof (mHost.Response));
+  } else {
+    Buffer[0] = mHost.Response[0];
+  }
   return EFI_SUCCESS;
 }
 
@@ -1176,6 +1187,230 @@ Mt6771MmcIsMultiBlock (
   )
 {
   return TRUE;
+}
+
+
+//
+// ---------------------------------------------------------------------------
+// Direct BlockIo
+//
+// EDK2's MmcDxe installs a BlockIo but leaves the media size at zero on this
+// controller (observed: blk=512 last=0 present=1 while the same media reads a
+// perfect protective MBR). Rather than depend on its internal state machine we
+// run the identification sequence ourselves -- the exact command order that the
+// MMC trace shows working -- and publish our own EFI_BLOCK_IO_PROTOCOL.
+// ---------------------------------------------------------------------------
+STATIC EFI_BLOCK_IO_MEDIA  mBlkMedia;
+STATIC EFI_BLOCK_IO_PROTOCOL mBlkIo;
+STATIC EFI_MMC_HOST_PROTOCOL *mOwnHost;
+
+STATIC
+EFI_STATUS
+EFIAPI
+A3BlkReset (
+  IN EFI_BLOCK_IO_PROTOCOL  *This,
+  IN BOOLEAN                 ExtendedVerification
+  )
+{
+  return EFI_SUCCESS;
+}
+
+STATIC
+EFI_STATUS
+EFIAPI
+A3BlkReadBlocks (
+  IN  EFI_BLOCK_IO_PROTOCOL  *This,
+  IN  UINT32                  MediaId,
+  IN  EFI_LBA                 Lba,
+  IN  UINTN                   BufferSize,
+  OUT VOID                   *Buffer
+  )
+{
+  UINT8       *Out = (UINT8 *)Buffer;
+  EFI_STATUS   Status;
+
+  if (Buffer == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+  if ((BufferSize % MT6771_MSDC_BLOCK_SIZE) != 0) {
+    return EFI_BAD_BUFFER_SIZE;
+  }
+
+  while (BufferSize > 0) {
+    if (Lba > mBlkMedia.LastBlock) {
+      return EFI_INVALID_PARAMETER;
+    }
+    Status = mOwnHost->SendCommand (mOwnHost, MMC_CMD17, (UINT32)Lba);
+    if (EFI_ERROR (Status)) {
+      return Status;
+    }
+    Status = mOwnHost->ReadBlockData (mOwnHost, Lba, MT6771_MSDC_BLOCK_SIZE,
+                                      (UINT32 *)Out);
+    if (EFI_ERROR (Status)) {
+      return Status;
+    }
+    Out        += MT6771_MSDC_BLOCK_SIZE;
+    BufferSize -= MT6771_MSDC_BLOCK_SIZE;
+    Lba++;
+  }
+
+  return EFI_SUCCESS;
+}
+
+STATIC
+EFI_STATUS
+EFIAPI
+A3BlkWriteBlocks (
+  IN EFI_BLOCK_IO_PROTOCOL  *This,
+  IN UINT32                  MediaId,
+  IN EFI_LBA                 Lba,
+  IN UINTN                   BufferSize,
+  IN VOID                   *Buffer
+  )
+{
+  return EFI_WRITE_PROTECTED;
+}
+
+STATIC
+EFI_STATUS
+EFIAPI
+A3BlkFlushBlocks (
+  IN EFI_BLOCK_IO_PROTOCOL  *This
+  )
+{
+  return EFI_SUCCESS;
+}
+
+STATIC
+EFI_STATUS
+Mt6771MmcInitCardAndInstallBlockIo (
+  IN EFI_MMC_HOST_PROTOCOL  *Host
+  )
+{
+  EFI_STATUS  Status;
+  UINT32      Ocr;
+  UINT32      Rca;
+  UINT32      Retry;
+  UINT8      *Ecsd;
+  UINT32      SectorCount;
+  EFI_HANDLE  Handle;
+
+  mOwnHost = Host;
+
+  Status = Host->SendCommand (Host, MMC_CMD0, 0);
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MMC: CMD0 failed %r\r\n", Status);
+    return Status;
+  }
+
+  Retry = 200;
+  do {
+    Status = Host->SendCommand (Host, MMC_CMD1, 0x40FF8080u);
+    if (EFI_ERROR (Status)) {
+      MmcTrace (L"MMC: CMD1 failed %r\r\n", Status);
+      return Status;
+    }
+    Host->ReceiveResponse (Host, MMC_RESPONSE_TYPE_OCR, &Ocr);
+    if ((Ocr & BIT31) != 0) {
+      break;
+    }
+    MicroSecondDelay (1000);
+  } while (--Retry != 0);
+
+  if ((Ocr & BIT31) == 0) {
+    MmcTrace (L"MMC: card never powered up, Ocr=%08x\r\n", Ocr);
+    return EFI_TIMEOUT;
+  }
+
+  Status = Host->SendCommand (Host, MMC_CMD2, 0);
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MMC: CMD2 failed %r\r\n", Status);
+    return Status;
+  }
+
+  Rca    = 0x0001u;
+  Status = Host->SendCommand (Host, MMC_CMD3, Rca << 16);
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MMC: CMD3 failed %r\r\n", Status);
+    return Status;
+  }
+
+  Status = Host->SendCommand (Host, MMC_CMD9, Rca << 16);
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MMC: CMD9 failed %r\r\n", Status);
+    return Status;
+  }
+
+  Status = Host->SendCommand (Host, MMC_CMD7, Rca << 16);
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MMC: CMD7 failed %r\r\n", Status);
+    return Status;
+  }
+
+  // 1-bit bus width, then read EXT_CSD for the sector count.
+  Host->SendCommand (Host, MMC_CMD6, (3u << 24) | (183u << 16) | (0u << 8) | 1u);
+
+  Ecsd = AllocatePool (MT6771_MSDC_BLOCK_SIZE);
+  if (Ecsd == NULL) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+  ZeroMem (Ecsd, MT6771_MSDC_BLOCK_SIZE);
+
+  Status = Host->SendCommand (Host, MMC_CMD8, 0);
+  if (!EFI_ERROR (Status)) {
+    Status = Host->ReadBlockData (Host, 0, MT6771_MSDC_BLOCK_SIZE, (UINT32 *)Ecsd);
+  }
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MMC: EXT_CSD read failed %r\r\n", Status);
+    FreePool (Ecsd);
+    return Status;
+  }
+
+  SectorCount = *(UINT32 *)(Ecsd + 212);
+  MmcTrace (L"MMC: own BlockIo: SEC_COUNT=%u (%u MB)\r\n",
+            SectorCount, SectorCount / 2048u);
+  FreePool (Ecsd);
+
+  if (SectorCount < 2) {
+    MmcTrace (L"MMC: SEC_COUNT too small, not publishing BlockIo\r\n");
+    return EFI_DEVICE_ERROR;
+  }
+
+  Status = Host->SendCommand (Host, MMC_CMD16, MT6771_MSDC_BLOCK_SIZE);
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MMC: CMD16 failed %r\r\n", Status);
+    return Status;
+  }
+
+  ZeroMem (&mBlkMedia, sizeof (mBlkMedia));
+  mBlkMedia.MediaId          = 1;
+  mBlkMedia.MediaPresent     = TRUE;
+  mBlkMedia.BlockSize        = MT6771_MSDC_BLOCK_SIZE;
+  mBlkMedia.LastBlock        = (EFI_LBA)SectorCount - 1;
+  mBlkMedia.IoAlign          = 0;
+  mBlkMedia.LogicalBlocksPerPhysicalBlock = 1;
+
+  mBlkIo.Revision    = EFI_BLOCK_IO_PROTOCOL_REVISION;
+  mBlkIo.Media       = &mBlkMedia;
+  mBlkIo.Reset       = A3BlkReset;
+  mBlkIo.ReadBlocks  = A3BlkReadBlocks;
+  mBlkIo.WriteBlocks = A3BlkWriteBlocks;
+  mBlkIo.FlushBlocks = A3BlkFlushBlocks;
+
+  Handle = NULL;
+  Status = gBS->InstallMultipleProtocolInterfaces (
+                  &Handle,
+                  &gEfiBlockIoProtocolGuid,
+                  &mBlkIo,
+                  NULL
+                  );
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MMC: BlockIo install failed %r\r\n", Status);
+    return Status;
+  }
+
+  MmcTrace (L"MMC: BlockIo installed, last=%u\r\n", (UINT32)mBlkMedia.LastBlock);
+  return EFI_SUCCESS;
 }
 
 STATIC
@@ -1388,6 +1623,13 @@ Mt6771MmcHostDxeInitialize (
     FreePool (Host);
     return Status;
   }
+
+  //
+  // Publish our own BlockIo as well. EDK2 MmcDxe leaves the media size at 0
+  // on this controller even though the same media reads a perfect protective
+  // MBR, so we size the device ourselves from EXT_CSD and expose it directly.
+  //
+  Mt6771MmcInitCardAndInstallBlockIo (Host);
 
   DEBUG ((DEBUG_INFO, "Mt6771Mmc: installed at 0x%x (top 0x%x), source=%uHz\n",
           mHost.MsdcBase, mHost.TopBase, mHost.SourceClockHz));

@@ -150,7 +150,8 @@ READ_LOCK_STATUS   = TRUE
   # MT6771 eMMC (MSDC0): host -> MMC BlockIo -> disk stack
   #
   INF MediaTekPkg/Drivers/Mt6771MmcHostDxe/Mt6771MmcHostDxe.inf
-  INF EmbeddedPkg/Universal/MmcDxe/MmcDxe.inf
+  # MmcDxe is intentionally NOT included: it installs a BlockIo whose media
+  # size stays 0 on this controller, so Mt6771MmcHostDxe publishes its own.
 
   #
   # FAT filesystem + GPT/MBR partitioning

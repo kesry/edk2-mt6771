@@ -33,6 +33,7 @@
 [Protocols]
   gEmbeddedMmcHostProtocolGuid
   gEfiDevicePathProtocolGuid
+  gEfiBlockIoProtocolGuid
 
 [Pcd]
   gMediaTekTokenSpaceGuid.PcdMsdcMmioRegBase
