@@ -246,6 +246,47 @@ Diagnose (
       );
     PrintText (Line);
 
+    //
+    // Force one block read. MmcDxe installs BlockIo first and initialises the
+    // card on first access, so LastBlock is still 0 at report time; this read
+    // triggers the initialisation and lets us re-check the media and look at
+    // the real sector content (a GPT disk has a protective MBR: zeros up to
+    // 445, a partition entry at 446..461 and 55 AA at 510..511).
+    //
+    if ((BlkIo->Media->BlockSize >= 512) && (BlkIo->Media->BlockSize <= 4096)) {
+      UINT8       *Sec;
+      EFI_STATUS   RdStatus;
+      Sec = AllocatePool (BlkIo->Media->BlockSize);
+      if (Sec != NULL) {
+        RdStatus = BlkIo->ReadBlocks (BlkIo, BlkIo->Media->MediaId, 0,
+                                      BlkIo->Media->BlockSize, Sec);
+        UnicodeSPrint (
+          Line, sizeof (Line),
+          L"      read LBA0 %r  last=%Lu\r\n",
+          RdStatus, BlkIo->Media->LastBlock
+          );
+        PrintText (Line);
+        if (!EFI_ERROR (RdStatus)) {
+          UINTN k;
+          UnicodeSPrint (Line, sizeof (Line), L"      head:");
+          PrintText (Line);
+          for (k = 0; k < 16; k++) {
+            UnicodeSPrint (Line, sizeof (Line), L" %02x", Sec[k]);
+            PrintText (Line);
+          }
+          PrintText (L"\r\n      mbr :");
+          for (k = 446; k < 462; k++) {
+            UnicodeSPrint (Line, sizeof (Line), L" %02x", Sec[k]);
+            PrintText (Line);
+          }
+          UnicodeSPrint (Line, sizeof (Line), L"  sig=%02x%02x\r\n",
+                         Sec[510], Sec[511]);
+          PrintText (Line);
+        }
+        FreePool (Sec);
+      }
+    }
+
     {
       EFI_DEVICE_PATH_PROTOCOL  *Dp = NULL;
       if (!EFI_ERROR (gBS->HandleProtocol (Handles[i], &gEfiDevicePathProtocolGuid, (VOID **)&Dp)) && (Dp != NULL)) {
