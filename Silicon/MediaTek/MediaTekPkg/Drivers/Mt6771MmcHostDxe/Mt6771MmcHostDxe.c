@@ -126,6 +126,7 @@ MmcTraceReplay (
 }
 
 
+STATIC UINTN  mPioReadFails;
 STATIC MT6771_MMC_HOST_DATA  mHost;
 STATIC EFI_HANDLE             mHostHandle;
 
@@ -653,7 +654,24 @@ MsdcPioRead (
   }
 
   if (Remaining != 0) {
-    DEBUG ((DEBUG_ERROR, "Mt6771Mmc: PIO read short, %u bytes missing\n", Remaining));
+    //
+    // One-line diagnosis of the data path: INT tells us whether XFER_COMPL
+    // or a data error ever arrived, FIFOCS whether the RX FIFO ever filled,
+    // and MSDC_CFG whether PIO mode is actually selected.
+    //
+    if (mPioReadFails < 4) {
+      mPioReadFails++;
+      MmcTrace (
+        L"PIO read short: left=%u len=%u INT=%08x FIFOCS=%08x CFG=%08x\r\n",
+        Remaining, Length,
+        MsdcRead (MSDC_INT), MsdcRead (MSDC_FIFOCS), MsdcRead (MSDC_CFG)
+        );
+    }
+    //
+    // Vendor resets the controller after a data error (sd.c:1442) so the next
+    // command is not issued while the data state machine is stuck mid-transfer.
+    //
+    MsdcResetHardware ();
     return EFI_DEVICE_ERROR;
   }
 
@@ -886,7 +904,17 @@ Mt6771MmcSendCommand (
     MsdcWrite (MSDC_INT, 0xffffffffu);
   }
 
-  MsdcClearBits (MSDC_INTEN, MSDC_INT_CMDSTS);
+  //
+  // Enable the command/data interrupt masks like the vendor driver does
+  // (sd.c sets cmd_ints_mask before writing SDC_CMD, plus the data mask for
+  // data commands). We poll MSDC_INT rather than taking an IRQ, but the mask
+  // must still be open for the controller to report completion and errors.
+  //
+  MsdcSetBits (MSDC_INTEN, MSDC_INT_CMDSTS);
+  if ((Index == 8) || (Index == 17) || (Index == 18) ||
+      (Index == 24) || (Index == 25)) {
+    MsdcSetBits (MSDC_INTEN, MSDC_INT_DATSTS);
+  }
   MsdcWrite (SDC_ARG, Argument);
   MsdcWrite (SDC_CMD, RawCmd);
 
