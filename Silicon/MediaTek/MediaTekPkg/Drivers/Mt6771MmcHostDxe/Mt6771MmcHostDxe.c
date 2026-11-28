@@ -1062,6 +1062,17 @@ Mt6771MmcHostInit (
   MsdcSetBits (MSDC_CFG, MSDC_CFG_MODE);
   MsdcSetBits (MSDC_CFG, MSDC_CFG_PIO);
 
+  //
+  // Both the MT6771 vendor driver (drivers/mmc/host/mediatek/ComboA/sd.c:
+  // msdc_init_hw) and Linux mtk-sd.c configure SDC_CFG.SDIO=1 and
+  // SDC_CFG.SDIOIDE=0 unconditionally unless MMC_CAP2_NO_SDIO is set. The
+  // comment there says SDIO mode must be enabled for CMD5; LK also sets it
+  // during its MSDC init. This platform does not advertise NO_SDIO, so mirror
+  // that configuration before any command is sent.
+  //
+  MsdcSetBits (SDC_CFG, SDC_CFG_SDIO);
+  MsdcClearBits (SDC_CFG, SDC_CFG_SDIOIDE);
+
   Status = MsdcResetHardware ();
   if (EFI_ERROR (Status)) {
     return Status;
@@ -1075,9 +1086,6 @@ Mt6771MmcHostInit (
   // configured, so they are opt-in. Default: keep whatever LK programmed.
   //
 #if MMC_USE_MT6789_QUIRKS
-  MsdcSetBits (SDC_CFG, SDC_CFG_SDIO);
-  MsdcClearBits (SDC_CFG, SDC_CFG_SDIOIDE);
-
   MsdcWrite (MSDC_IOCON, 0);
   MsdcWrite (MSDC_PATCH_BIT0, 0x403c0046u);
   MsdcWrite (MSDC_PATCH_BIT1, 0xffff4089u);
