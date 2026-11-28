@@ -1034,10 +1034,10 @@ Mt6771MmcHostInit (
 
   MmcTrace (
     L"MSDC regs before: CFG=%08x SDC_CFG=%08x PS=%08x INTEN=%08x\r\n",
-    MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_CFG),
-    MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + SDC_CFG),
-    MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_PS),
-    MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_INTEN)
+    MmioRead32 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_CFG),
+    MmioRead32 (FixedPcdGet32 (PcdMsdcMmioRegBase) + SDC_CFG),
+    MmioRead32 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_PS),
+    MmioRead32 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_INTEN)
     );
 
   mHost.MsdcBase      = FixedPcdGet32 (PcdMsdcMmioRegBase);
@@ -1150,10 +1150,10 @@ Mt6771MmcHostInit (
 
   MmcTrace (
     L"MSDC regs after : CFG=%08x SDC_CFG=%08x PS=%08x INTEN=%08x\r\n",
-    MmioRead16 (mHost.MsdcBase + MSDC_CFG),
-    MmioRead16 (mHost.MsdcBase + SDC_CFG),
-    MmioRead16 (mHost.MsdcBase + MSDC_PS),
-    MmioRead16 (mHost.MsdcBase + MSDC_INTEN)
+    MmioRead32 (mHost.MsdcBase + MSDC_CFG),
+    MmioRead32 (mHost.MsdcBase + SDC_CFG),
+    MmioRead32 (mHost.MsdcBase + MSDC_PS),
+    MmioRead32 (mHost.MsdcBase + MSDC_INTEN)
     );
 
   return MsdcSetBusWidth (1);
