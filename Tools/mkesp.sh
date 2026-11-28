@@ -69,6 +69,19 @@ menuentry "Boot /Image, root=PARTUUID=3edee4d4-eba3-4bfc-9e93-29bad7809196" {
     linux /Image root=PARTUUID=3edee4d4-eba3-4bfc-9e93-29bad7809196 rw console=tty0 loglevel=7
 }
 
+# ---------------------------------------------------------------------------
+# 3) Full install from the Debian DVD ISO stored on a partition.
+#    Adjust the partition (hd0,gpt45) and the file name to your layout, and put
+#    debian-*-arm64-DVD-1.iso there.
+# ---------------------------------------------------------------------------
+menuentry "Debian DVD ISO (loopback from gpt45)" {
+    set isofile=/debian-arm64-DVD-1.iso
+    loopback loop (hd0,gpt45)$isofile
+    devicetree /a3.dtb
+    linux (loop)/install.a64/vmlinuz console=tty0 loglevel=7 --- quiet
+    initrd (loop)/install.a64/initrd.gz
+}
+
 menuentry "UEFI Shell" {
     exit
 }
