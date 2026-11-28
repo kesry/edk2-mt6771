@@ -12,14 +12,16 @@ set -eu
 
 OUT=esp.img
 KERNEL=""
+INITRD=""
 DTB=""
 SIZE_MB=512
 
-usage() { echo "usage: $0 [-o esp.img] [-k Image] [-d dtb] [-s sizeMB]" >&2; exit 1; }
-while getopts "o:k:d:s:" opt; do
+usage() { echo "usage: $0 [-o esp.img] [-k Image] [-i initrd.gz] [-d dtb] [-s sizeMB]" >&2; exit 1; }
+while getopts "o:k:i:d:s:" opt; do
   case "$opt" in
     o) OUT="$OPTARG" ;;
     k) KERNEL="$OPTARG" ;;
+    i) INITRD="$OPTARG" ;;
     d) DTB="$OPTARG" ;;
     s) SIZE_MB="$OPTARG" ;;
     *) usage ;;
@@ -40,21 +42,38 @@ cat > "$WORK/grub.cfg" <<'GRUBCFG'
 set timeout=5
 set default=0
 
-# Text terminal: works with the simple-framebuffer GOP we expose.
+# Text terminal works with the firmware GOP; the Debian kernel also has
+# CONFIG_FB_EFI=y so it draws its own console on the same framebuffer.
 terminal_output console
 
-menuentry "fnOS (OPPO A3 / MT6771, our kernel)" {
-    # Our own device tree: the phone's hardware is described here, not by ACPI
-    # and not by any vendor Image's built-in DTB.
+# ---------------------------------------------------------------------------
+# 1) Installer / initrd boot: no root= on the command line, the initrd decides.
+#    Used for debian-installer netboot images and for any distro live media.
+# ---------------------------------------------------------------------------
+menuentry "Boot /Image + /initrd.gz (our DTB)" {
     devicetree /a3.dtb
-    linux /Image root=PARTUUID=3edee4d4-eba3-4bfc-9e93-29bad7809196 rw \
-          console=tty0 loglevel=7
+    if [ -f /initrd.gz ]; then
+        linux /Image console=tty0 loglevel=7 --- quiet
+        initrd /initrd.gz
+    else
+        linux /Image console=tty0 loglevel=7
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# 2) Installed system: same kernel, but mount a real root filesystem.
+#    Change the PARTUUID to the root partition on this phone.
+# ---------------------------------------------------------------------------
+menuentry "Boot /Image, root=PARTUUID=3edee4d4-eba3-4bfc-9e93-29bad7809196" {
+    devicetree /a3.dtb
+    linux /Image root=PARTUUID=3edee4d4-eba3-4bfc-9e93-29bad7809196 rw console=tty0 loglevel=7
 }
 
 menuentry "UEFI Shell" {
     exit
 }
 GRUBCFG
+
 
 echo "== building GRUB arm64 standalone =="
 grub-mkstandalone \
@@ -80,6 +99,12 @@ if [ -n "$KERNEL" ]; then
   echo "   added kernel: $KERNEL"
 else
   echo "   NOTE: no kernel added; copy your Image to /Image on the ESP"
+fi
+
+if [ -n "$INITRD" ]; then
+  [ -f "$INITRD" ] || { echo "initrd not found: $INITRD" >&2; exit 1; }
+  mcopy -i "$OUT" "$INITRD" ::/initrd.gz
+  echo "   added initrd: $INITRD"
 fi
 
 echo "== done: $OUT =="
