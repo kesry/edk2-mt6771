@@ -137,7 +137,7 @@ DumpGpt (
   }
 
   Printed = 0;
-  for (i = 0; i < NumEntries && Printed < 12; i++) {
+  for (i = 0; i < NumEntries && Printed < 48; i++) {
     UINT8   *E = Entries + i * EntrySize;
     UINT64  First;
     UINT64  Last;
@@ -157,18 +157,32 @@ DumpGpt (
     First = *(UINT64 *)(E + 32);
     Last  = *(UINT64 *)(E + 40);
 
-    UnicodeSPrint (
-      Line, sizeof (Line),
-      L"  #%u type=%08x-%04x-%04x first=%Lu last=%Lu (%Lu MB)\r\n",
-      i,
-      *(UINT32 *)E,
-      *(UINT16 *)(E + 4),
-      *(UINT16 *)(E + 6),
-      First,
-      Last,
-      (Last - First + 1) * BlockSize / (1024 * 1024)
-      );
-    PrintText (Line);
+    {
+      CHAR8  Name[17];
+      UINTN  n;
+      for (n = 0; n < 16; n++) {
+        CHAR16 c = *(CHAR16 *)(E + 56 + n * 2);
+        Name[n] = (c == 0) ? 0 : ((c < 0x80) ? (CHAR8)c : (CHAR8)'?');
+        if (c == 0) {
+          break;
+        }
+      }
+      Name[16] = 0;
+
+      UnicodeSPrint (
+        Line, sizeof (Line),
+        L"  #%u %a %08x-%04x-%04x first=%Lu last=%Lu (%Lu MB)\r\n",
+        i,
+        Name,
+        *(UINT32 *)E,
+        *(UINT16 *)(E + 4),
+        *(UINT16 *)(E + 6),
+        First,
+        Last,
+        (Last - First + 1) * BlockSize / (1024 * 1024)
+        );
+      PrintText (Line);
+    }
     Printed++;
   }
 
