@@ -122,6 +122,18 @@ MmcTraceDump (
   gST->ConOut->OutputString (gST->ConOut, L"==== end MMC trace ====\r\n");
 }
 
+STATIC
+VOID
+EFIAPI
+MmcTraceReplayEvent (
+  IN EFI_EVENT  Event,
+  IN VOID       *Context
+  )
+{
+  gBS->SetTimer (Event, TimerCancel, 0);
+  MmcTraceDump ();
+}
+
 
 STATIC UINTN  mPioReadFails;
 STATIC UINTN  mReadTraceCount;
@@ -1304,6 +1316,24 @@ Mt6771MmcHostDxeInitialize (
   Host->WriteBlockData  = Mt6771MmcWriteBlockData;
   Host->SetIos          = Mt6771MmcSetIos;
   Host->IsMultiBlock    = Mt6771MmcIsMultiBlock;
+  {
+    EFI_EVENT  TraceEvent = NULL;
+    if (!EFI_ERROR (gBS->CreateEvent (
+                      EVT_TIMER | EVT_NOTIFY_SIGNAL,
+                      TPL_CALLBACK,
+                      MmcTraceReplayEvent,
+                      NULL,
+                      &TraceEvent
+                      )))
+    {
+      //
+      // ONE-SHOT at 5 s. A periodic replay from TPL_CALLBACK rebooted the
+      // board; a single late dump is what produced the readable traces in
+      // builds #136-#139. Do not make this periodic.
+      //
+      gBS->SetTimer (TraceEvent, TimerRelative, 50000000u);
+    }
+  }
 
   mHostHandle = NULL;
   Status = gBS->InstallProtocolInterface (

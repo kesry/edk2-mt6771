@@ -179,6 +179,24 @@ STATIC
 VOID
 Diagnose (
   VOID
+  );
+
+STATIC
+VOID
+EFIAPI
+OnTimer (
+  IN EFI_EVENT  Event,
+  IN VOID       *Context
+  )
+{
+  gBS->SetTimer (Event, TimerCancel, 0);
+  Diagnose ();
+}
+
+STATIC
+VOID
+Diagnose (
+  VOID
   )
 {
   CHAR16               Line[192];
@@ -278,11 +296,24 @@ Mt6771MmcDiagDxeInitialize (
   IN EFI_SYSTEM_TABLE  *SystemTable
   )
 {
+  EFI_STATUS  TimerStatus;
+  EFI_EVENT   TimerEvent;
+
   //
-  // No timer: print synchronously. The Depex waits for BlockIo, so MmcDxe has
-  // already finished identification by the time this runs. Timer-driven ConOut
-  // from TPL_CALLBACK is what rebooted the board earlier.
+  // ONE-SHOT at 5 s so the report survives the Shell screen clear. A periodic
+  // timer rebooted the board earlier; this must stay single-shot.
   //
-  Diagnose ();
+  TimerEvent = NULL;
+  TimerStatus = gBS->CreateEvent (
+                  EVT_TIMER | EVT_NOTIFY_SIGNAL,
+                  TPL_CALLBACK,
+                  OnTimer,
+                  NULL,
+                  &TimerEvent
+                  );
+  if (!EFI_ERROR (TimerStatus)) {
+    gBS->SetTimer (TimerEvent, TimerRelative, DIAG_PERIOD);
+  }
+
   return EFI_SUCCESS;
 }
