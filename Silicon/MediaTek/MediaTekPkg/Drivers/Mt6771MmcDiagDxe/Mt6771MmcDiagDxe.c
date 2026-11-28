@@ -235,11 +235,14 @@ Diagnose (
 
     UnicodeSPrint (
       Line, sizeof (Line),
-      L"  [%u] blk=%u last=%Lu removable=%u\r\n",
+      L"  [%u] blk=%u last=%Lu present=%u ro=%u rem=%u id=%u\r\n",
       i,
       BlkIo->Media->BlockSize,
       BlkIo->Media->LastBlock,
-      BlkIo->Media->RemovableMedia
+      BlkIo->Media->MediaPresent,
+      BlkIo->Media->ReadOnly,
+      BlkIo->Media->RemovableMedia,
+      BlkIo->Media->MediaId
       );
     PrintText (Line);
 

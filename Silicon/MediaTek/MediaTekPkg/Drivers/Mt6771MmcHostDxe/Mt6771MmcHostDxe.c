@@ -137,6 +137,7 @@ MmcTraceReplayEvent (
 
 STATIC UINTN  mPioReadFails;
 STATIC UINTN  mReadTraceCount;
+STATIC BOOLEAN mSectorDumped;
 STATIC MT6771_MMC_HOST_DATA  mHost;
 STATIC EFI_HANDLE             mHostHandle;
 
@@ -972,16 +973,15 @@ Mt6771MmcSendCommand (
   if (ResponseType != 0) {
     if (ResponseType == 2) {
       //
-      // R2 (CSD/CID) is 128 bits. The vendor driver stores the most
-      // significant word first: rsp[0] = SDC_RESP3 ... rsp[3] = SDC_RESP0
-      // (sd.c, case RESP_R2). EDK2 parses Response[0] as CSD[127:96], so the
-      // order must match; storing RESP0 first swaps every field and makes
-      // the computed capacity zero (observed: BlockIo media last=0).
+      // R2 is 128 bits. EDK2's CSD struct (EmbeddedPkg/Universal/MmcDxe/
+      // MmcDxe.h) declares fields in increasing CSD bit order, so Buffer[0]
+      // (offset 0..3) must hold CSD[31:0] and Buffer[3] CSD[127:96].
+      // Keep Response[0] = SDC_RESP0 accordingly.
       //
-      mHost.Response[0] = MsdcRead (SDC_RESP3);
-      mHost.Response[1] = MsdcRead (SDC_RESP2);
-      mHost.Response[2] = MsdcRead (SDC_RESP1);
-      mHost.Response[3] = MsdcRead (SDC_RESP0);
+      mHost.Response[0] = MsdcRead (SDC_RESP0);
+      mHost.Response[1] = MsdcRead (SDC_RESP1);
+      mHost.Response[2] = MsdcRead (SDC_RESP2);
+      mHost.Response[3] = MsdcRead (SDC_RESP3);
     } else {
       mHost.Response[0] = MsdcRead (SDC_RESP0);
     }
@@ -990,9 +990,9 @@ Mt6771MmcSendCommand (
   if (mMmcTraceCount < 32) {
     TraceInt = MsdcRead (MSDC_INT);
     MmcTrace (
-      L"MMC CMD%u arg=%08x raw=%04x -> %r INT=%08x resp0=%08x resp3=%08x\r\n",
+      L"MMC CMD%u arg=%08x raw=%04x -> %r INT=%08x r0=%08x r1=%08x r2=%08x r3=%08x\r\n",
       MMC_GET_INDX (Cmd), Argument, RawCmd, Status, TraceInt,
-      mHost.Response[0], mHost.Response[3]
+      mHost.Response[0], mHost.Response[1], mHost.Response[2], mHost.Response[3]
       );
     mMmcTraceCount++;
   }
@@ -1043,6 +1043,22 @@ Mt6771MmcReadBlockData (
   }
 
   Status = MsdcPioRead (Buffer, Length);
+
+  //
+  // Dump the first 16 bytes of the first successful sector read (CMD17) so we
+  // can tell real media data from garbage without guessing.
+  //
+  if (!EFI_ERROR (Status) && !mSectorDumped && (Lba == 0) &&
+      (mHost.LastCommand != 0) && (MMC_GET_INDX (mHost.LastCommand) == 17) &&
+      (Length >= 16)) {
+    UINT8 *B = (UINT8 *)Buffer;
+    mSectorDumped = TRUE;
+    MmcTrace (
+      L"MMC: LBA0 head %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x\r\n",
+      B[0], B[1], B[2], B[3], B[4], B[5], B[6], B[7],
+      B[8], B[9], B[10], B[11], B[12], B[13], B[14], B[15]
+      );
+  }
 
   //
   // EXT_CSD read (CMD8/SEND_EXTCSD): force DEVICE_TYPE (EXT_CSD byte 196) to
