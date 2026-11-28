@@ -25,6 +25,8 @@
 #include <Library/PrintLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Protocol/BlockIo.h>
+#include <Protocol/DevicePath.h>
+#include <Library/DevicePathLib.h>
 
 //
 // 0 = leave LK's MSDC tuning alone (default). 1 = apply the MT6789-derived
@@ -56,7 +58,7 @@
 
 STATIC UINTN  mMmcTraceCount;
 
-#define MMC_TRACE_LINES  64
+#define MMC_TRACE_LINES  160
 STATIC CHAR16  mMmcTraceBuf[MMC_TRACE_LINES][112];
 STATIC UINTN   mMmcTraceUsed;
 STATIC UINTN   mMmcReplays;
@@ -141,6 +143,7 @@ STATIC UINTN  mPioReadFails;
 STATIC UINTN  mReadTraceCount;
 STATIC BOOLEAN mSectorDumped;
 STATIC BOOLEAN mTraceQuiet;
+STATIC UINTN   mPostReads;
 STATIC MT6771_MMC_HOST_DATA  mHost;
 STATIC EFI_HANDLE             mHostHandle;
 
@@ -1237,8 +1240,21 @@ A3BlkReadBlocks (
     return EFI_BAD_BUFFER_SIZE;
   }
 
+  //
+  // Log the first block requests coming from the disk stack. If the boot hangs
+  // during partition scanning this shows the exact request it died on.
+  //
+  if (mPostReads < 48) {
+    MmcTrace (L"MMC: blk read lba=%u size=%u\r\n", (UINT32)Lba, BufferSize);
+    mPostReads++;
+  }
+
   while (BufferSize > 0) {
     if (Lba > mBlkMedia.LastBlock) {
+      if (mPostReads < 52) {
+        MmcTrace (L"MMC: blk read past end lba=%u\r\n", (UINT32)Lba);
+        mPostReads++;
+      }
       return EFI_INVALID_PARAMETER;
     }
     Status = mOwnHost->SendCommand (mOwnHost, MMC_CMD17, (UINT32)Lba);
@@ -1407,13 +1423,33 @@ Mt6771MmcInitCardAndInstallBlockIo (
   mBlkIo.WriteBlocks = A3BlkWriteBlocks;
   mBlkIo.FlushBlocks = A3BlkFlushBlocks;
 
-  Handle = NULL;
-  Status = gBS->InstallMultipleProtocolInterfaces (
-                  &Handle,
-                  &gEfiBlockIoProtocolGuid,
-                  &mBlkIo,
-                  NULL
-                  );
+  {
+    VENDOR_DEVICE_PATH        VenHw;
+    EFI_DEVICE_PATH_PROTOCOL  *Dp;
+
+    ZeroMem (&VenHw, sizeof (VenHw));
+    VenHw.Header.Type    = HARDWARE_DEVICE_PATH;
+    VenHw.Header.SubType = HW_VENDOR_DP;
+    VenHw.Header.Length[0] = (UINT8)(sizeof (VENDOR_DEVICE_PATH) & 0xFF);
+    VenHw.Header.Length[1] = (UINT8)(sizeof (VENDOR_DEVICE_PATH) >> 8);
+    CopyMem (&VenHw.Guid, &gMt6771EmmcHostDevicePathGuid, sizeof (EFI_GUID));
+
+    Dp = AppendDevicePathNode (NULL, (EFI_DEVICE_PATH_PROTOCOL *)&VenHw);
+    if (Dp == NULL) {
+      MmcTrace (L"MMC: device path alloc failed\r\n");
+      return EFI_OUT_OF_RESOURCES;
+    }
+
+    Handle = NULL;
+    Status = gBS->InstallMultipleProtocolInterfaces (
+                    &Handle,
+                    &gEfiBlockIoProtocolGuid,
+                    &mBlkIo,
+                    &gEfiDevicePathProtocolGuid,
+                    Dp,
+                    NULL
+                    );
+  }
   if (EFI_ERROR (Status)) {
     MmcTrace (L"MMC: BlockIo install failed %r\r\n", Status);
     return Status;
