@@ -978,14 +978,21 @@ Mt6771MmcSetIos (
   EFI_STATUS  Status;
 
   //
-  // MmcDxe calls SetIos(0, 1, EMMCBACKWARD) during identification. Keep the
-  // clock produced by LK in that case; only change the bus width.
+  // MmcDxe calls SetIos(0, 1, EMMCBACKWARD) at the start of identification.
+  // BusClockFreq==0 means "identification clock" (<=400 kHz per spec).
+  // LK leaves MSDC at its boot (high) clock, which makes CMD0/CMD1 fail with
+  // CRC errors while the card is still in idle.
   //
-  if (BusClockFreq != 0) {
-    Status = MsdcSetClock (BusClockFreq);
-    if (EFI_ERROR (Status)) {
-      return Status;
-    }
+  // Only lower the clock when the clock adopted from LK is faster than the
+  // 400 kHz identification limit. If it is already slow enough, leave it.
+
+  if (BusClockFreq == 0) {
+    BusClockFreq = 400000u;
+  }
+
+  Status = MsdcSetClock (BusClockFreq);
+  if (EFI_ERROR (Status)) {
+    return Status;
   }
 
   return MsdcSetBusWidth (BusWidth);
