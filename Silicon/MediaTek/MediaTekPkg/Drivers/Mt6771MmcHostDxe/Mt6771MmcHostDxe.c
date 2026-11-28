@@ -547,44 +547,6 @@ MsdcWaitDataDone (
   return Status;
 }
 
-STATIC
-EFI_STATUS
-MsdcPumpRxFifo (
-  IN OUT UINT8  **Buffer,
-  IN OUT UINTN  *Remaining
-  )
-{
-  UINTN  Chunk;
-  UINT8  *Byte;
-
-  Byte = *Buffer;
-  while (*Remaining > 0) {
-    Chunk = MsdcRead (MSDC_FIFOCS) & MSDC_FIFO_RXBYTES_MASK;
-    if (Chunk == 0) {
-      break;
-    }
-    if (Chunk > *Remaining) {
-      Chunk = *Remaining;
-    }
-
-    if ((Chunk >= 4) && (((UINTN)Byte & 3u) == 0)) {
-      while (Chunk >= 4) {
-        *(UINT32 *)Byte = MmioRead32 (mHost.MsdcBase + MSDC_RXDATA);
-        Byte += 4;
-        *Remaining -= 4;
-        Chunk -= 4;
-      }
-    }
-    while (Chunk > 0) {
-      *Byte++ = (UINT8)MmioRead32 (mHost.MsdcBase + MSDC_RXDATA);
-      (*Remaining)--;
-      Chunk--;
-    }
-  }
-
-  *Buffer = Byte;
-  return EFI_SUCCESS;
-}
 
 STATIC
 EFI_STATUS
@@ -634,40 +596,70 @@ MsdcPioRead (
   IN UINTN  Length
   )
 {
-  EFI_STATUS  Status;
-  UINT8       *Byte;
-  UINTN       Remaining;
-  UINT32      IntStatus;
+  UINT8   *Byte = Buffer;
+  UINTN   Remaining;
+  UINT32  Ints;
+  UINT32  Elapsed;
+  UINT32  Word;
+  UINTN   Copy;
+  BOOLEAN XferDone;
 
   if ((Buffer == NULL) || ((Length % MT6771_MSDC_BLOCK_SIZE) != 0)) {
     return EFI_INVALID_PARAMETER;
   }
 
-  Byte      = Buffer;
   Remaining = Length;
+  XferDone  = FALSE;
 
-  while (TRUE) {
-    Status = MsdcWaitDataDone (&IntStatus);
-    if (Status == EFI_SUCCESS) {
-      MsdcPumpRxFifo (&Byte, &Remaining);
-    } else {
-      DEBUG ((DEBUG_ERROR, "Mt6771Mmc: read data error/timeout %r, left=%u\n",
-              Status, Remaining));
+  //
+  // Unit-independent PIO drain, following mtk-sd.c which only uses
+  // MSDC_FIFOCS.RXCNT as a "FIFO non-empty" flag (mtk-sd.c:1306) and never
+  // relies on its unit. The old code waited for XFER_COMPL first and then
+  // drained the FIFO once; if XFER_COMPL arrived before every byte was in the
+  // FIFO the drain stopped early and the read failed, which made MmcDxe issue
+  // CMD12 and time out.
+  //
+  for (Elapsed = 0; Elapsed < MT6771_DAT_WAIT_TIMEOUT_US; Elapsed += 10) {
+    Ints = MsdcRead (MSDC_INT);
+
+    if ((Ints & (MSDC_INT_DATTMO | MSDC_INT_DATCRCERR)) != 0) {
+      MsdcWrite (MSDC_INT, Ints & MSDC_INT_DATSTS);
+      return ((Ints & MSDC_INT_DATCRCERR) != 0) ? EFI_CRC_ERROR : EFI_TIMEOUT;
+    }
+    if ((Ints & MSDC_INT_XFER_COMPL) != 0) {
+      XferDone = TRUE;
     }
 
-    MsdcWrite (MSDC_INT, IntStatus & MSDC_INT_XFER_COMPL);
-    MsdcClearBits (MSDC_INTEN, MSDC_INT_DATSTS);
-    if (EFI_ERROR (Status)) {
-      return Status;
+    if ((MsdcRead (MSDC_FIFOCS) & MSDC_FIFO_RXBYTES_MASK) != 0) {
+      Word = MmioRead32 (mHost.MsdcBase + MSDC_RXDATA);
+      Copy = (Remaining >= 4) ? 4 : Remaining;
+      Byte[0] = (UINT8)(Word & 0xFF);
+      if (Copy > 1) Byte[1] = (UINT8)((Word >> 8) & 0xFF);
+      if (Copy > 2) Byte[2] = (UINT8)((Word >> 16) & 0xFF);
+      if (Copy > 3) Byte[3] = (UINT8)((Word >> 24) & 0xFF);
+      Byte      += Copy;
+      Remaining -= Copy;
+      if (Remaining == 0) {
+        break;
+      }
+      continue;
     }
-    if (Remaining != 0) {
-      DEBUG ((DEBUG_ERROR, "Mt6771Mmc: XFER_COMPL with %u bytes left\n", Remaining));
-      return EFI_DEVICE_ERROR;
+
+    if (XferDone && (Remaining == 0)) {
+      break;
     }
-    return EFI_SUCCESS;
+
+    MicroSecondDelay (10);
   }
-}
 
+  if (Remaining != 0) {
+    DEBUG ((DEBUG_ERROR, "Mt6771Mmc: PIO read short, %u bytes missing\n", Remaining));
+    return EFI_DEVICE_ERROR;
+  }
+
+  MsdcWrite (MSDC_INT, MSDC_INT_XFER_COMPL);
+  return EFI_SUCCESS;
+}
 STATIC
 EFI_STATUS
 MsdcPioWrite (
@@ -903,19 +895,11 @@ Mt6771MmcSendCommand (
 
   Status = MsdcWaitCommandDone (&IntStatus);
 
-  if (mMmcTraceCount < 32) {
-    TraceInt = MsdcRead (MSDC_INT);
-    MmcTrace (
-      L"MMC CMD%u arg=%08x raw=%04x -> %r INT=%04x resp0=%08x\r\n",
-      MMC_GET_INDX (Cmd), Argument, RawCmd, Status, TraceInt, mHost.Response[0]
-      );
-    mMmcTraceCount++;
-  }
-
-  if (EFI_ERROR (Status)) {
-    return Status;
-  }
-
+  //
+  // Capture the response BEFORE tracing. The trace used to print
+  // mHost.Response[0] while it was still zeroed, so every line showed
+  // resp0=00000000 even for perfectly answered commands.
+  //
   if (ResponseType != 0) {
     if (ResponseType == 2) {
       mHost.Response[3] = MsdcRead (SDC_RESP3);
@@ -925,6 +909,20 @@ Mt6771MmcSendCommand (
     } else {
       mHost.Response[0] = MsdcRead (SDC_RESP0);
     }
+  }
+
+  if (mMmcTraceCount < 32) {
+    TraceInt = MsdcRead (MSDC_INT);
+    MmcTrace (
+      L"MMC CMD%u arg=%08x raw=%04x -> %r INT=%08x resp0=%08x resp3=%08x\r\n",
+      MMC_GET_INDX (Cmd), Argument, RawCmd, Status, TraceInt,
+      mHost.Response[0], mHost.Response[3]
+      );
+    mMmcTraceCount++;
+  }
+
+  if (EFI_ERROR (Status)) {
+    return Status;
   }
 
   return EFI_SUCCESS;
