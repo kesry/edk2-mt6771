@@ -873,9 +873,19 @@ Mt6771MmcSendCommand (
       break;
   }
 
-  Status = MsdcResetHardware ();
-  if (EFI_ERROR (Status)) {
-    return Status;
+  //
+  // Do NOT soft-reset the controller before every command. The vendor
+  // (mtk-sd.c) only resets on a previous error or when the FIFO is non-empty;
+  // a full MSDC_CFG_RST before CMD1 clears the response-sampling state LK
+  // left configured and makes the R3 OCR response appear as a CRC error.
+  // Clear stale command status/interrupts instead.
+  //
+  if ((MsdcRead (MSDC_FIFOCS) & 0x00FF00FFu) != 0) {
+    Status = MsdcResetHardware ();
+    if (EFI_ERROR (Status)) return Status;
+  } else {
+    MsdcSetBits (MSDC_FIFOCS, MSDC_FIFOCS_CLR);
+    MsdcWrite (MSDC_INT, 0xffffffffu);
   }
 
   MsdcClearBits (MSDC_INTEN, MSDC_INT_CMDSTS);
