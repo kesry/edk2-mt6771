@@ -108,7 +108,7 @@ MmcTraceReplay (
 {
   UINTN  i;
 
-  if (mMmcReplays >= 4) {
+  if (mMmcReplays >= 1) {
     gBS->SetTimer (Event, TimerCancel, 0);
     return;
   }
@@ -125,6 +125,7 @@ MmcTraceReplay (
   gST->ConOut->OutputString (gST->ConOut, L"==== end MMC trace ====\r\n");
 }
 
+#endif
 
 STATIC MT6771_MMC_HOST_DATA  mHost;
 STATIC EFI_HANDLE             mHostHandle;
@@ -1174,7 +1175,9 @@ Mt6771MmcHostDxeInitialize (
                       &TraceEvent
                       )))
     {
-      gBS->SetTimer (TraceEvent, TimerPeriodic, 30000000u);   // 3 s
+      // One-shot only. A periodic ConOut replay from TPL_CALLBACK caused a
+      // fixed 2-reboot loop; print once after BDS has cleared the screen.
+      gBS->SetTimer (TraceEvent, TimerRelative, 30000000u);
     }
   }
 

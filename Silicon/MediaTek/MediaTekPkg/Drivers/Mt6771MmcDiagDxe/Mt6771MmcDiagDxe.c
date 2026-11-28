@@ -310,6 +310,6 @@ Mt6771MmcDiagDxeInitialize (
   if (EFI_ERROR (Status)) {
     return EFI_SUCCESS;
   }
-  gBS->SetTimer (Event, TimerPeriodic, DIAG_PERIOD);
+  gBS->SetTimer (Event, TimerRelative, DIAG_PERIOD);
   return EFI_SUCCESS;
 }
