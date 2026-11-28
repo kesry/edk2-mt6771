@@ -110,6 +110,7 @@ MmcTrace (
   gST->ConOut->OutputString (gST->ConOut, Buffer);
 }
 
+#if MMC_VERBOSE_TRACE
 STATIC
 VOID
 MmcTraceDump (
@@ -133,6 +134,7 @@ MmcTraceDump (
   }
   gST->ConOut->OutputString (gST->ConOut, L"==== end MMC trace ====\r\n");
 }
+#endif
 
 #if MMC_VERBOSE_TRACE
 STATIC
@@ -1654,7 +1656,8 @@ Mt6771MmcHostDxeInitialize (
   Host->WriteBlockData  = Mt6771MmcWriteBlockData;
   Host->SetIos          = Mt6771MmcSetIos;
   Host->IsMultiBlock    = Mt6771MmcIsMultiBlock;
-  if (MMC_VERBOSE_TRACE) {
+#if MMC_VERBOSE_TRACE
+  {
     EFI_EVENT  TraceEvent = NULL;
     if (!EFI_ERROR (gBS->CreateEvent (
                       EVT_TIMER | EVT_NOTIFY_SIGNAL,
@@ -1667,6 +1670,8 @@ Mt6771MmcHostDxeInitialize (
       gBS->SetTimer (TraceEvent, TimerRelative, 50000000u);
     }
   }
+
+#endif
 
   mHostHandle = NULL;
   Status = gBS->InstallProtocolInterface (
