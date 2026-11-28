@@ -29,7 +29,7 @@
 // PATCH_BIT quirks that edk2-mtk next-msdc used; only for experiments.
 //
 #define MMC_USE_MT6789_QUIRKS   0
-#define MMC_SCREEN_TRACE        FALSE
+#define MMC_SCREEN_TRACE        TRUE
 
 //
 // eMMC clock gates. Vendor DT: clocks = <&infracfg_ao INFRACFG_AO_MSDC0_SCK_CG>,

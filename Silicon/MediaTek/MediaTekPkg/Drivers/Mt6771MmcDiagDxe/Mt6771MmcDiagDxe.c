@@ -41,7 +41,7 @@ STATIC UINTN  mPass;
 // screen while the USB/OTG bring-up is being debugged. Set to TRUE to re-enable
 // the eMMC/GPT report.
 //
-#define MMC_DIAG_SCREEN_TRACE  FALSE
+#define MMC_DIAG_SCREEN_TRACE  TRUE
 
 STATIC
 VOID
