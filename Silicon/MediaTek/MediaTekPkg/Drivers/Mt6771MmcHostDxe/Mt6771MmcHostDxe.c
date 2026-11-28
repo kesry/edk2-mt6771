@@ -1027,7 +1027,7 @@ Mt6771MmcHostInit (
   EFI_STATUS  Status;
 
   MmcTrace (
-    L"MSDC regs before: CFG=%04x SDC_CFG=%04x PS=%04x INTEN=%04x\r\n",
+    L"MSDC regs before: CFG=%08x SDC_CFG=%08x PS=%08x INTEN=%08x\r\n",
     MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_CFG),
     MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + SDC_CFG),
     MmioRead16 (FixedPcdGet32 (PcdMsdcMmioRegBase) + MSDC_PS),
@@ -1127,7 +1127,7 @@ Mt6771MmcHostInit (
   MsdcSetTimeout ();
 
   MmcTrace (
-    L"MSDC regs after : CFG=%04x SDC_CFG=%04x PS=%04x INTEN=%04x\r\n",
+    L"MSDC regs after : CFG=%08x SDC_CFG=%08x PS=%08x INTEN=%08x\r\n",
     MmioRead16 (mHost.MsdcBase + MSDC_CFG),
     MmioRead16 (mHost.MsdcBase + SDC_CFG),
     MmioRead16 (mHost.MsdcBase + MSDC_PS),
