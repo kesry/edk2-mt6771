@@ -480,6 +480,14 @@ MsdcWaitCommandDone (
       if ((Value & MSDC_INT_CMDRDY) != 0) {
         return EFI_SUCCESS;
       }
+      //
+      // Capture RESP0 even on error. With CMD1/R3 (OCR, no CRC) a
+      // CMDCRCERR can be a mis-detected completion, and without a response
+      // dump the trace only shows resp0=0, which is indistinguishable from a
+      // card that never answered. Reading RESP0 is harmless.
+      //
+      mHost.Response[0] = MsdcRead (SDC_RESP0);
+
       if ((Value & (MSDC_INT_CMDTMO | MSDC_INT_ACMDTMO)) != 0) {
         return EFI_TIMEOUT;
       }
