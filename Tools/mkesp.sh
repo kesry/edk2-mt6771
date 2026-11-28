@@ -13,22 +13,26 @@ set -eu
 OUT=esp.img
 KERNEL=""
 INITRD=""
+GRUBEFI=""
 DTB=""
 SIZE_MB=512
 
-usage() { echo "usage: $0 [-o esp.img] [-k Image] [-i initrd.gz] [-d dtb] [-s sizeMB]" >&2; exit 1; }
-while getopts "o:k:i:d:s:" opt; do
+usage() { echo "usage: $0 [-o esp.img] [-k Image] [-i initrd.gz] [-g grub.efi] [-d dtb] [-s sizeMB]" >&2; exit 1; }
+while getopts "o:k:i:g:d:s:" opt; do
   case "$opt" in
     o) OUT="$OPTARG" ;;
     k) KERNEL="$OPTARG" ;;
     i) INITRD="$OPTARG" ;;
+    g) GRUBEFI="$OPTARG" ;;
     d) DTB="$OPTARG" ;;
     s) SIZE_MB="$OPTARG" ;;
     *) usage ;;
   esac
 done
 
-command -v grub-mkstandalone >/dev/null 2>&1 || { echo "grub-mkstandalone missing" >&2; exit 1; }
+if [ -z "$GRUBEFI" ]; then
+  command -v grub-mkstandalone >/dev/null 2>&1 || { echo "need -g grub.efi or grub-mkstandalone" >&2; exit 1; }
+fi
 command -v mcopy >/dev/null 2>&1            || { echo "mtools missing (apt install mtools)" >&2; exit 1; }
 command -v mkfs.vfat >/dev/null 2>&1        || { echo "dosfstools missing" >&2; exit 1; }
 
@@ -88,23 +92,26 @@ menuentry "UEFI Shell" {
 GRUBCFG
 
 
-echo "== building GRUB arm64 standalone =="
-# grub-mkstandalone is host-arch, but it can emit arm64-efi images as long as it
-# can read the arm64 module directory. Set GRUB_MODULE_DIR when the arm64
-# modules come from an extracted .deb rather than the host package.
-MODOPT=""
-if [ -n "${GRUB_MODULE_DIR:-}" ]; then
-  MODOPT="--directory=$GRUB_MODULE_DIR"
-  echo "   modules from: $GRUB_MODULE_DIR"
+if [ -n "$GRUBEFI" ]; then
+  [ -f "$GRUBEFI" ] || { echo "grub efi not found: $GRUBEFI" >&2; exit 1; }
+  echo "== using provided GRUB: $GRUBEFI =="
+  cp "$GRUBEFI" "$WORK/BOOTAA64.EFI"
+else
+  echo "== building GRUB arm64 standalone =="
+  MODOPT=""
+  if [ -n "${GRUB_MODULE_DIR:-}" ]; then
+    MODOPT="--directory=$GRUB_MODULE_DIR"
+    echo "   modules from: $GRUB_MODULE_DIR"
+  fi
+  # shellcheck disable=SC2086
+  grub-mkstandalone \
+    -O arm64-efi \
+    -o "$WORK/BOOTAA64.EFI" \
+    $MODOPT \
+    --modules="normal linux devicetree part_gpt part_msdos fat ext2 search search_label configfile echo test" \
+    --locales="" --themes="" --fonts="" \
+    "boot/grub/grub.cfg=$WORK/grub.cfg"
 fi
-# shellcheck disable=SC2086
-grub-mkstandalone \
-  -O arm64-efi \
-  -o "$WORK/BOOTAA64.EFI" \
-  $MODOPT \
-  --modules="normal linux devicetree part_gpt part_msdos fat ext2 search search_label configfile echo test" \
-  --locales="" --themes="" --fonts="" \
-  "boot/grub/grub.cfg=$WORK/grub.cfg"
 
 echo "== creating ${SIZE_MB}MB FAT32 image: $OUT =="
 rm -f "$OUT"

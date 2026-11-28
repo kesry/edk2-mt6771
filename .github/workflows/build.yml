@@ -47,15 +47,11 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          # GRUB arm64 (Architecture: any) + mtools/dosfstools for the ESP image
-          # grub-efi-arm64-bin is Architecture: arm64 and is not installable on this
-          # x86_64 runner, so fetch the .deb and extract the arm64 modules only.
-          sudo dpkg --add-architecture arm64
-          sudo apt-get update
-          apt-get download grub-efi-arm64-bin
-          sudo dpkg-deb -x grub-efi-arm64-bin_*.deb /opt/grub-arm64
-          ls /opt/grub-arm64/usr/lib/grub/arm64-efi >/dev/null
-          sudo apt-get install -y --no-install-recommends grub-common mtools dosfstools p7zip-full
+          # The ESP uses Debian's own bootaa64.efi taken from the DVD ISO, so no
+          # arm64 GRUB package is needed (grub-efi-arm64-bin is not installable
+          # on an x86_64 runner). mtools/dosfstools build the FAT image, p7zip
+          # reads the ISO.
+          sudo apt-get install -y --no-install-recommends mtools dosfstools p7zip-full
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             build-essential gcc gcc-aarch64-linux-gnu libc6-dev-arm64-cross \
@@ -129,7 +125,6 @@ jobs:
 
       - name: Build ESP image from Debian DVD ISO
         run: |
-          export GRUB_MODULE_DIR=/opt/grub-arm64/usr/lib/grub/arm64-efi
           sh Tools/fetch-debian-dvd-esp.sh -o "$GITHUB_WORKSPACE/esp-dvd.img" -c iso-cache
           ls -lh "$GITHUB_WORKSPACE/esp-dvd.img"
 
