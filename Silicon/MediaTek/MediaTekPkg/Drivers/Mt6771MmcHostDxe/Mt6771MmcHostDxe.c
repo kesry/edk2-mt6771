@@ -1019,6 +1019,32 @@ Mt6771MmcReadBlockData (
 
   Status = MsdcPioRead (Buffer, Length);
 
+  //
+  // EXT_CSD read (CMD8/SEND_EXTCSD): force DEVICE_TYPE (EXT_CSD byte 196) to
+  // 0 = backward-compatible only.
+  //
+  // Why: this host has no HS/DDR pad tuning. EDK2 InitializeEmmcDevice()
+  // returns early only when ECSD DEVICE_TYPE is EMMCBACKWARD
+  // (MmcIdentification.c:271). Otherwise it writes EXT_CSD BUS_WIDTH=6,
+  // which is 8-bit DDR, and asks for SetIos(52000000, 8, ...). Our controller
+  // samples SDR, so the card's DDR data fails CRC -- exactly what runner #138
+  // showed (commands fine, ReadBlockData -> CRC Error).
+  //
+  // Declaring no HS/DDR keeps card and controller on 1-bit SDR at the
+  // identification clock, which the EXTCSD read itself already proves works.
+  //
+  if (!EFI_ERROR (Status) &&
+      (mHost.LastCommand != 0) &&
+      (MMC_GET_INDX (mHost.LastCommand) == 8) &&
+      (Length >= 197)) {
+    UINT8 *Ecsd = (UINT8 *)Buffer;
+    if (Ecsd[196] != 0) {
+      UINT8 OrigType = Ecsd[196];
+      Ecsd[196] = 0;
+      MmcTrace (L"MMC: EXT_CSD DEVICE_TYPE %02x -> 00 (backward only)\r\n", OrigType);
+    }
+  }
+
   if (mReadTraceCount < 8) {
     MmcTrace (L"MMC: ReadBlockData -> %r INT=%08x FIFOCS=%08x\r\n",
               Status, MsdcRead (MSDC_INT), MsdcRead (MSDC_FIFOCS));
