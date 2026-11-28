@@ -453,7 +453,13 @@ MsdcSetClock (
     return Status;
   }
 
-  MsdcSetBits (MSDC_CFG, MSDC_CFG_CCKPD);
+  //
+  // Keep the clock pad powered after programming the divider: vendor sd.c
+  // (4373-4375) toggles CKPDN and finishes with it CLEARED, i.e. the card
+  // clock keeps running. Gating it here would stop the clock that the
+  // identification commands still need.
+  //
+  MsdcClearBits (MSDC_CFG, MSDC_CFG_CCKPD);
   MsdcSetTimeout ();
 
   DEBUG ((DEBUG_INFO, "Mt6771Mmc: source=%uHz request=%uHz sclk=%uHz mode=%u div=%u\n",
@@ -997,7 +1003,7 @@ Mt6771MmcSetIos (
   // 400 kHz identification limit. If it is already slow enough, leave it.
 
   if (BusClockFreq == 0) {
-    BusClockFreq = 400000u;
+    BusClockFreq = 260000u;
   }
 
   Status = MsdcSetClock (BusClockFreq);
@@ -1113,17 +1119,33 @@ Mt6771MmcHostInit (
 #endif /* MMC_USE_MT6789_QUIRKS */
 
   //
-  // Adopt the card clock LK already programmed. Do not recompute a divider
-  // from an assumed source frequency: mainline explicitly warns that a wrong
-  // assumed source rate overclocks the card and produces I/O errors.
+  // EDK2 MmcDxe does NOT lower the card clock before CMD0/CMD1:
+  // MmcIdentification.c calls Host->SetIos(0,1,EMMCBACKWARD) only inside
+  // EmmcIdentificationMode(), i.e. AFTER CMD1 has already succeeded. So the
+  // identification commands run at whatever clock this init leaves behind.
   //
-  Status = MsdcAdoptLkClock (&mHost.SclkHz);
-  if (EFI_ERROR (Status)) {
-    MmcTrace (L"MSDC: cannot adopt LK clock %r, keeping PCD value\r\n", Status);
-    mHost.SclkHz = mHost.SourceClockHz;
-  } else {
-    MmcTrace (L"MSDC: adopted LK clock %uHz\r\n", mHost.SclkHz);
+  // LK leaves MSDC at its boot clock (observed MSDC_CFG CKDIV=1 => 50 MHz with
+  // a 400 MHz msdcpll). The eMMC spec requires <=400 kHz for identification;
+  // at 50 MHz CMD1 returns a garbage OCR (observed resp0=0x900, no PowerUp
+  // bit) and the controller reports RSPCRCERR.
+  //
+  // Report what LK had configured, then program the 400 kHz identification
+  // clock. MsdcSetClock only touches MSDC_CFG CKDIV/CKMOD and leaves LK top
+  // pad tuning alone.
+  //
+  {
+    UINT32 LkSclk = 0;
+    if (!EFI_ERROR (MsdcAdoptLkClock (&LkSclk))) {
+      MmcTrace (L"MSDC: LK left card clock at %uHz\r\n", LkSclk);
+    }
   }
+
+  Status = MsdcSetClock (260000u);
+  if (EFI_ERROR (Status)) {
+    MmcTrace (L"MSDC: identification clock failed %r\r\n", Status);
+    return Status;
+  }
+  MmcTrace (L"MSDC: identification clock set to %uHz\r\n", mHost.SclkHz);
   MsdcSetTimeout ();
 
   MmcTrace (
