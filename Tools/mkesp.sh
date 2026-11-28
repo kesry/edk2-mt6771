@@ -89,9 +89,19 @@ GRUBCFG
 
 
 echo "== building GRUB arm64 standalone =="
+# grub-mkstandalone is host-arch, but it can emit arm64-efi images as long as it
+# can read the arm64 module directory. Set GRUB_MODULE_DIR when the arm64
+# modules come from an extracted .deb rather than the host package.
+MODOPT=""
+if [ -n "${GRUB_MODULE_DIR:-}" ]; then
+  MODOPT="--directory=$GRUB_MODULE_DIR"
+  echo "   modules from: $GRUB_MODULE_DIR"
+fi
+# shellcheck disable=SC2086
 grub-mkstandalone \
   -O arm64-efi \
   -o "$WORK/BOOTAA64.EFI" \
+  $MODOPT \
   --modules="normal linux devicetree part_gpt part_msdos fat ext2 search search_label configfile echo test" \
   --locales="" --themes="" --fonts="" \
   "boot/grub/grub.cfg=$WORK/grub.cfg"
