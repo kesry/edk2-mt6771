@@ -24,11 +24,14 @@
 // charger-boost VBUS path comes up. A periodic callback is used instead of a
 // blocking loop in the driver entry point.
 //
-#define A3_PROBE_TICKS     60
+#define A3_PROBE_TICKS     8
 #define A3_PROBE_PERIOD_US 250000u   // 250 ms
 
 STATIC EFI_EVENT  mProbeEvent;
 STATIC UINTN      mProbeTicks;
+STATIC BOOLEAN    mDescPrinted;
+STATIC UINT8      mLastReport[8];
+STATIC BOOLEAN    mHaveLast;
 
 STATIC
 VOID
@@ -65,11 +68,14 @@ ProbeOneUsbIo (
     return;
   }
 
-  UnicodeSPrint (Buf, sizeof (Buf),
-    L"A3Probe: VID=%04x PID=%04x Class=%02x Sub=%02x Proto=%02x\r\n",
-    DevDesc.IdVendor, DevDesc.IdProduct,
-    DevDesc.DeviceClass, DevDesc.DeviceSubClass, DevDesc.DeviceProtocol);
-  PrintLine (Buf);
+  if (!mDescPrinted) {
+    mDescPrinted = TRUE;
+    UnicodeSPrint (Buf, sizeof (Buf),
+      L"A3Probe: VID=%04x PID=%04x Class=%02x Sub=%02x Proto=%02x\r\n",
+      DevDesc.IdVendor, DevDesc.IdProduct,
+      DevDesc.DeviceClass, DevDesc.DeviceSubClass, DevDesc.DeviceProtocol);
+    PrintLine (Buf);
+  }
 
   //
   // UsbKbDxe already sent SET_PROTOCOL(BOOT) during its Start(), so a plain
@@ -92,9 +98,14 @@ ProbeOneUsbIo (
                     sizeof (Report),
                     &UsbStatus
                     );
+  if (mHaveLast && (CompareMem (mLastReport, Report, sizeof (Report)) == 0)) {
+    return;
+  }
+  CopyMem (mLastReport, Report, sizeof (Report));
+  mHaveLast = TRUE;
   UnicodeSPrint (Buf, sizeof (Buf),
-    L"A3Probe: GET_REPORT %r status=0x%x %02x %02x %02x %02x %02x %02x %02x %02x\r\n",
-    Status, UsbStatus,
+    L"A3Probe: GET_REPORT %r %02x %02x %02x %02x %02x %02x %02x %02x\r\n",
+    Status,
     Report[0], Report[1], Report[2], Report[3],
     Report[4], Report[5], Report[6], Report[7]);
   PrintLine (Buf);
