@@ -65,12 +65,29 @@ menuentry "Boot /Image + /initrd.gz (our DTB)" {
 }
 
 # ---------------------------------------------------------------------------
-# 2) Installed system: same kernel, but mount a real root filesystem.
-#    Change the PARTUUID to the root partition on this phone.
+# 2) Installed system.
+#
+#    The installed kernel MUST come with its own initrd: on Debian/arm64 the
+#    MediaTek clock and eMMC drivers are modules (CONFIG_COMMON_CLK_MT6779=m,
+#    CONFIG_MMC_MTK=m), so a kernel booted without them cannot see the eMMC at
+#    all. Copy the two files out of the installed root filesystem:
+#
+#      cp /boot/vmlinuz-<ver>   /mnt/esp/vmlinuz-inst
+#      cp /boot/initrd.img-<ver> /mnt/esp/initrd-inst.img
+#
+#    root= uses the PARTUUID of the root partition (NOT the filesystem UUID).
+#    On this phone p44 "userdata" is the fnOS/Debian rootfs:
+#      PARTUUID = 6fce83a6-5273-4748-1145-c205ebb4b8ad
 # ---------------------------------------------------------------------------
-menuentry "Boot /Image, root=PARTUUID=3edee4d4-eba3-4bfc-9e93-29bad7809196" {
+menuentry "Installed system (p44 fnos-root)" {
     devicetree /a3.dtb
-    linux /Image root=PARTUUID=3edee4d4-eba3-4bfc-9e93-29bad7809196 rw console=tty0 loglevel=7
+    if [ -f /vmlinuz-inst ]; then
+        linux /vmlinuz-inst root=PARTUUID=6fce83a6-5273-4748-1145-c205ebb4b8ad rw console=tty0 loglevel=7
+        initrd /initrd-inst.img
+    else
+        echo "vmlinuz-inst / initrd-inst.img missing on the ESP"
+        sleep 5
+    fi
 }
 
 # ---------------------------------------------------------------------------
