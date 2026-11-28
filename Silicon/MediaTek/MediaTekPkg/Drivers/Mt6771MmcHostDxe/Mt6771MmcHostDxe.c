@@ -36,6 +36,14 @@
 #define MMC_SCREEN_TRACE        TRUE
 
 //
+// Per-command / per-read tracing. Off by default: the block stack issues
+// hundreds of reads during partition scan, the ConOut flood is slow at
+// TPL_CALLBACK and was the last thing before the board rebooted. Only the GPT
+// summary from Mt6771MmcDiagDxe is printed while this is 0.
+//
+#define MMC_VERBOSE_TRACE       0
+
+//
 // eMMC clock gates. Vendor DT: clocks = <&infracfg_ao INFRACFG_AO_MSDC0_SCK_CG>,
 // <&infracfg_ao INFRACFG_AO_MSDC0_CG>; vendor clk-mt6771.c maps both to the
 // infra1 gate group:
@@ -81,7 +89,7 @@ MmcTrace (
   // Screen output is disabled on purpose: the USB diagnostics need the whole
   // screen, and the MMC trace was pushing them off. Set to TRUE to debug eMMC.
   //
-  if (!MMC_SCREEN_TRACE) {
+  if ((!MMC_SCREEN_TRACE) || (!MMC_VERBOSE_TRACE)) {
     return;
   }
   if ((gST == NULL) || (gST->ConOut == NULL)) {
@@ -126,6 +134,7 @@ MmcTraceDump (
   gST->ConOut->OutputString (gST->ConOut, L"==== end MMC trace ====\r\n");
 }
 
+#if MMC_VERBOSE_TRACE
 STATIC
 VOID
 EFIAPI
@@ -137,6 +146,7 @@ MmcTraceReplayEvent (
   gBS->SetTimer (Event, TimerCancel, 0);
   MmcTraceDump ();
 }
+#endif
 
 
 STATIC UINTN  mPioReadFails;
@@ -1644,7 +1654,7 @@ Mt6771MmcHostDxeInitialize (
   Host->WriteBlockData  = Mt6771MmcWriteBlockData;
   Host->SetIos          = Mt6771MmcSetIos;
   Host->IsMultiBlock    = Mt6771MmcIsMultiBlock;
-  {
+  if (MMC_VERBOSE_TRACE) {
     EFI_EVENT  TraceEvent = NULL;
     if (!EFI_ERROR (gBS->CreateEvent (
                       EVT_TIMER | EVT_NOTIFY_SIGNAL,
@@ -1654,11 +1664,6 @@ Mt6771MmcHostDxeInitialize (
                       &TraceEvent
                       )))
     {
-      //
-      // ONE-SHOT at 5 s. A periodic replay from TPL_CALLBACK rebooted the
-      // board; a single late dump is what produced the readable traces in
-      // builds #136-#139. Do not make this periodic.
-      //
       gBS->SetTimer (TraceEvent, TimerRelative, 50000000u);
     }
   }

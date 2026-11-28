@@ -31,6 +31,12 @@
 #include <Protocol/BlockIo.h>
 #include <Protocol/DevicePath.h>
 
+//
+// 0 = print only the GPT partition list for the real disk.
+// 1 = also dump every BlockIo handle, its device path and its MBR bytes.
+//
+#define MMC_DIAG_VERBOSE   0
+
 #define DIAG_PERIOD   50000000u   // 5 s, after Shell clears the screen
 
 
@@ -244,6 +250,22 @@ Diagnose (
   for (i = 0; i < Count; i++) {
     Status = gBS->HandleProtocol (Handles[i], &gEfiBlockIoProtocolGuid, (VOID **)&BlkIo);
     if (EFI_ERROR (Status) || (BlkIo->Media == NULL)) {
+      continue;
+    }
+
+    if (!MMC_DIAG_VERBOSE) {
+      //
+      // Quiet mode: only the partition list of the real disk. Skip the RAM
+      // disk and skip the handle/MBR dump entirely.
+      //
+      if (BlkIo->Media->LastBlock > 0x10000) {
+        Buf = AllocatePool (BlkIo->Media->BlockSize);
+        if (Buf == NULL) {
+          continue;
+        }
+        DumpGpt (BlkIo, Buf, BlkIo->Media->BlockSize);
+        FreePool (Buf);
+      }
       continue;
     }
 
