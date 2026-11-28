@@ -1090,6 +1090,24 @@ Mt6771MmcReadBlockData (
         Ecsd[215], Ecsd[214], Ecsd[213], Ecsd[212],
         Ecsd[73], Ecsd[72], Ecsd[71], Ecsd[70]
         );
+
+      //
+      // Select the user data area. EXT_CSD PARTITION_CONFIG (byte 179) bits
+      // [2:0] choose which area a normal read/write hits; 0 = user data area,
+      // 1/2 = boot partition 1/2, 3 = RPMB. If LK or Android left a boot
+      // partition selected, CMD17 returns that area, which on this device is
+      // erased (all zeros) even though EXT_CSD still reads fine -- exactly the
+      // symptom in the #144 log (SEC_COUNT correct, LBA0 head all zeros).
+      //
+      MmcTrace (L"MMC: EXT_CSD PARTITION_CONFIG=%02x BUS_WIDTH=%02x HS_TIMING=%02x\r\n",
+                Ecsd[179], Ecsd[183], Ecsd[185]);
+      if ((Ecsd[179] & 0x07u) != 0) {
+        UINT32 SwitchArg;
+        SwitchArg = (3u << 24) | (179u << 16) | (0u << 8) | 1u;
+        Mt6771MmcSendCommand (This, MMC_CMD6, SwitchArg);
+        Ecsd[179] &= (UINT8)~0x07u;
+        MmcTrace (L"MMC: user area selected\r\n");
+      }
     }
   }
 
