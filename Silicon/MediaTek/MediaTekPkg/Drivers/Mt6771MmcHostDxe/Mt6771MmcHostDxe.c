@@ -795,9 +795,11 @@ Mt6771MmcNotifyState (
   // rebooted the board, and a one-shot timer is still unnecessary because
   // MmcDxe calls this hook right after identification finishes.
   //
-  if (State == MmcTransferState) {
-    MmcTraceDump ();
-  }
+  //
+  // Do not dump here: the one-shot timer owns the single dump. Dumping from
+  // NotifyState consumed the mMmcReplays budget and made the timer return
+  // immediately, which is why the trace disappeared in build #143.
+  //
   return EFI_SUCCESS;
 }
 
@@ -1083,6 +1085,11 @@ Mt6771MmcReadBlockData (
       UINT8 OrigType = Ecsd[196];
       Ecsd[196] = 0;
       MmcTrace (L"MMC: EXT_CSD DEVICE_TYPE %02x -> 00 (backward only)\r\n", OrigType);
+      MmcTrace (
+        L"MMC: EXT_CSD SEC_COUNT=%02x%02x%02x%02x C_SIZE=%02x%02x%02x%02x\r\n",
+        Ecsd[215], Ecsd[214], Ecsd[213], Ecsd[212],
+        Ecsd[73], Ecsd[72], Ecsd[71], Ecsd[70]
+        );
     }
   }
 
