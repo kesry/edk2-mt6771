@@ -140,6 +140,7 @@ MmcTraceReplayEvent (
 STATIC UINTN  mPioReadFails;
 STATIC UINTN  mReadTraceCount;
 STATIC BOOLEAN mSectorDumped;
+STATIC BOOLEAN mTraceQuiet;
 STATIC MT6771_MMC_HOST_DATA  mHost;
 STATIC EFI_HANDLE             mHostHandle;
 
@@ -991,7 +992,7 @@ Mt6771MmcSendCommand (
     }
   }
 
-  if (mMmcTraceCount < 32) {
+  if (!mTraceQuiet && (mMmcTraceCount < 32)) {
     TraceInt = MsdcRead (MSDC_INT);
     MmcTrace (
       L"MMC CMD%u arg=%08x raw=%04x -> %r INT=%08x r0=%08x r1=%08x r2=%08x r3=%08x\r\n",
@@ -1050,7 +1051,7 @@ Mt6771MmcReadBlockData (
     return EFI_INVALID_PARAMETER;
   }
 
-  if (mReadTraceCount < 8) {
+  if (!mTraceQuiet && (mReadTraceCount < 8)) {
     mReadTraceCount++;
     MmcTrace (L"MMC: ReadBlockData lba=%u len=%u\r\n", (UINT32)Lba, Length);
   }
@@ -1122,7 +1123,7 @@ Mt6771MmcReadBlockData (
     }
   }
 
-  if (mReadTraceCount < 8) {
+  if (!mTraceQuiet && (mReadTraceCount < 8)) {
     MmcTrace (L"MMC: ReadBlockData -> %r INT=%08x FIFOCS=%08x\r\n",
               Status, MsdcRead (MSDC_INT), MsdcRead (MSDC_FIFOCS));
   }
@@ -1382,6 +1383,15 @@ Mt6771MmcInitCardAndInstallBlockIo (
     return Status;
   }
 
+  //
+  // Identification is done, so raise the card clock. It ran at 260 kHz, which
+  // makes PartitionDxe/FAT probing crawl (about 32 KB/s) and the Shell appear
+  // to hang. 26 MHz is the legacy eMMC limit and LK itself read boot.img at
+  // about 50 MHz on this board, so 1-bit SDR at 26 MHz is safe.
+  //
+  MsdcSetClock (26000000u);
+  MmcTrace (L"MMC: data clock set to %uHz\r\n", mHost.SclkHz);
+
   ZeroMem (&mBlkMedia, sizeof (mBlkMedia));
   mBlkMedia.MediaId          = 1;
   mBlkMedia.MediaPresent     = TRUE;
@@ -1410,6 +1420,12 @@ Mt6771MmcInitCardAndInstallBlockIo (
   }
 
   MmcTrace (L"MMC: BlockIo installed, last=%u\r\n", (UINT32)mBlkMedia.LastBlock);
+
+  //
+  // Stop per-command tracing now: the block stack will issue hundreds of CMD17
+  // reads and would scroll the useful lines away.
+  //
+  mTraceQuiet = TRUE;
   return EFI_SUCCESS;
 }
 
